@@ -1,93 +1,24 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Gerador de Dieta IA | Personal Jean Oliveira</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <style>
-        body { font-family: sans-serif; background: #f4f4f4; text-align: center; padding: 50px; }
-        .container { background: white; padding: 30px; border-radius: 10px; max-width: 500px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        input, button { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; }
-        button { background: #6c63ff; color: white; border: none; cursor: pointer; font-weight: bold; }
-        #resultado { margin-top: 20px; text-align: left; white-space: pre-wrap; background: #eee; padding: 15px; border-radius: 5px; display: none; }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <h2>🍎 Gerador de Reeducação Alimentar IA</h2>
-    <p>Personal Jean Oliveira</p>
-    
-    <div id="login-section">
-        <input type="email" id="user-email" placeholder="Digite o e-mail cadastrado">
-        <button onclick="verificarAcesso()">Entrar e Gerar</button>
-    </div>
-
-    <div id="dieta-section" style="display:none;">
-        <input type="number" id="calorias" placeholder="Calorias alvo (ex: 2200)">
-        <input type="text" id="objetivo" placeholder="Seu objetivo (ex: Ganho de Massa)">
-        <button id="btn-gerar" onclick="gerarDieta()">Gerar Plano Alimentar Agora</button>
-    </div>
-
-    <div id="resultado"></div>
-</div>
-
 <script>
     const S_URL = 'https://xyqqngskrjzhxbsackul.supabase.co';
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cXFuZ3Nrcmp6aHhic2Fja3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NTI3NzksImV4cCI6MjA4NTUyODc3OX0.B90q1Jv-vodVIV_dLFUCOekyshrv3HekVpPugpPaHRI';
     const OPENAI_KEY = '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';
 
-    // Inicializa o Supabase corretamente
     const _supabase = supabase.createClient(S_URL, S_KEY);
 
     async function verificarAcesso() {
-        const email = document.getElementById('user-email').value;
-        // Nome da tabela e coluna corrigidos para bater com seus prints
-        const { data, error } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', email).single();
+        const emailFornecido = document.getElementById('user-email').value;
+        
+        // Ajustado para 'Usuarios_Dieta' e a coluna 'e-mail' com hífen conforme seu print
+        const { data, error } = await _supabase.from('Usuarios_Dieta').select('*').eq('e-mail', emailFornecido).single();
 
         if (error || !data) {
             alert("E-mail não encontrado ou sem acesso ativo.");
-        } else if (data.contagem_se >= 2) {
+        } else if (data.contagem_semanal >= 2) { // Ajustado para contagem_semanal conforme seu print
             alert("Você já atingiu o limite de 2 planos esta semana!");
         } else {
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('dieta-section').style.display = 'block';
         }
     }
-
-    async function gerarDieta() {
-        const cal = document.getElementById('calorias').value;
-        const obj = document.getElementById('objetivo').value;
-        const btn = document.getElementById('btn-gerar');
-        btn.innerText = "Gerando... aguarde";
-        btn.disabled = true;
-
-        const prompt = `Aja como um nutricionista esportivo. Crie uma dieta de um dia com ${cal} calorias focada em ${obj}. Use alimentos brasileiros e baratos.`;
-
-        try {
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_KEY}` },
-                body: JSON.stringify({
-                    model: "gpt-3.5-turbo",
-                    messages: [{role: "user", content: prompt}]
-                })
-            });
-
-            const result = await response.json();
-            const textoDieta = result.choices[0].message.content;
-
-            document.getElementById('resultado').innerText = textoDieta;
-            document.getElementById('resultado').style.display = 'block';
-            btn.innerText = "Gerar Outro Plano";
-            btn.disabled = false;
-        } catch (e) {
-            alert("Erro ao gerar dieta. Verifique sua chave OpenAI.");
-            btn.disabled = false;
-            btn.innerText = "Tentar Novamente";
-        }
-    }
+    // ... restante do código de gerarDieta continua igual
 </script>
-
-</body>
-</html>
