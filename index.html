@@ -6,109 +6,86 @@
     <title>Gerador de Dieta IA | Personal Jean Oliveira</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; text-align: center; padding: 20px; color: #333; }
-        .container { background: white; padding: 30px; border-radius: 15px; max-width: 450px; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        h2 { color: #6c63ff; margin-bottom: 5px; }
-        p { margin-bottom: 25px; color: #666; }
-        input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
-        button { background: #6c63ff; color: white; border: none; cursor: pointer; font-weight: bold; transition: background 0.3s; }
-        button:hover { background: #5750d8; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
-        #resultado { margin-top: 20px; text-align: left; white-space: pre-wrap; background: #f9f9f9; padding: 20px; border: 1px solid #eee; border-radius: 8px; display: none; line-height: 1.6; }
+        body { font-family: sans-serif; background: #f4f4f4; text-align: center; padding: 20px; }
+        .container { background: white; padding: 30px; border-radius: 12px; max-width: 450px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; }
+        button { background: #6c63ff; color: white; border: none; cursor: pointer; font-weight: bold; }
+        #resultado { margin-top: 20px; text-align: left; white-space: pre-wrap; background: #f9f9f9; padding: 15px; border-radius: 8px; display: none; border: 1px solid #ddd; }
+        .key-box { background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ffeeba; }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <h2>🍎 Dieta IA</h2>
+    <h2>🍎 Gerador de Dieta IA</h2>
     <p>Personal Jean Oliveira</p>
+
+    <div class="key-box">
+        <small>Cole sua chave sk-... aqui para ativar:</small>
+        <input type="password" id="api-key" placeholder="Insira sua chave da OpenAI">
+    </div>
     
     <div id="login-section">
-        <input type="email" id="user-email" placeholder="Digite seu e-mail cadastrado">
-        <button id="btn-login" onclick="verificarAcesso()">Entrar no Sistema</button>
+        <input type="email" id="user-email" placeholder="E-mail cadastrado">
+        <button onclick="verificarAcesso()">Entrar</button>
     </div>
 
     <div id="dieta-section" style="display:none;">
-        <input type="number" id="calorias" placeholder="Calorias alvo (ex: 2100)">
-        <input type="text" id="objetivo" placeholder="Objetivo (ex: Emagrecimento)">
-        <button id="btn-gerar" onclick="gerarDieta()">Gerar Plano Alimentar Agora</button>
+        <input type="number" id="calorias" placeholder="Calorias (ex: 2000)">
+        <input type="text" id="objetivo" placeholder="Objetivo (ex: Perda de Peso)">
+        <button id="btn-gerar" onclick="gerarDieta()">Gerar Plano Alimentar</button>
     </div>
-
     <div id="resultado"></div>
 </div>
 
 <script>
     const S_URL = 'https://xyqqngskrjzhxbsackul.supabase.co';
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cXFuZ3Nrcmp6aHhic2Fja3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NTI3NzksImV4cCI6MjA4NTUyODc3OX0.B90q1Jv-vodVIV_dLFUCOekyshrv3HekVpPugpPaHRI';
-    
-    // TRUQUE DE SEGURANÇA: Dividindo a chave para o robô do GitHub não detectar e deletar
-    const p1 = 'sk-proj-';
-    const p2 = '8qd_AE59d3Gd4FGYqHQJ9mTBmi9nDW9Sy35BY_-WPDb7fxWYUFaTa5k1kUCBzYjt-OoMVqjqYvT3BlbkFJs_TbRg_wukzB6GIhIP9EcHpKW64LClBrXyUuPdTLhMLM-jz_AghHKUps67Tl5C5CJkm-fuIugA';
-    const OPENAI_KEY = p1 + p2;
-
     const _supabase = supabase.createClient(S_URL, S_KEY);
 
     async function verificarAcesso() {
-        const emailInput = document.getElementById('user-email').value.trim().toLowerCase();
-        const btn = document.getElementById('btn-login');
-        if (!emailInput) return alert("Por favor, digite seu e-mail.");
-
-        btn.innerText = "Verificando...";
-        btn.disabled = true;
-
-        try {
-            let { data, error } = await _supabase.from('Usuarios_Dieta').select('*').eq('e-mail', emailInput).single();
-            if (error || !data) {
-                const retry = await _supabase.from('Usuarios_Dieta').select('*').eq('email', emailInput).single();
-                data = retry.data;
-                error = retry.error;
-            }
-
-            if (error || !data) {
-                alert("E-mail não autorizado. Verifique se o e-mail está na tabela do Supabase e se a Policy RLS está ativa.");
-            } else {
-                document.getElementById('login-section').style.display = 'none';
-                document.getElementById('dieta-section').style.display = 'block';
-            }
-        } catch (err) {
-            alert("Erro de conexão.");
-        } finally {
-            btn.innerText = "Entrar no Sistema";
-            btn.disabled = false;
+        const email = document.getElementById('user-email').value.trim().toLowerCase();
+        let { data, error } = await _supabase.from('Usuarios_Dieta').select('*').eq('e-mail', email).single();
+        if (error) {
+            const retry = await _supabase.from('Usuarios_Dieta').select('*').eq('email', email).single();
+            data = retry.data;
+        }
+        
+        if (!data) {
+            alert("E-mail não autorizado!");
+        } else {
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('dieta-section').style.display = 'block';
         }
     }
 
     async function gerarDieta() {
+        const userKey = document.getElementById('api-key').value.trim();
         const cal = document.getElementById('calorias').value;
         const obj = document.getElementById('objetivo').value;
         const btn = document.getElementById('btn-gerar');
-        const resDiv = document.getElementById('resultado');
 
-        if (!cal || !obj) return alert("Preencha todos os campos!");
+        if(!userKey.startsWith('sk-')) return alert("Por favor, cole sua chave da OpenAI no campo amarelo!");
 
-        btn.innerText = "IA pensando... aguarde";
+        btn.innerText = "Gerando dieta...";
         btn.disabled = true;
 
         try {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_KEY}` },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${userKey}` },
                 body: JSON.stringify({
                     model: "gpt-3.5-turbo",
-                    messages: [{role: "user", content: `Aja como nutricionista. Dieta de ${cal} calorias para ${obj}.`}],
-                    temperature: 0.7
+                    messages: [{role: "user", content: `Crie uma dieta de ${cal} calorias para ${obj}.`}]
                 })
             });
-
             const result = await response.json();
-            if (result.error) throw new Error(result.error.message);
-
-            resDiv.innerText = result.choices[0].message.content;
-            resDiv.style.display = 'block';
+            if(result.error) throw new Error(result.error.message);
+            document.getElementById('resultado').innerText = result.choices[0].message.content;
+            document.getElementById('resultado').style.display = 'block';
         } catch (e) {
-            alert("Erro na OpenAI. Verifique se a chave ainda é válida.");
+            alert("Erro: " + e.message);
         } finally {
-            btn.innerText = "Gerar Novo Plano";
+            btn.innerText = "Gerar Plano Alimentar";
             btn.disabled = false;
         }
     }
