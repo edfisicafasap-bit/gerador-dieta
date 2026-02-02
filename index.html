@@ -6,7 +6,7 @@
     <title>Reeducação Alimentar IA | Personal Jean Oliveira</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <style>
-        body { background:#000; margin:0; font-family:Arial, sans-serif; color: #fff; padding-bottom: 50px; }
+        body { background:#000; margin:0; font-family:Arial, sans-serif; color: #fff; padding-bottom: 30px; }
         .container { max-width:450px; margin:auto; padding:20px; background:#000; }
         
         h2 { color:#FFD700; text-align: center; margin-bottom: 5px; font-size: 19px; letter-spacing: -0.5px; text-transform: uppercase; }
@@ -26,7 +26,7 @@
             color:#000; cursor: pointer; transition: 0.3s; text-transform: uppercase;
         }
         button:hover { background: #e6c200; }
-        button:disabled { background: #555; color: #888; }
+        button:disabled { background: #444; color: #777; cursor: not-allowed; }
 
         .secao-titulo { color: #FFD700; font-weight: bold; margin-top: 25px; font-size: 13px; text-transform: uppercase; }
         .grid-alimentos { 
@@ -38,11 +38,22 @@
 
         .extra-alimentos { margin-top: 5px; border-color: #222 !important; font-size: 13px !important; }
 
+        /* Estilo da Cláusula */
+        .clausula-container { 
+            margin-top: 30px; background: #0a0a0a; padding: 15px; border-radius: 8px; 
+            border: 1px solid #333; font-size: 11px; color: #aaa; text-align: justify; line-height: 1.4;
+        }
+        .clausula-titulo { color: #FFD700; font-weight: bold; margin-bottom: 8px; display: block; font-size: 12px; }
+        .checkbox-aceite { display: flex; align-items: flex-start; gap: 10px; margin-top: 15px; color: #fff; font-size: 13px; cursor: pointer; }
+        .checkbox-aceite input { width: 18px; height: 18px; margin: 0; cursor: pointer; }
+
+        /* Resultado e Rodapé */
         #resultado { 
             margin-top: 30px; text-align: left; white-space: pre-wrap; 
             background: #111; padding: 20px; border-radius: 8px; 
             display: none; border: 1px solid #FFD700; line-height: 1.6; color: #fff; font-size: 14px;
         }
+        .rodape { margin-top: 40px; font-size: 10px; color: #fff; text-align: center; opacity: 0.7; }
     </style>
 </head>
 <body>
@@ -58,7 +69,7 @@
 
     <div id="dieta-section" style="display:none;">
         <h2>⚙️ Personalizar Plano</h2>
-        <p class="subtitle">Preencha os dados e escolha seus alimentos</p>
+        <p class="subtitle">Selecione suas preferências abaixo</p>
 
         <label>Meta de Calorias Diárias</label>
         <input type="number" id="calorias" placeholder="Ex: 2100">
@@ -73,24 +84,39 @@
         </select>
 
         <div class="secao-titulo">🍗 Fontes de Proteína</div>
-        <div class="grid-alimentos" id="lista-proteinas">
-            </div>
-        <input type="text" id="extra-proteinas" class="extra-alimentos" placeholder="Outras proteínas (ex: Whey de Baunilha)">
+        <div class="grid-alimentos" id="lista-proteinas"></div>
+        <input type="text" id="extra-proteinas" class="extra-alimentos" placeholder="Outras proteínas...">
 
         <div class="secao-titulo">🍞 Fontes de Carboidrato</div>
         <div class="grid-alimentos" id="lista-carbos"></div>
-        <input type="text" id="extra-carbos" class="extra-alimentos" placeholder="Outros carbos (ex: Pão de forma)">
+        <input type="text" id="extra-carbos" class="extra-alimentos" placeholder="Outros carbos...">
 
         <div class="secao-titulo">🥑 Gorduras Boas</div>
         <div class="grid-alimentos" id="lista-gorduras"></div>
-        <input type="text" id="extra-gorduras" class="extra-alimentos" placeholder="Outras gorduras">
+        <input type="text" id="extra-gorduras" class="extra-alimentos" placeholder="Outras gorduras...">
 
         <div class="secao-titulo">🥦 Legumes e Verduras</div>
         <div class="grid-alimentos" id="lista-vegetais"></div>
-        <input type="text" id="extra-vegetais" class="extra-alimentos" placeholder="Outros vegetais">
+        <input type="text" id="extra-vegetais" class="extra-alimentos" placeholder="Outros vegetais...">
+
+        <div class="clausula-container">
+            <span class="clausula-titulo">CLÁUSULA – ORIENTAÇÕES ALIMENTARES</span>
+            O CONTRATANTE declara estar ciente de que o serviço prestado por Jean Oliveira – Profissional de Educação Física – CREF RJ-058636 consiste em consultoria de treinamento físico e orientações gerais sobre hábitos alimentares com finalidade exclusivamente educativa e de apoio à prática de exercícios físicos. 
+            Fica expressamente esclarecido que não são realizadas prescrições de dietas, planos alimentares individualizados ou condutas nutricionais clínicas, atividades estas privativas do profissional nutricionista. 
+            As sugestões têm caráter informativo e não substituem acompanhamento nutricional.
+            
+            <label class="checkbox-aceite">
+                <input type="checkbox" id="aceite-clausula"> 
+                Li e concordo com a cláusula de orientações alimentares.
+            </label>
+        </div>
 
         <button id="btn-gerar" onclick="gerarDieta()">GERAR MEU PLANO AGORA</button>
         <div id="resultado"></div>
+
+        <div class="rodape">
+            Conteúdo alimentar com caráter educativo. Não substitui nutricionista.
+        </div>
     </div>
 </div>
 
@@ -105,15 +131,13 @@
     const p4 = 'bkFJyAl1zdu6kiiny1ItO0DrXPu7KG7MrduB6KG32duIwtQxe1GM2ESqCssw3U-CY8L4nEE_1rkMAA';
     const FINAL_KEY = p1 + p2 + p3 + p4;
 
-    // Listas de Alimentos
     const proteinas = ["Peito de frango", "Sobrecoxa sem pele", "Frango desfiado", "Patinho", "Músculo bovino", "Alcatra magra", "Filé mignon", "Coxão mole", "Coxão duro", "Lagarto", "Acém magro", "Peito de peru", "Tilápia", "Merluza", "Pescada", "Atum", "Sardinha", "Salmão", "Bacalhau", "Camarão", "Ovo inteiro", "Clara de ovo", "Whey protein", "Caseína", "Iogurte grego proteico", "Skyr", "Queijo cottage", "Queijo quark", "Tofu firme", "Tempeh"];
     const carbos = ["Arroz branco", "Arroz integral", "Batata inglesa", "Batata doce", "Mandioca", "Inhame", "Cará", "Aveia", "Tapioca", "Cuscuz", "Pão integral", "Macarrão integral", "Macarrão comum", "Quinoa", "Amaranto", "Milho", "Granola sem açúcar", "Feijão", "Lentilha", "Grão-de-bico", "Ervilha", "Banana", "Maçã", "Manga", "Mamão", "Abacaxi", "Uva", "Laranja", "Melancia", "Melão"];
     const gorduras = ["Azeite de oliva", "Abacate", "Castanha-do-pará", "Castanha de caju", "Amêndoas", "Nozes", "Amendoim", "Pasta de amendoim", "Chia", "Linhaça", "Semente de abóbora", "Gergelim", "Tahine", "Gema do ovo", "Azeitona", "Óleo de coco", "Ghee"];
     const vegetais = ["Brócolis", "Couve", "Espinafre", "Alface", "Rúcula", "Agrião", "Repolho", "Cenoura", "Beterraba", "Abobrinha", "Berinjela", "Pepino", "Tomate", "Pimentão", "Chuchu", "Vagem", "Couve-flor", "Abóbora", "Cebola", "Alho"];
 
     function renderizarLista(id, lista) {
-        const container = document.getElementById(id);
-        container.innerHTML = lista.map(a => `<label class="item-alimento"><input type="checkbox" value="${a}"> ${a}</label>`).join('');
+        document.getElementById(id).innerHTML = lista.map(a => `<label class="item-alimento"><input type="checkbox" value="${a}"> ${a}</label>`).join('');
     }
 
     renderizarLista('lista-proteinas', proteinas);
@@ -137,14 +161,15 @@
     }
 
     async function gerarDieta() {
+        const aceite = document.getElementById('aceite-clausula').checked;
+        if(!aceite) return alert("Você precisa aceitar a cláusula de orientações alimentares para prosseguir.");
+
         const cal = document.getElementById('calorias').value;
         const obj = document.getElementById('objetivo').value;
         const btn = document.getElementById('btn-gerar');
         const resDiv = document.getElementById('resultado');
 
         const marcados = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(i => i.value);
-        
-        // Coletar itens extras
         const extras = [
             document.getElementById('extra-proteinas').value,
             document.getElementById('extra-carbos').value,
@@ -154,14 +179,14 @@
 
         const listaFinal = [...marcados, ...extras];
 
-        if (!cal || !obj || listaFinal.length === 0) return alert("Preencha calorias, objetivo e escolha alimentos!");
+        if (!cal || !obj || listaFinal.length === 0) return alert("Preencha todos os campos!");
 
         btn.innerText = "IA GERANDO SEU PLANO...";
         btn.disabled = true;
 
-        const prompt = `Aja como um nutricionista esportivo. Crie um plano de reeducação alimentar de ${cal} calorias para o objetivo de ${obj}. 
-        Alimentos escolhidos: ${listaFinal.join(', ')}. 
-        Organize por refeições (Café, Lanche, Almoço, Lanche, Jantar) com horários sugeridos, gramagens precisas para atingir as calorias e macros. Seja muito específico.`;
+        const prompt = `Aja como um nutricionista esportivo. Crie um plano de reeducação alimentar de ${cal} calorias focado em ${obj}. 
+        Alimentos permitidos: ${listaFinal.join(', ')}. 
+        Divida em 5 refeições com horários e pesos em gramas. No final, adicione uma dica motivacional curta.`;
 
         try {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -174,7 +199,7 @@
             resDiv.style.display = 'block';
             resDiv.scrollIntoView({ behavior: 'smooth' });
         } catch (e) {
-            alert("Erro no sistema.");
+            alert("Erro na conexão.");
         } finally {
             btn.innerText = "GERAR MEU PLANO AGORA";
             btn.disabled = false;
