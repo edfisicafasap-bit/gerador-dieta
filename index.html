@@ -11,10 +11,11 @@
         .container { max-width:450px; margin:auto; padding:20px; background:#000; }
         
         h2 { color:#FFD700; text-align: center; margin-bottom: 5px; font-size: 19px; letter-spacing: -0.5px; text-transform: uppercase; }
+        h3 { color:#FFD700; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 30px; font-size: 16px; text-transform: uppercase; }
         p.subtitle { text-align: center; color: #ccc; font-size: 14px; margin-bottom: 25px; }
         
         label { display:block; margin-top:18px; font-size:14px; font-weight: bold; color: #eee; }
-        input, select { 
+        input, select, textarea { 
             width:100%; padding:12px; margin-top:6px; border-radius:6px; 
             border:1px solid #333; background: #111; color: #fff; 
             font-size: 15px; box-sizing: border-box; 
@@ -33,19 +34,16 @@
             display: grid; grid-template-columns: 1fr 1fr; gap: 8px; 
             text-align: left; margin: 10px 0; background: #0a0a0a; padding: 12px; border-radius: 8px; border: 1px solid #222;
         }
-        .item-alimento { display: flex; align-items: center; font-size: 12px; cursor: pointer; color: #bbb; padding: 5px 0; }
+        .item-alimento { display: flex; align-items: center; font-size: 12px; cursor: pointer; color: #bbb; }
         .item-alimento input { width: auto; margin-top: 0; margin-right: 8px; }
 
         .extra-alimentos { margin-top: 5px; border-color: #222 !important; font-size: 13px !important; }
 
-        /* Cláusula Alinhada */
         .clausula-container { 
             margin-top: 30px; background: #0a0a0a; padding: 15px; border-radius: 8px; 
-            border: 1px solid #333; font-size: 12px; color: #aaa; text-align: justify; line-height: 1.5;
+            border: 1px solid #333; font-size: 11px; color: #aaa; text-align: justify; line-height: 1.4;
         }
-        .clausula-titulo { color: #FFD700; font-weight: bold; margin-bottom: 8px; display: block; text-align: center; }
         .checkbox-aceite { display: flex; align-items: flex-start; gap: 10px; margin-top: 15px; color: #fff; font-size: 13px; cursor: pointer; }
-        .checkbox-aceite input { width: 18px; height: 18px; margin: 0; }
 
         #resultado { 
             margin-top: 30px; text-align: left; white-space: pre-wrap; 
@@ -55,8 +53,7 @@
         #btn-pdf { background: #fff; color: #000; display: none; margin-top: 15px; }
         .rodape { margin-top: 40px; font-size: 10px; color: #fff; text-align: center; opacity: 0.7; }
 
-        /* Área do PDF - Clean para Impressão */
-        #pdf-area { display: none; color: #000; background: #fff; padding: 40px; font-family: Arial, sans-serif; }
+        #pdf-area { display: none; color: #000; background: #fff; padding: 30px; font-family: Arial, sans-serif; }
     </style>
 </head>
 <body>
@@ -72,7 +69,8 @@
 
     <div id="dieta-section" style="display:none;">
         <h2>⚙️ Personalizar Plano</h2>
-        
+        <p class="subtitle">Selecione suas preferências abaixo</p>
+
         <label>Seu Peso Atual (kg)</label>
         <input type="number" id="peso" placeholder="Ex: 80">
 
@@ -113,11 +111,10 @@
         <input type="text" id="extra-vegetais" class="extra-alimentos" placeholder="Outros vegetais...">
 
         <div class="clausula-container">
-            <span class="clausula-titulo">Cláusula de Isenção de Responsabilidade</span>
-            As informações fornecidas neste aplicativo têm caráter educativo e informativo e não substituem a avaliação ou orientação de um nutricionista. O usuário é responsável por seu próprio uso das informações e orientações recebidas pelo app. O desenvolvedor do aplicativo não se responsabiliza por quaisquer danos, lesões ou resultados adversos que possam ocorrer em decorrência do uso equivocado das informações disponibilizadas. Recomenda-se que o usuário consulte um nutricionista antes de iniciar qualquer alteração em sua rotina alimentar.
-            
+            <span style="color: #FFD700; font-weight: bold; display: block; margin-bottom: 5px;">CLÁUSULA – ORIENTAÇÕES ALIMENTARES</span>
+            O CONTRATANTE declara estar ciente de que o serviço prestado por Jean Oliveira consiste em orientações gerais com finalidade educativa. Não substitui nutricionista.
             <label class="checkbox-aceite">
-                <input type="checkbox" id="aceite-clausula"> Li e estou de acordo com a cláusula acima.
+                <input type="checkbox" id="aceite-clausula"> Li e concordo.
             </label>
         </div>
 
@@ -130,9 +127,9 @@
 </div>
 
 <div id="pdf-area">
-    <h2 style="color: #000; border-bottom: 2px solid #FFD700; padding-bottom: 10px;">Plano Alimentar - Personal Jean Oliveira</h2>
-    <div id="pdf-corpo" style="white-space: pre-wrap; margin-top: 20px; color: #000; font-size: 14px;"></div>
-    <div id="pdf-footer" style="margin-top: 30px; font-size: 12px; border-top: 1px solid #ccc; padding-top: 15px; color: #444;"></div>
+    <h2 style="color: #000; border-bottom: 2px solid #000;">Plano Alimentar - Personal Jean Oliveira</h2>
+    <div id="pdf-corpo" style="white-space: pre-wrap; margin-top: 20px;"></div>
+    <div id="pdf-footer" style="margin-top: 30px; font-size: 12px; border-top: 1px solid #ccc; padding-top: 10px;"></div>
 </div>
 
 <script>
@@ -175,18 +172,18 @@
     }
 
     async function gerarDieta() {
-        if(!document.getElementById('aceite-clausula').checked) return alert("Você deve aceitar a cláusula para continuar.");
+        if(!document.getElementById('aceite-clausula').checked) return alert("Aceite a cláusula!");
         const peso = document.getElementById('peso').value;
         const cal = document.getElementById('calorias').value;
         const obj = document.getElementById('objetivo').value;
-        const numRef = document.getElementById('num-refeicoes').value;
+        const numRefeicoes = document.getElementById('num-refeicoes').value;
         const btn = document.getElementById('btn-gerar');
 
         const marcados = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(i => i.value);
         const extras = [document.getElementById('extra-proteinas').value, document.getElementById('extra-carbos').value, document.getElementById('extra-gorduras').value, document.getElementById('extra-vegetais').value].filter(t => t.trim() !== "");
         const listaFinal = [...marcados, ...extras];
 
-        if (!cal || !obj || !peso || listaFinal.length === 0) return alert("Preencha todos os campos!");
+        if (!cal || !obj || listaFinal.length === 0) return alert("Preencha todos os campos!");
 
         btn.innerText = "IA GERANDO SEU PLANO...";
         btn.disabled = true;
@@ -195,13 +192,21 @@
 Crie um plano de reeducação alimentar de ${cal} calorias focado em ${obj}. 
 O aluno pesa ${peso}kg.
 
-REGRAS OBRIGATÓRIAS:
-1. QUANTIDADE DE REFEIÇÕES: Organize em exatamente ${numRef} refeições diárias.
-2. ALIMENTOS PERMITIDOS: Utilize APENAS: ${listaFinal.join(', ')}.
-3. ALMOÇO E JANTA: Inclua Arroz e Feijão como padrão. Abaixo de cada uma, crie uma "OPÇÃO SEM ARROZ E FEIJÃO" equivalente.
-4. SUBSTITUIÇÕES: Liste equivalências entre os alimentos escolhidos.
-5. HIDRATAÇÃO: Calcule 35ml x ${peso}kg.
-6. REGISTRO: Finalize com a data/hora: ${new Date().toLocaleString()}.`;
+REGRAS OBRIGATÓRIAS DE ESTRUTURA:
+1. QUANTIDADE DE REFEIÇÕES: Organize o plano em exatamente ${numRefeicoes} refeições diárias, distribuindo as calorias e macros de forma equilibrada entre elas.
+2. ALIMENTOS PERMITIDOS: Utilize APENAS os seguintes alimentos selecionados pelo aluno: ${listaFinal.join(', ')}.
+
+REGRAS ESPECÍFICAS (ALMOÇO E JANTAR):
+3. PADRÃO: Inclua Arroz e Feijão como base obrigatória no Almoço e no Jantar.
+4. VARIAÇÃO: Para cada uma dessas duas refeições, apresente uma "OPÇÃO SEM ARROZ E SEM FEIJÃO", substituindo-os por outros carboidratos da lista mantendo a mesma equivalência calórica.
+
+ITENS COMPLEMENTARES:
+5. SUBSTITUIÇÕES: Liste equivalências entre os alimentos escolhidos (ex: trocas de carboidratos, proteínas e gorduras).
+6. HIDRATAÇÃO: Calcule e informe a recomendação diária de água (35ml x ${peso}kg).
+7. REGISTRO: No final, carimbe com a data e hora: ${new Date().toLocaleString()}.
+
+FORMATO DE SAÍDA:
+Gere um texto extremamente organizado e profissional, ideal para ser exportado para um PDF.`;
 
         try {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -216,11 +221,14 @@ REGRAS OBRIGATÓRIAS:
             document.getElementById('resultado').style.display = 'block';
             document.getElementById('btn-pdf').style.display = 'block';
 
+            const litrosAgua = peso ? (peso * 0.035).toFixed(1) : "2.5";
+            const dataHora = new Date().toLocaleString();
+
             document.getElementById('pdf-corpo').innerText = textoDieta;
             document.getElementById('pdf-footer').innerHTML = `
-                <strong>💧 HIDRATAÇÃO:</strong> ${ (peso * 0.035).toFixed(1) }L por dia.<br>
-                <strong>📅 GERADO EM:</strong> ${new Date().toLocaleString()}<br><br>
-                <small>Conteúdo educativo. Não substitui nutricionista.</small>
+                <strong>💧 RECOMENDAÇÃO DE HIDRATAÇÃO:</strong> Beber aproximadamente ${litrosAgua} litros de água por dia.<br>
+                <strong>📅 GERADO EM:</strong> ${dataHora}<br><br>
+                <em>Conteúdo alimentar com caráter educativo. Não substitui nutricionista.</em>
             `;
             
         } catch (e) {
@@ -234,20 +242,13 @@ REGRAS OBRIGATÓRIAS:
     function baixarPDF() {
         const element = document.getElementById('pdf-area');
         element.style.display = 'block';
-        
         const opt = { 
-            margin: 15, 
+            margin: 10, 
             filename: 'Plano_Alimentar_JeanOliveira.pdf', 
-            html2canvas: { scale: 2, useCORS: true }, 
+            html2canvas: { scale: 2 }, 
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
         };
-
-        // Delay para garantir renderização do texto antes do PDF
-        setTimeout(() => {
-            html2pdf().set(opt).from(element).save().then(() => { 
-                element.style.display = 'none'; 
-            });
-        }, 500);
+        html2pdf().set(opt).from(element).save().then(() => { element.style.display = 'none'; });
     }
 </script>
 </body>
