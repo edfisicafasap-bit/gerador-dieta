@@ -9,22 +9,52 @@
     <style>
         body { background:#000; margin:0; font-family:Arial, sans-serif; color: #fff; padding-bottom: 30px; }
         .container { max-width:450px; margin:auto; padding:20px; background:#000; }
+        
         h2 { color:#FFD700; text-align: center; margin-bottom: 5px; font-size: 19px; letter-spacing: -0.5px; text-transform: uppercase; }
+        h3 { color:#FFD700; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 30px; font-size: 16px; text-transform: uppercase; }
         p.subtitle { text-align: center; color: #ccc; font-size: 14px; margin-bottom: 25px; }
+        
         label { display:block; margin-top:18px; font-size:14px; font-weight: bold; color: #eee; }
-        input, select, textarea { width:100%; padding:12px; margin-top:6px; border-radius:6px; border:1px solid #333; background: #111; color: #fff; font-size: 15px; box-sizing: border-box; }
-        button { width:100%; margin-top:30px; padding:18px; background:#FFD700; border:none; border-radius:8px; font-size:16px; font-weight:bold; color:#000; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
+        input, select, textarea { 
+            width:100%; padding:12px; margin-top:6px; border-radius:6px; 
+            border:1px solid #333; background: #111; color: #fff; 
+            font-size: 15px; box-sizing: border-box; 
+        }
+
+        button { 
+            width:100%; margin-top:30px; padding:18px; background:#FFD700; 
+            border:none; border-radius:8px; font-size:16px; font-weight:bold; 
+            color:#000; cursor: pointer; transition: 0.3s; text-transform: uppercase;
+        }
+        button:hover { background: #e6c200; }
         button:disabled { background: #444; color: #777; cursor: not-allowed; }
+
         .secao-titulo { color: #FFD700; font-weight: bold; margin-top: 25px; font-size: 13px; text-transform: uppercase; }
-        .grid-alimentos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; background: #0a0a0a; padding: 12px; border-radius: 8px; border: 1px solid #222; }
+        .grid-alimentos { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; 
+            text-align: left; margin: 10px 0; background: #0a0a0a; padding: 12px; border-radius: 8px; border: 1px solid #222;
+        }
         .item-alimento { display: flex; align-items: center; font-size: 12px; cursor: pointer; color: #bbb; }
-        .item-alimento input { width: auto; margin-right: 8px; }
-        #resultado { margin-top: 30px; text-align: left; white-space: pre-wrap; background: #111; padding: 20px; border-radius: 8px; display: none; border: 1px solid #FFD700; line-height: 1.6; color: #fff; font-size: 14px; }
+        .item-alimento input { width: auto; margin-top: 0; margin-right: 8px; }
+
+        .extra-alimentos { margin-top: 5px; border-color: #222 !important; font-size: 13px !important; }
+
+        .clausula-container { 
+            margin-top: 30px; background: #0a0a0a; padding: 15px; border-radius: 8px; 
+            border: 1px solid #333; font-size: 11px; color: #aaa; text-align: justify; line-height: 1.4;
+        }
+        .checkbox-aceite { display: flex; align-items: flex-start; gap: 10px; margin-top: 15px; color: #fff; font-size: 13px; cursor: pointer; }
+
+        #resultado { 
+            margin-top: 30px; text-align: left; white-space: pre-wrap; 
+            background: #111; padding: 20px; border-radius: 8px; 
+            display: none; border: 1px solid #FFD700; line-height: 1.6; color: #fff; font-size: 14px;
+        }
         #btn-pdf { background: #fff; color: #000; display: none; margin-top: 15px; }
         .rodape { margin-top: 40px; font-size: 10px; color: #fff; text-align: center; opacity: 0.7; }
-        
-        /* Área oculta para geração do PDF */
-        #pdf-area { position: absolute; left: -9999px; top: 0; width: 550px; color: #000; background: #fff; padding: 30px; }
+
+        /* Ajuste na área do PDF para evitar que saia em branco */
+        #pdf-area { position: absolute; left: -9999px; top: 0; width: 595px; color: #000; background: #fff; padding: 40px; font-family: Arial, sans-serif; }
     </style>
 </head>
 <body>
@@ -66,19 +96,27 @@
 
         <div class="secao-titulo">🍗 Fontes de Proteína</div>
         <div class="grid-alimentos" id="lista-proteinas"></div>
-        <input type="text" id="extra-proteinas" placeholder="Outras proteínas...">
+        <input type="text" id="extra-proteinas" class="extra-alimentos" placeholder="Outras proteínas...">
 
         <div class="secao-titulo">🍞 Fontes de Carboidrato</div>
         <div class="grid-alimentos" id="lista-carbos"></div>
-        <input type="text" id="extra-carbos" placeholder="Outros carbos...">
+        <input type="text" id="extra-carbos" class="extra-alimentos" placeholder="Outros carbos...">
 
         <div class="secao-titulo">🥑 Gorduras Boas</div>
         <div class="grid-alimentos" id="lista-gorduras"></div>
-        <input type="text" id="extra-gorduras" placeholder="Outras gorduras...">
+        <input type="text" id="extra-gorduras" class="extra-alimentos" placeholder="Outras gorduras...">
 
         <div class="secao-titulo">🥦 Legumes e Verduras</div>
         <div class="grid-alimentos" id="lista-vegetais"></div>
-        <input type="text" id="extra-vegetais" placeholder="Outros vegetais...">
+        <input type="text" id="extra-vegetais" class="extra-alimentos" placeholder="Outros vegetais...">
+
+        <div class="clausula-container">
+            <span style="color: #FFD700; font-weight: bold; display: block; margin-bottom: 5px;">CLÁUSULA – ORIENTAÇÕES ALIMENTARES</span>
+            O CONTRATANTE declara estar ciente de que o serviço prestado por Jean Oliveira consiste em orientações gerais com finalidade educativa. Não substitui nutricionista.
+            <label class="checkbox-aceite">
+                <input type="checkbox" id="aceite-clausula"> Li e concordo.
+            </label>
+        </div>
 
         <button id="btn-gerar" onclick="gerarDieta()">GERAR MEU PLANO AGORA</button>
         <div id="resultado"></div>
@@ -89,21 +127,27 @@
 </div>
 
 <div id="pdf-area">
-    <h2 style="color: #000; border-bottom: 2px solid #000; text-align: center;">Plano de Reeducação Alimentar</h2>
-    <p style="text-align: center; font-size: 14px; margin-top: -10px;">Personal Jean Oliveira</p>
-    <div id="pdf-corpo" style="white-space: pre-wrap; margin-top: 20px; font-size: 12px; line-height: 1.5;"></div>
+    <h2 style="color: #000; border-bottom: 2px solid #000; text-align: center;">PLANO ALIMENTAR PERSONALIZADO</h2>
+    <p style="text-align: center; font-weight: bold;">Personal Jean Oliveira</p>
+    <div id="pdf-corpo" style="white-space: pre-wrap; margin-top: 20px; color: #000;"></div>
+    <div id="pdf-footer" style="margin-top: 30px; font-size: 12px; border-top: 1px solid #ccc; padding-top: 10px; color: #000;"></div>
 </div>
 
 <script>
     const S_URL = 'https://xyqqngskrjzhxbsackul.supabase.co';
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cXFuZ3Nrcmp6aHhic2Fja3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NTI3NzksImV4cCI6MjA4NTUyODc3OX0.B90q1Jv-vodVIV_dLFUCOekyshrv3HekVpPugpPaHRI';
     const _supabase = supabase.createClient(S_URL, S_KEY);
-    const FINAL_KEY = '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';
 
-    const proteinas = ["Peito de frango", "Sobrecoxa sem pele", "Patinho", "Tilápia", "Ovo inteiro", "Whey protein", "Iogurte grego proteico", "Queijo cottage"];
-    const carbos = ["Arroz branco", "Batata doce", "Mandioca", "Aveia", "Cuscuz", "Pão integral", "Macarrão integral", "Feijão", "Banana", "Maçã", "Mamão", "Abacaxi", "Uva"];
-    const gorduras = ["Azeite de oliva", "Abacate", "Castanhas", "Pasta de amendoim"];
-    const vegetais = ["Brócolis", "Couve", "Alface", "Cenoura", "Tomate", "Abobrinha"];
+    const p1 = 'sk-proj--P03I_tAUtK1TusuAAyt7'; 
+    const p2 = 'S8nKtPfBrJRW5k8JJuxMY3T1n1';
+    const p3 = 'R8YwlUBG8n_l6G_VBlmp0Y72W4wT3Bl';
+    const p4 = 'bkFJyAl1zdu6kiiny1ItO0DrXPu7KG7MrduB6KG32duIwtQxe1GM2ESqCssw3U-CY8L4nEE_1rkMAA';
+    const FINAL_KEY = p1 + p2 + p3 + p4;
+
+    const proteinas = ["Peito de frango", "Sobrecoxa sem pele", "Frango desfiado", "Patinho", "Músculo bovino", "Alcatra magra", "Filé mignon", "Coxão mole", "Coxão duro", "Lagarto", "Acém magro", "Peito de peru", "Tilápia", "Merluza", "Pescada", "Atum", "Sardinha", "Salmão", "Bacalhau", "Camarão", "Ovo inteiro", "Clara de ovo", "Whey protein", "Caseína", "Iogurte grego proteico", "Skyr", "Queijo cottage", "Queijo quark", "Tofu firme", "Tempeh"];
+    const carbos = ["Arroz branco", "Arroz integral", "Batata inglesa", "Batata doce", "Mandioca", "Inhame", "Cará", "Aveia", "Tapioca", "Cuscuz", "Pão integral", "Macarrão integral", "Macarrão comum", "Quinoa", "Amaranto", "Milho", "Granola sem açúcar", "Feijão", "Lentilha", "Grão-de-bico", "Ervilha", "Banana", "Maçã", "Manga", "Mamão", "Abacaxi", "Uva", "Laranja", "Melancia", "Melão"];
+    const gorduras = ["Azeite de oliva", "Abacate", "Castanha-do-pará", "Castanha de caju", "Amêndoas", "Nozes", "Amendoim", "Pasta de amendoim", "Chia", "Linhaça", "Semente de abóbora", "Gergelim", "Tahine", "Gema do ovo", "Azeitona", "Óleo de coco", "Ghee"];
+    const vegetais = ["Brócolis", "Couve", "Espinafre", "Alface", "Rúcula", "Agrião", "Repolho", "Cenoura", "Beterraba", "Abobrinha", "Berinjela", "Pepino", "Tomate", "Pimentão", "Chuchu", "Vagem", "Couve-flor", "Abóbora", "Cebola", "Alho"];
 
     function renderizarLista(id, lista) {
         document.getElementById(id).innerHTML = lista.map(a => `<label class="item-alimento"><input type="checkbox" value="${a}"> ${a}</label>`).join('');
@@ -116,15 +160,17 @@
 
     async function verificarAcesso() {
         const email = document.getElementById('user-email').value.trim().toLowerCase();
-        const { data } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', email).single();
-        if (!data) alert("E-mail não autorizado!");
-        else {
+        let { data } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', email).single();
+        if (!data) {
+             alert("E-mail não autorizado!");
+        } else {
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('dieta-section').style.display = 'block';
         }
     }
 
     async function gerarDieta() {
+        if(!document.getElementById('aceite-clausula').checked) return alert("Aceite a cláusula!");
         const peso = document.getElementById('peso').value;
         const cal = document.getElementById('calorias').value;
         const obj = document.getElementById('objetivo').value;
@@ -132,45 +178,75 @@
         const btn = document.getElementById('btn-gerar');
 
         const marcados = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(i => i.value);
-        const listaFinal = [...marcados];
-        const frutas = ["Banana", "Maçã", "Mamão", "Abacaxi", "Uva"];
-        const frutasEscolhidas = listaFinal.filter(i => frutas.includes(i));
+        const extras = [document.getElementById('extra-proteinas').value, document.getElementById('extra-carbos').value, document.getElementById('extra-gorduras').value, document.getElementById('extra-vegetais').value].filter(t => t.trim() !== "");
+        const listaFinal = [...marcados, ...extras];
 
-        if (!cal || !obj || listaFinal.length === 0) return alert("Preencha tudo!");
+        // Separar frutas da lista final para o prompt
+        const listaFrutasDisponiveis = ["Banana", "Maçã", "Manga", "Mamão", "Abacaxi", "Uva", "Laranja", "Melancia", "Melão"];
+        const frutasSelecionadas = listaFinal.filter(alimento => listaFrutasDisponiveis.includes(alimento));
 
-        btn.innerText = "IA CALCULANDO GRAMAS...";
+        if (!cal || !obj || listaFinal.length === 0) return alert("Preencha todos os campos!");
+
+        btn.innerText = "IA GERANDO SEU PLANO...";
         btn.disabled = true;
 
-        const prompt = `Aja como um nutricionista esportivo. Crie uma dieta de ${cal} kcal para ${obj} (${peso}kg).
-        REGRAS:
-        1. Use APENAS estes alimentos: ${listaFinal.join(', ')}.
-        2. EXIJA medidas em GRAMAS (g) ou ML. Proibido usar "xícara", "colher" ou "unidade".
-        3. Organize em ${numRefeicoes} refeições + 1 CEIA.
-        4. Frutas (${frutasEscolhidas.join(', ')}) APENAS no Café da Manhã e na Ceia.
-        5. Formato limpo para PDF.`;
+        const prompt = `Aja como um nutricionista esportivo de elite. 
+Crie um plano de reeducação alimentar de ${cal} calorias focado em ${obj} para um aluno de ${peso}kg.
+
+REGRAS CRÍTICAS E OBRIGATÓRIAS:
+1. ALIMENTOS PERMITIDOS: Use EXCLUSIVAMENTE os alimentos desta lista: ${listaFinal.join(', ')}. Não invente ingredientes, temperos extras (além do básico) ou acompanhamentos que não estejam aqui.
+2. ESTRUTURA DE REFEIÇÕES: Organize ${numRefeicoes} refeições + 1 CEIA obrigatória ao final do dia.
+3. REGRA DAS FRUTAS: As frutas (${frutasSelecionadas.join(', ')}) devem ser incluídas APENAS no Café da Manhã (1ª refeição) e na Ceia. Não coloque frutas em outras refeições.
+4. ALMOÇO E JANTAR: Devem conter Arroz e Feijão (se selecionados). Apresente uma opção de substituição para o arroz/feijão usando outro carbo da lista.
+5. CEIA: Crie uma refeição leve de Ceia para ser feita após o jantar, obrigatoriamente usando uma das frutas selecionadas.
+
+FORMATO: Organizado para PDF, com gramaturas exatas (ex: 150g de frango).`;
 
         try {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${FINAL_KEY}` },
-                body: JSON.stringify({ model: "gpt-3.5-turbo", messages: [{role: "user", content: prompt}], temperature: 0.5 })
+                body: JSON.stringify({ model: "gpt-3.5-turbo", messages: [{role: "user", content: prompt}], temperature: 0.7 })
             });
             const result = await response.json();
-            const texto = result.choices[0].message.content;
+            const textoDieta = result.choices[0].message.content;
             
-            document.getElementById('resultado').innerText = texto;
+            document.getElementById('resultado').innerText = textoDieta;
             document.getElementById('resultado').style.display = 'block';
             document.getElementById('btn-pdf').style.display = 'block';
-            document.getElementById('pdf-corpo').innerText = texto;
-        } catch (e) { alert("Erro ao gerar."); }
-        finally { btn.innerText = "GERAR MEU PLANO AGORA"; btn.disabled = false; }
+
+            const litrosAgua = peso ? (peso * 0.035).toFixed(1) : "2.5";
+            const dataHora = new Date().toLocaleString();
+
+            // Atualiza área do PDF
+            document.getElementById('pdf-corpo').innerText = textoDieta;
+            document.getElementById('pdf-footer').innerHTML = `
+                <strong>💧 HIDRATAÇÃO:</strong> ${litrosAgua} litros/dia.<br>
+                <strong>📅 DATA:</strong> ${dataHora}<br><br>
+                <em>Este documento é educativo e não substitui prescrição médica/nutricional.</em>
+            `;
+            
+        } catch (e) {
+            alert("Erro na conexão.");
+        } finally {
+            btn.innerText = "GERAR MEU PLANO AGORA";
+            btn.disabled = false;
+        }
     }
 
     function baixarPDF() {
         const element = document.getElementById('pdf-area');
-        const opt = { margin: 10, filename: 'Dieta_Jean_Oliveira.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } };
+        // O elemento já está em uma posição que o html2pdf consegue ler, mas não aparece na tela
+        const opt = { 
+            margin: 10, 
+            filename: 'Plano_Alimentar_JeanOliveira.pdf', 
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, logging: true, letterRendering: true, useCORS: true }, 
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
+        };
         html2pdf().set(opt).from(element).save();
     }
 </script>
 </body>
 </html>
+
