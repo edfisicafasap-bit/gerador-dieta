@@ -45,7 +45,6 @@
         }
         .checkbox-aceite { display: flex; align-items: flex-start; gap: 10px; margin-top: 15px; color: #fff; font-size: 13px; cursor: pointer; }
 
-        /* Resultado e Botão PDF */
         #resultado { 
             margin-top: 30px; text-align: left; white-space: pre-wrap; 
             background: #111; padding: 20px; border-radius: 8px; 
@@ -54,7 +53,6 @@
         #btn-pdf { background: #fff; color: #000; display: none; margin-top: 15px; }
         .rodape { margin-top: 40px; font-size: 10px; color: #fff; text-align: center; opacity: 0.7; }
 
-        /* Estilo invisível para montagem do PDF */
         #pdf-area { display: none; color: #000; background: #fff; padding: 30px; font-family: Arial, sans-serif; }
     </style>
 </head>
@@ -78,6 +76,14 @@
 
         <label>Meta de Calorias Diárias</label>
         <input type="number" id="calorias" placeholder="Ex: 2100">
+
+        <label>Quantas refeições ao dia?</label>
+        <select id="num-refeicoes">
+            <option value="4">4 Refeições</option>
+            <option value="5" selected>5 Refeições</option>
+            <option value="6">6 Refeições</option>
+            <option value="7">7 Refeições</option>
+        </select>
         
         <label>Qual seu Objetivo?</label>
         <select id="objetivo">
@@ -170,6 +176,7 @@
         const peso = document.getElementById('peso').value;
         const cal = document.getElementById('calorias').value;
         const obj = document.getElementById('objetivo').value;
+        const numRefeicoes = document.getElementById('num-refeicoes').value;
         const btn = document.getElementById('btn-gerar');
 
         const marcados = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(i => i.value);
@@ -181,11 +188,25 @@
         btn.innerText = "IA GERANDO SEU PLANO...";
         btn.disabled = true;
 
-        // PROMPT COM O PEDIDO DE SUBSTITUIÇÕES
-        const prompt = `Aja como um nutricionista esportivo. Crie um plano de reeducação alimentar de ${cal} calorias focado em ${obj}. 
-        Alimentos escolhidos: ${listaFinal.join(', ')}. 
-        Divida em 5 refeições com horários e pesos. 
-        IMPORTANTE: No final, adicione uma lista de SUGESTÕES DE SUBSTITUIÇÃO para alimentos equivalentes (Ex: 100g de arroz pode ser trocado por Xg de batata).`;
+        const prompt = `Aja como um nutricionista esportivo. 
+Crie um plano de reeducação alimentar de ${cal} calorias focado em ${obj}. 
+O aluno pesa ${peso}kg.
+
+REGRAS OBRIGATÓRIAS DE ESTRUTURA:
+1. QUANTIDADE DE REFEIÇÕES: Organize o plano em exatamente ${numRefeicoes} refeições diárias, distribuindo as calorias e macros de forma equilibrada entre elas.
+2. ALIMENTOS PERMITIDOS: Utilize APENAS os seguintes alimentos selecionados pelo aluno: ${listaFinal.join(', ')}.
+
+REGRAS ESPECÍFICAS (ALMOÇO E JANTAR):
+3. PADRÃO: Inclua Arroz e Feijão como base obrigatória no Almoço e no Jantar.
+4. VARIAÇÃO: Para cada uma dessas duas refeições, apresente uma "OPÇÃO SEM ARROZ E SEM FEIJÃO", substituindo-os por outros carboidratos da lista mantendo a mesma equivalência calórica.
+
+ITENS COMPLEMENTARES:
+5. SUBSTITUIÇÕES: Liste equivalências entre os alimentos escolhidos (ex: trocas de carboidratos, proteínas e gorduras).
+6. HIDRATAÇÃO: Calcule e informe a recomendação diária de água (35ml x ${peso}kg).
+7. REGISTRO: No final, carimbe com a data e hora: ${new Date().toLocaleString()}.
+
+FORMATO DE SAÍDA:
+Gere um texto extremamente organizado e profissional, ideal para ser exportado para um PDF.`;
 
         try {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -196,21 +217,18 @@
             const result = await response.json();
             const textoDieta = result.choices[0].message.content;
             
-            // Exibir resultado na tela
             document.getElementById('resultado').innerText = textoDieta;
             document.getElementById('resultado').style.display = 'block';
             document.getElementById('btn-pdf').style.display = 'block';
 
-            // Preparar dados para o PDF
             const litrosAgua = peso ? (peso * 0.035).toFixed(1) : "2.5";
-            const agora = new Date();
-            const dataHora = agora.toLocaleDateString() + " às " + agora.toLocaleTimeString();
+            const dataHora = new Date().toLocaleString();
 
             document.getElementById('pdf-corpo').innerText = textoDieta;
             document.getElementById('pdf-footer').innerHTML = `
                 <strong>💧 RECOMENDAÇÃO DE HIDRATAÇÃO:</strong> Beber aproximadamente ${litrosAgua} litros de água por dia.<br>
                 <strong>📅 GERADO EM:</strong> ${dataHora}<br><br>
-                <em>Conteúdo educativo. Não substitui nutricionista.</em>
+                <em>Conteúdo alimentar com caráter educativo. Não substitui nutricionista.</em>
             `;
             
         } catch (e) {
@@ -224,7 +242,12 @@
     function baixarPDF() {
         const element = document.getElementById('pdf-area');
         element.style.display = 'block';
-        const opt = { margin: 10, filename: 'Meu_Plano_Alimentar.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+        const opt = { 
+            margin: 10, 
+            filename: 'Plano_Alimentar_JeanOliveira.pdf', 
+            html2canvas: { scale: 2 }, 
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
+        };
         html2pdf().set(opt).from(element).save().then(() => { element.style.display = 'none'; });
     }
 </script>
