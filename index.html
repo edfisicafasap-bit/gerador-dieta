@@ -53,8 +53,18 @@
         #btn-pdf { background: #fff; color: #000; display: none; margin-top: 15px; }
         .rodape { margin-top: 40px; font-size: 10px; color: #fff; text-align: center; opacity: 0.7; }
 
-        /* Ajuste na área do PDF para evitar que saia em branco */
-        #pdf-area { position: absolute; left: -9999px; top: 0; width: 595px; color: #000; background: #fff; padding: 40px; font-family: Arial, sans-serif; }
+        /* AJUSTE PDF: Visibility hidden em vez de left -9999 para o html2pdf capturar melhor */
+        #pdf-area { 
+            visibility: hidden; 
+            position: absolute; 
+            left: 0; 
+            top: 0; 
+            width: 595px; 
+            color: #000; 
+            background: #fff; 
+            padding: 40px; 
+            font-family: Arial, sans-serif; 
+        }
     </style>
 </head>
 <body>
@@ -80,9 +90,17 @@
 
         <label>Quantas refeições ao dia?</label>
         <select id="num-refeicoes">
-            <option value="4">4 Refeições + Ceia</option>
-            <option value="5" selected>5 Refeições + Ceia</option>
-            <option value="6">6 Refeições + Ceia</option>
+            <option value="3">3 Refeições</option>
+            <option value="4">4 Refeições</option>
+            <option value="5" selected>5 Refeições</option>
+            <option value="6">6 Refeições</option>
+            <option value="7">7 Refeições</option>
+        </select>
+
+        <label>Deseja incluir uma Ceia após o Jantar?</label>
+        <select id="incluir-ceia">
+            <option value="sim">Sim</option>
+            <option value="nao">Não</option>
         </select>
         
         <label>Qual seu Objetivo?</label>
@@ -175,13 +193,13 @@
         const cal = document.getElementById('calorias').value;
         const obj = document.getElementById('objetivo').value;
         const numRefeicoes = document.getElementById('num-refeicoes').value;
+        const incluirCeia = document.getElementById('incluir-ceia').value;
         const btn = document.getElementById('btn-gerar');
 
         const marcados = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(i => i.value);
         const extras = [document.getElementById('extra-proteinas').value, document.getElementById('extra-carbos').value, document.getElementById('extra-gorduras').value, document.getElementById('extra-vegetais').value].filter(t => t.trim() !== "");
         const listaFinal = [...marcados, ...extras];
 
-        // Separar frutas da lista final para o prompt
         const listaFrutasDisponiveis = ["Banana", "Maçã", "Manga", "Mamão", "Abacaxi", "Uva", "Laranja", "Melancia", "Melão"];
         const frutasSelecionadas = listaFinal.filter(alimento => listaFrutasDisponiveis.includes(alimento));
 
@@ -190,16 +208,20 @@
         btn.innerText = "IA GERANDO SEU PLANO...";
         btn.disabled = true;
 
+        // Ajuste no Prompt para refletir a nova lógica de refeições e ceia
+        const promptCeia = incluirCeia === 'sim' 
+            ? `Crie também uma CEIA obrigatória ao final do dia usando obrigatoriamente uma das frutas: ${frutasSelecionadas.join(', ')}.` 
+            : `NÃO inclua Ceia. O plano deve terminar no Jantar.`;
+
         const prompt = `Aja como um nutricionista esportivo de elite. 
 Crie um plano de reeducação alimentar de ${cal} calorias focado em ${obj} para um aluno de ${peso}kg.
 
-REGRAS CRÍTICAS E OBRIGATÓRIAS:
-1. ALIMENTOS PERMITIDOS: Use EXCLUSIVAMENTE os alimentos desta lista: ${listaFinal.join(', ')}. Não invente ingredientes, temperos extras (além do básico) ou acompanhamentos que não estejam aqui.
-2. ESTRUTURA DE REFEIÇÕES: Organize ${numRefeicoes} refeições + 1 CEIA obrigatória ao final do dia.
-3. REGRA DAS FRUTAS: As frutas (${frutasSelecionadas.join(', ')}) devem ser incluídas APENAS no Café da Manhã (1ª refeição) e na Ceia. Não coloque frutas em outras refeições.
-4. ALMOÇO E JANTAR: Devem conter Arroz e Feijão (se selecionados). Apresente uma opção de substituição para o arroz/feijão usando outro carbo da lista.
-5. CEIA: Crie uma refeição leve de Ceia para ser feita após o jantar, obrigatoriamente usando uma das frutas selecionadas.
-
+REGRAS CRÍTICAS:
+1. ALIMENTOS PERMITIDOS: Use EXCLUSIVAMENTE: ${listaFinal.join(', ')}.
+2. ESTRUTURA: Organize exatamente ${numRefeicoes} refeições.
+3. CEIA: ${promptCeia}
+4. REGRA DAS FRUTAS: Frutas apenas no Café da Manhã e na Ceia (se houver).
+5. ALMOÇO E JANTAR: Incluir Arroz e Feijão (se selecionados) com uma opção de substituição.
 FORMATO: Organizado para PDF, com gramaturas exatas (ex: 150g de frango).`;
 
         try {
@@ -218,7 +240,6 @@ FORMATO: Organizado para PDF, com gramaturas exatas (ex: 150g de frango).`;
             const litrosAgua = peso ? (peso * 0.035).toFixed(1) : "2.5";
             const dataHora = new Date().toLocaleString();
 
-            // Atualiza área do PDF
             document.getElementById('pdf-corpo').innerText = textoDieta;
             document.getElementById('pdf-footer').innerHTML = `
                 <strong>💧 HIDRATAÇÃO:</strong> ${litrosAgua} litros/dia.<br>
@@ -236,18 +257,20 @@ FORMATO: Organizado para PDF, com gramaturas exatas (ex: 150g de frango).`;
 
     function baixarPDF() {
         const element = document.getElementById('pdf-area');
-        // O elemento já está em uma posição que o html2pdf consegue ler, mas não aparece na tela
+        element.style.visibility = 'visible'; // Torna visível para o html2pdf capturar
+
         const opt = { 
             margin: 10, 
             filename: 'Plano_Alimentar_JeanOliveira.pdf', 
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, logging: true, letterRendering: true, useCORS: true }, 
+            html2canvas: { scale: 2, logging: false, useCORS: true }, 
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
         };
-        html2pdf().set(opt).from(element).save();
+
+        html2pdf().set(opt).from(element).save().then(() => {
+            element.style.visibility = 'hidden'; // Esconde novamente após gerar
+        });
     }
 </script>
 </body>
 </html>
-
-
