@@ -178,35 +178,30 @@
         const obj = document.getElementById('objetivo').value;
         const numRef = document.getElementById('num-refeicoes').value;
 
-        const prompt = `Aja como um nutricionista esportivo. Crie um plano de reeducação alimentar de ${cal} kcal focado em ${obj} para um aluno de ${peso}kg.
+        const prompt = `Aja como um nutricionista esportivo de alta precisão. Crie um plano de reeducação alimentar de ${cal} calorias focado em ${obj} para um aluno de ${peso}kg.
 
-REGRAS DE FORMATAÇÃO E EQUIVALÊNCIA (OBRIGATÓRIO):
-1. EXIBIÇÃO EM LINHA: Não crie tabelas separadas. Apresente os alimentos e suas substituições na mesma linha usando "ou".
-   Exemplo: 100g de Arroz Branco cozido ou 120g de Batata Doce ou 90g de Macarrão integral.
-2. PRECISÃO DE MACROS: As substituições (o que vem após o "ou") devem ter a gramatura calculada para manter o mesmo valor de carboidratos ou proteínas do alimento principal da linha.
-3. REGRA ARROZ E FEIJÃO: Se "Arroz" e "Feijão" foram selecionados, eles DEVEM ser a base principal do Almoço e Jantar. As outras opções selecionadas entram como substituições após o "ou".
-4. QUANTIDADE DE REFEIÇÕES: Exatamente ${numRef} conforme selecionado.
+REGRAS DE ESTRUTURA:
+1. QUANTIDADE DE REFEIÇÕES: Organize o plano em exatamente ${numRef} refeições diárias.
+2. DISTRIBUIÇÃO: Use a divisão escolhida (${document.getElementById('info-refeicoes').innerText}).
 
-ALIMENTOS SELECIONADOS PELO USUÁRIO (USE APENAS ESTES):
+REGRA DE EQUIVALÊNCIA DE SUBSTITUIÇÃO (OBRIGATÓRIO):
+Para cada alimento fonte de carboidrato e proteína indicado no Almoço e Jantar, você deve fornecer uma lista de substituição equivalente em MACRONUTRIENTES.
+Exemplo: Se a refeição principal pede 100g de Arroz Branco (aprox. 28g de carbo), a opção de substituição deve listar a gramatura exata do outro alimento escolhido para atingir os mesmos 28g de carbo (ex: 120g de Batata Doce ou 90g de Macarrão). Faça isso para todos os itens principais.
+
+ALIMENTOS PERMITIDOS (USE APENAS ESTES):
 - Principais (Almoço/Jantar): Carbos: [${getCheckeds('lista-carbo-principal')}], Proteínas: [${getCheckeds('lista-proteina-principal')}], Legumes: [${getCheckeds('lista-vegetais')}], Gorduras: [${getCheckeds('lista-gorduras-principal')}].
-- Leves (Manhã/Tarde/Ceia): Carbos: [${getCheckeds('lista-carbo-leve')}], Proteínas: [${getCheckeds('lista-proteina-leve')}], Frutas: [${getCheckeds('lista-frutas')}], Bases: [${getCheckeds('lista-bases')}].
+- Leves (Restante): Carbos: [${getCheckeds('lista-carbo-leve')}], Proteínas: [${getCheckeds('lista-proteina-leve')}], Frutas: [${getCheckeds('lista-frutas')}], Bases: [${getCheckeds('lista-bases')}].
 
-ESTRUTURA DE CADA REFEIÇÃO:
-- Nome da Refeição: Alimento Base + Sugestão Equivalente 1 + Sugestão Equivalente 2.
-- Use sempre o peso para alimentos PRONTOS.
+ORIENTAÇÕES TÉCNICAS:
+- Use valores de alimentos PRONTOS/COZIDOS.
+- Café da manhã/Tarde: 1 carbo + 1 proteína + 1 fruta.
+- Almoço/Jantar: Proteína + Legumes + Carbo Principal. Apresente logo abaixo a seção "TABELA DE SUBSTITUIÇÃO EQUIVALENTE" com as gramaturas ajustadas.
 - Hidratação: ${(peso * 0.035).toFixed(1)}L/dia.
 
-RODAPÉ (em todos os pdf's gerados) : TERMO DE RESPONSABILIDADE E ORIENTAÇÕES
+RODAPÉ LEGAL OBRIGATÓRIO:
+TERMO DE RESPONSABILIDADE E ORIENTAÇÕES: Este plano é uma sugestão gerada por IA. Indispensável consulta médica para patologias. Limitações: Educativo e performance, não substitui prescrição clínica. Personal Jean Oliveira.
 
-Natureza do Plano: Este documento é uma sugestão de reeducação alimentar gerada por inteligência artificial, baseada nos alimentos e objetivos selecionados pelo usuário.
-
-Individualidade: Os resultados podem variar conforme o metabolismo, nível de atividade física e condições de saúde preexistentes.
-
-Saúde: Antes de iniciar qualquer mudança drástica em sua dieta ou rotina de exercícios, é indispensável a consulta com um médico ou nutricionista clínico, especialmente se você possui patologias (diabetes, hipertensão, alergias, etc.).
-
-Limitações: O Personal Jean Oliveira e o sistema de IA fornecem diretrizes educativas e de apoio à performance; este plano não configura prescrição médica ou tratamento de doenças.
-
-Hidratação: A recomendação de água é uma estimativa geral. Ajuste conforme sua transpiração e intensidade de treino.  (Coloque em tamanho pequeno e bem justo, sem muito espaço para ficar visiel mas não destacando)
+DATA: ${new Date().toLocaleString()}.`;
 
         try {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -232,22 +227,33 @@ Hidratação: A recomendação de água é uma estimativa geral. Ajuste conforme
     function baixarPDF(conteudo) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
+        
+        // Cabeçalho estilizado no PDF
         doc.setFillColor(30, 30, 30);
         doc.rect(0, 0, 210, 20, 'F');
         doc.setTextColor(255, 215, 0);
         doc.setFontSize(14);
-        doc.text("PLANO DE REEDUCAÇÃO ALIMENTAR", 105, 13, { align: "center" });
+        doc.text("PLANO DE REEDUCAÇÃO ALIMENTAR PERSONALIZADO", 105, 13, { align: "center" });
+        
         doc.setTextColor(40, 40, 40);
         doc.setFontSize(10);
+        
+        // Quebra automática de texto para não sair da página
         const lines = doc.splitTextToSize(conteudo, 180);
+        
         let y = 30;
         lines.forEach(line => {
-            if (y > 280) { doc.addPage(); y = 20; }
+            if (y > 280) { // Nova página se chegar ao fim
+                doc.addPage();
+                y = 20;
+            }
             doc.text(line, 15, y);
-            y += 6;
+            y += 5;
         });
-        doc.save("Sujestão_Alimentar.pdf");
+
+        doc.save("Minha_Dieta_Equivalente.pdf");
     }
 </script>
 </body>
 </html>
+
