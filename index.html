@@ -8,20 +8,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body { background:#000; margin:0; font-family:Arial, sans-serif; color: #fff; padding-bottom: 30px; }
-        .container { max-width:450px; margin:auto; padding:20px; background:#000; }
-        h2 { color:#FFD700; text-align: center; margin-bottom: 5px; font-size: 19px; letter-spacing: -0.5px; text-transform: uppercase; }
+        .container { max-width:500px; margin:auto; padding:20px; background:#000; }
+        h2 { color:#FFD700; text-align: center; margin-bottom: 5px; font-size: 19px; text-transform: uppercase; }
         p.subtitle { text-align: center; color: #ccc; font-size: 14px; margin-bottom: 25px; }
         label { display:block; margin-top:18px; font-size:14px; font-weight: bold; color: #eee; }
         input, select, textarea { width:100%; padding:12px; margin-top:6px; border-radius:6px; border:1px solid #333; background: #111; color: #fff; font-size: 15px; box-sizing: border-box; }
         button { width:100%; margin-top:30px; padding:18px; background:#FFD700; border:none; border-radius:8px; font-size:16px; font-weight:bold; color:#000; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
-        button:hover { background: #e6c200; }
-        .secao-titulo { color: #FFD700; font-weight: bold; margin-top: 25px; font-size: 13px; text-transform: uppercase; }
-        .grid-alimentos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: left; margin: 10px 0; background: #0a0a0a; padding: 12px; border-radius: 8px; border: 1px solid #222; }
-        .item-alimento { display: flex; align-items: center; font-size: 12px; cursor: pointer; color: #bbb; }
-        .item-alimento input { width: auto; margin-top: 0; margin-right: 8px; }
-        .clausula-container { margin-top: 30px; background: #0a0a0a; padding: 15px; border-radius: 8px; border: 1px solid #333; font-size: 11px; color: #aaa; text-align: justify; }
-        #resultado { margin-top: 30px; text-align: left; white-space: pre-wrap; background: #111; padding: 20px; border-radius: 8px; display: none; border: 1px solid #FFD700; font-size: 14px; }
-        .rodape { margin-top: 40px; font-size: 10px; color: #fff; text-align: center; opacity: 0.7; }
+        button:disabled { background: #555; cursor: not-allowed; }
+        .secao-titulo { color: #FFD700; font-weight: bold; margin-top: 25px; font-size: 13px; text-transform: uppercase; border-left: 3px solid #FFD700; padding-left: 10px; }
+        .grid-alimentos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; background: #0a0a0a; padding: 12px; border-radius: 8px; border: 1px solid #222; }
+        .item-alimento { display: flex; align-items: center; font-size: 12px; color: #bbb; cursor: pointer; }
+        .item-alimento input { width: auto; margin: 0 8px 0 0; }
+        #resultado { margin-top: 30px; white-space: pre-wrap; background: #111; padding: 20px; border-radius: 8px; display: none; border: 1px solid #FFD700; font-size: 14px; line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -37,37 +35,59 @@
 
     <div id="dieta-section" style="display:none;">
         <h2>⚙️ Personalizar Plano</h2>
+        
         <label>Seu Peso Atual (kg)</label>
         <input type="number" id="peso" placeholder="Ex: 80">
+        
         <label>Meta de Calorias Diárias</label>
         <input type="number" id="calorias" placeholder="Ex: 2100">
-        <label>Quantas refeições?</label>
-        <select id="num-refeicoes">
-            <option value="3">3 Refeições</option>
-            <option value="4">4 Refeições</option>
-            <option value="5" selected>5 Refeições</option>
-            <option value="6">6 Refeições</option>
-            <option value="7">7 Refeições</option>
+        
+        <label>Número de Refeições</label>
+        <select id="num-refeicoes" onchange="atualizarInfoRefeicoes()">
+            <option value="4">4 Refeições (Padrão)</option>
+            <option value="5">5 Refeições (+ Desjejum)</option>
+            <option value="6">6 Refeições (+ Desjejum e Ceia)</option>
         </select>
-        <label>Deseja incluir Ceia?</label>
-        <select id="incluir-ceia">
-            <option value="sim">Sim, incluir ceia leve</option>
-            <option value="nao">Não, encerrar no jantar</option>
-        </select>
-        <label>Objetivo</label>
-        <select id="objetivo"><option>Emagrecimento</option><option>Hipertrofia</option><option>Definição</option></select>
+        <p id="info-refeicoes" style="font-size: 11px; color: #FFD700; margin-top: 5px;"></p>
 
-        <div class="secao-titulo">🍗 Proteínas</div>
-        <div class="grid-alimentos" id="lista-proteinas"></div>
-        <div class="secao-titulo">🍞 Carboidratos</div>
-        <div class="grid-alimentos" id="lista-carbos"></div>
-        <div class="secao-titulo">🥑 Gorduras</div>
-        <div class="grid-alimentos" id="lista-gorduras"></div>
-        <div class="secao-titulo">🥦 Vegetais</div>
+        <label>Objetivo</label>
+        <select id="objetivo">
+            <option>Emagrecimento</option>
+            <option>Hipertrofia</option>
+            <option>Definição</option>
+        </select>
+
+        <hr style="border: 0.5px solid #222; margin-top: 30px;">
+        <h3 style="color: #FFD700; font-size: 16px; text-align: center;">SELEÇÃO DE ALIMENTOS</h3>
+
+        <div class="secao-titulo">Carboidratos (Almoço/Janta)</div>
+        <div class="grid-alimentos" id="lista-carbo-principal"></div>
+
+        <div class="secao-titulo">Proteínas (Almoço/Janta)</div>
+        <div class="grid-alimentos" id="lista-proteina-principal"></div>
+
+        <div class="secao-titulo">Legumes e Verduras (Almoço/Janta)</div>
         <div class="grid-alimentos" id="lista-vegetais"></div>
 
-        <div class="clausula-container">
-            <label><input type="checkbox" id="aceite-clausula"> Li e aceito as orientações.</label>
+        <div class="secao-titulo">Gorduras (Almoço/Janta)</div>
+        <div class="grid-alimentos" id="lista-gorduras-principal"></div>
+
+        <div class="secao-titulo">Carboidratos (Manhã/Tarde/Ceia)</div>
+        <div class="grid-alimentos" id="lista-carbo-leve"></div>
+
+        <div class="secao-titulo">Proteínas (Manhã/Tarde/Ceia)</div>
+        <div class="grid-alimentos" id="lista-proteina-leve"></div>
+
+        <div class="secao-titulo">Frutas (Manhã/Tarde/Ceia)</div>
+        <div class="grid-alimentos" id="lista-frutas"></div>
+
+        <div class="secao-titulo">Bases/Líquidos (Manhã/Tarde/Ceia)</div>
+        <div class="grid-alimentos" id="lista-bases"></div>
+
+        <div style="margin-top: 20px; font-size: 12px;">
+            <label style="display: flex; align-items: center; font-weight: normal;">
+                <input type="checkbox" id="aceite-clausula" style="width: 20px; margin-right: 10px;"> Li e aceito as orientações.
+            </label>
         </div>
 
         <button id="btn-gerar" onclick="gerarDieta()">GERAR E BAIXAR PLANO</button>
@@ -86,19 +106,39 @@
     const p4 = '4_51KFJnhtk1lWuDrnuiIRywTy6ErSDai9Qn54A';
     const FINAL_KEY = p1 + p2 + p3 + p4;
 
-
-    const proteinas = ["Peito de frango", "Patinho", "Tilápia", "Ovo inteiro", "Whey protein", "Atum"];
-    const carbos = ["Arroz branco", "Batata doce", "Aveia", "Pão integral", "Feijão", "Banana", "Maçã"];
-    const gorduras = ["Azeite de oliva", "Abacate", "Pasta de amendoim", "Castanhas"];
-    const vegetais = ["Brócolis", "Alface", "Cenoura", "Tomate"];
+    const alimentos = {
+        carboPrincipal: ["Arroz branco", "Arroz integral", "Arroz 7 grãos", "Feijão", "Lentilha", "Grão-de-bico", "Quinoa", "Macarrão integral", "Cuscuz", "Cuscuz marroquino", "Batata inglesa", "Batata doce", "Mandioquinha", "Mandioca cozida", "Purê de batata", "Purê de batata doce", "Purê de abóbora", "Abóbora cozida", "Milho", "Tapioca"],
+        proteinaPrincipal: ["Filé de peito de frango grelhado", "Frango desfiado", "Frango em cubos", "Frango ao forno", "Carne moída (patinho)", "Hambúrguer caseiro de patinho", "Almôndega de carne magra", "Carne grelhada", "Carne de panela magra", "Tilápia grelhada", "Filé de peixe assado", "Salmão grelhado", "Atum grelhado", "Atum em água", "Sardinha", "Ovos mexidos", "Ovos cozidos", "Omelete", "Omelete de forno", "Tofu grelhado"],
+        vegetais: ["Brócolis", "Couve-flor", "Abobrinha", "Cenoura", "Beterraba", "Vagem", "Berinjela", "Abóbora", "Chuchu", "Couve refogada", "Espinafre", "Alface", "Rúcula", "Agrião", "Tomate", "Pepino", "Pimentão", "Repolho", "Vinagrete"],
+        gordurasPrincipal: ["Azeite de oliva", "Abacate", "Castanhas", "Amêndoas", "Nozes", "Pasta de amendoim natural", "Sementes de chia", "Sementes de linhaça", "Gergelim", "Gema do ovo"],
+        carboLeve: ["Pão integral", "Pão de sal", "Pão de forma tradicional", "Aveia", "Granola sem açúcar", "Torrada integral", "Wrap integral", "Tapioca", "Cuscuz", "Batata doce"],
+        proteinaLeve: ["Ovos mexidos", "Ovos cozidos", "Omelete", "Omelete de legumes", "Frango desfiado", "Atum", "Whey protein", "Iogurte natural", "Iogurte grego natural", "Ricota", "Queijo branco", "Pasta de amendoim natural"],
+        frutas: ["Banana", "Maçã", "Morango", "Mamão", "Abacate", "Frutas vermelhas", "Manga", "Pera"],
+        bases: ["Leite", "Leite vegetal", "Iogurte natural", "Iogurte grego", "Água", "Whey protein"]
+    };
 
     function renderizarLista(id, lista) {
-        document.getElementById(id).innerHTML = lista.map(a => `<label class="item-alimento"><input type="checkbox" value="${a}"> ${a}</label>`).join('');
+        document.getElementById(id).innerHTML = lista.map(a => `<label class="item-alimento"><input type="checkbox" name="${id}" value="${a}"> ${a}</label>`).join('');
     }
-    renderizarLista('lista-proteinas', proteinas);
-    renderizarLista('lista-carbos', carbos);
-    renderizarLista('lista-gorduras', gorduras);
-    renderizarLista('lista-vegetais', vegetais);
+
+    function inicializarListas() {
+        renderizarLista('lista-carbo-principal', alimentos.carboPrincipal);
+        renderizarLista('lista-proteina-principal', alimentos.proteinaPrincipal);
+        renderizarLista('lista-vegetais', alimentos.vegetais);
+        renderizarLista('lista-gorduras-principal', alimentos.gordurasPrincipal);
+        renderizarLista('lista-carbo-leve', alimentos.carboLeve);
+        renderizarLista('lista-proteina-leve', alimentos.proteinaLeve);
+        renderizarLista('lista-frutas', alimentos.frutas);
+        renderizarLista('lista-bases', alimentos.bases);
+    }
+
+    function atualizarInfoRefeicoes() {
+        const val = document.getElementById('num-refeicoes').value;
+        const info = document.getElementById('info-refeicoes');
+        if(val == "4") info.innerText = "Incluso: Café da manhã, Almoço, Café da tarde e Jantar.";
+        if(val == "5") info.innerText = "Incluso: Desjejum, Café da manhã, Almoço, Café da tarde e Jantar.";
+        if(val == "6") info.innerText = "Incluso: Desjejum, Café da manhã, Almoço, Café da tarde, Jantar e Ceia.";
+    }
 
     async function verificarAcesso() {
         const email = document.getElementById('user-email').value.trim().toLowerCase();
@@ -106,35 +146,76 @@
         if (!data) return alert("E-mail não autorizado!");
         document.getElementById('login-section').style.display = 'none';
         document.getElementById('dieta-section').style.display = 'block';
+        inicializarListas();
+        atualizarInfoRefeicoes();
     }
 
     async function gerarDieta() {
+        // Validação: Pelo menos 1 de cada
+        const categorias = ['lista-carbo-principal', 'lista-proteina-principal', 'lista-vegetais', 'lista-gorduras-principal', 'lista-carbo-leve', 'lista-proteina-leve', 'lista-frutas', 'lista-bases'];
+        for(let cat of categorias) {
+            if(document.querySelectorAll(`input[name="${cat}"]:checked`).length === 0) {
+                return alert("Por favor, selecione ao menos 1 item de cada categoria!");
+            }
+        }
+
         if(!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
+
         const btn = document.getElementById('btn-gerar');
-        const listaFinal = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(i => i.value);
-        
         btn.innerText = "IA PROCESSANDO...";
         btn.disabled = true;
 
-        const prompt = `Aja como nutricionista esportivo. Monte uma dieta de ${document.getElementById('calorias').value} kcal para objetivo ${document.getElementById('objetivo').value}. Use apenas: ${listaFinal.join(', ')}. Estruture em ${document.getElementById('num-refeicoes').value} refeições ${document.getElementById('incluir-ceia').value === 'sim' ? 'MAIS uma ceia obrigatória' : 'SEM ceia'}. Use gramaturas exatas.`;
+        // Coleta de seleções
+        const getCheckeds = (name) => Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(i => i.value).join(', ');
+        
+        const peso = document.getElementById('peso').value;
+        const cal = document.getElementById('calorias').value;
+        const obj = document.getElementById('objetivo').value;
+        const numRef = document.getElementById('num-refeicoes').value;
+
+        const prompt = `Aja como um nutricionista esportivo. Crie um plano de reeducação alimentar de ${cal} calorias focado em ${obj}. O aluno pesa ${peso}kg.
+
+REGRAS OBRIGATÓRIAS DE ESTRUTURA:
+1. QUANTIDADE DE REFEIÇÕES: Organize o plano em exatamente ${numRef} refeições diárias.
+2. DISTRIBUIÇÃO CONFORME ESCOLHA:
+   - Se 4 refeições: Café da manhã, Almoço, Café da tarde e Jantar.
+   - Se 5 refeições: Incluir Desjejum.
+   - Se 6 refeições: Incluir Desjejum e Ceia.
+
+3. ALIMENTOS PERMITIDOS POR REFEIÇÃO (USE APENAS ESTES):
+   - Almoço e Jantar (Principais): Carbos: [${getCheckeds('lista-carbo-principal')}], Proteínas: [${getCheckeds('lista-proteina-principal')}], Legumes: [${getCheckeds('lista-vegetais')}], Gorduras: [${getCheckeds('lista-gorduras-principal')}].
+   - Outras refeições (Leves): Carbos: [${getCheckeds('lista-carbo-leve')}], Proteínas: [${getCheckeds('lista-proteina-leve')}], Frutas: [${getCheckeds('lista-frutas')}], Bases: [${getCheckeds('lista-bases')}].
+
+REGRAS ESPECÍFICAS DE MONTAGEM:
+- Café da manhã: 1 carboidrato + 1 proteína + 1 fruta + 1 gordura boa.
+- Almoço: Arroz e Feijão (obrigatório se selecionado) + 1 proteína principal + legumes à vontade + 1 azeite (opcional). Crie também uma "OPÇÃO SEM ARROZ E FEIJÃO" substituindo por outro carbo da lista principal.
+- Café da tarde: 1 proteína + 1 carboidrato + (opcional) 1 fruta ou gordura.
+- Jantar: 1 proteína + legumes + carboidrato moderado. Crie também uma "OPÇÃO SEM ARROZ E FEIJÃO" substituindo por outro carbo da lista principal.
+- Ceia (se houver): 1 proteína leve + porção pequena de fruta.
+
+ITENS COMPLEMENTARES:
+4. SUBSTITUIÇÕES: Liste equivalências entre os alimentos escolhidos.
+5. HIDRATAÇÃO: Informe a recomendação de ${(peso * 0.035).toFixed(1)}L de água por dia.
+6. DATA: ${new Date().toLocaleString()}.`;
 
         try {
+            const p1 = 'sk-proj-iTWUZ8Lsr4Sd1qKmuH1Rc43q4IgdchSvYHYJ_'; const p2 = 'qmaLxHRh9JptNkpoYgGEP7gERjSntNWnyjgA-T3Bl';
+            const p3 = 'bkFJP0F5nitDThUcrohRynDAQuU0F8vYQ-ARete'; const p4 = '4_51KFJnhtk1lWuDrnuiIRywTy6ErSDai9Qn54A';
+            
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${FINAL_KEY}` },
-                body: JSON.stringify({ model: "gpt-3.5-turbo", messages: [{role: "user", content: prompt}] })
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${p1+p2+p3+p4}` },
+                body: JSON.stringify({ model: "gpt-3.5-turbo", messages: [{role: "user", content: prompt}], temperature: 0.7 })
             });
+            
             const result = await response.json();
             const texto = result.choices[0].message.content;
-
             document.getElementById('resultado').innerText = texto;
             document.getElementById('resultado').style.display = 'block';
-            
-            // CHAMA O DOWNLOAD AUTOMÁTICO
             baixarPDF(texto);
 
         } catch (e) {
-            alert("Erro ao gerar. Tente novamente.");
+            alert("Erro ao processar. Verifique sua conexão.");
         } finally {
             btn.innerText = "GERAR E BAIXAR PLANO";
             btn.disabled = false;
@@ -144,25 +225,17 @@
     function baixarPDF(conteudo) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        
-        // Estilização do PDF
         doc.setFillColor(30, 30, 30);
-        doc.rect(0, 0, 210, 30, 'F');
+        doc.rect(0, 0, 210, 25, 'F');
         doc.setTextColor(255, 215, 0);
-        doc.setFontSize(16);
-        doc.text("PLANO ALIMENTAR - JEAN OLIVEIRA", 105, 20, { align: "center" });
-
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(10);
-        const splitText = doc.splitTextToSize(conteudo, 180);
-        doc.text(splitText, 15, 45);
-
-        doc.setFontSize(8);
-        doc.text("Hidratação sugerida: " + (document.getElementById('peso').value * 0.035).toFixed(1) + "L/dia", 15, 280);
-
+        doc.setFontSize(14);
+        doc.text("PLANO ALIMENTAR PERSONALIZADO - JEAN OLIVEIRA", 105, 15, { align: "center" });
+        doc.setTextColor(40, 40, 40);
+        doc.setFontSize(9);
+        const lines = doc.splitTextToSize(conteudo, 180);
+        doc.text(lines, 15, 35);
         doc.save("Meu_Plano_Alimentar.pdf");
     }
 </script>
 </body>
 </html>
-
