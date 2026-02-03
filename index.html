@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reeducação Alimentar IA | Personal Jean Oliveira</title>
+    <title>Sujestão de Reeducação Alimentar IA</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
@@ -27,14 +27,14 @@
 <div class="container">
     <div id="login-section">
         <h2>🍎 Reeducação Alimentar</h2>
-        <p class="subtitle">Área do Aluno - Personal Jean Oliveira</p>
+        <p class="subtitle">Seja bem vindo(a) | Calcule Selecione seus alimentos prefetidos</p>
         <label>E-mail de Acesso</label>
         <input type="email" id="user-email" placeholder="Seu e-mail de cadastro">
         <button onclick="verificarAcesso()">ACESSAR SISTEMA</button>
     </div>
 
     <div id="dieta-section" style="display:none;">
-        <h2>⚙️ Personalizar Plano</h2>
+        <h2>⚙️ Personalizar Sugestão Alimentar</h2>
         
         <label>Seu Peso Atual (kg)</label>
         <input type="number" id="peso" placeholder="Ex: 80">
@@ -107,7 +107,7 @@
     const FINAL_KEY = p1 + p2 + p3 + p4;
 
     const alimentos = {
-        carboPrincipal: ["Arroz branco", "Arroz integral", "Arroz 7 grãos", "Feijão", "Lentilha", "Grão-de-bico", "Quinoa", "Macarrão integral", "Cuscuz", "Cuscuz marroquino", "Batata inglesa", "Batata doce", "Mandioquinha", "Mandioca cozida", "Purê de batata", "Purê de batata doce", "Purê de abóbora", "Abóbora cozida", "Milho", "Tapioca"],
+        carboPrincipal: ["Arroz branco cozido", "Arroz integral cozido", "Arroz 7 grãos cozido", "Feijão preto cozido","Feijão vermelho cozido", "Lentilha", "Grão-de-bico", "Quinoa", "Macarrão integral cozido", "Cuscuz", "Cuscuz marroquino", "Batata inglesa", "Batata doce", "Mandioquinha", "Mandioca cozida", "Purê de batata", "Purê de batata doce", "Purê de abóbora", "Abóbora cozida", "Milho", "Tapioca"],
         proteinaPrincipal: ["Filé de peito de frango grelhado", "Frango desfiado", "Frango em cubos", "Frango ao forno", "Carne moída (patinho)", "Hambúrguer caseiro de patinho", "Almôndega de carne magra", "Carne grelhada", "Carne de panela magra", "Tilápia grelhada", "Filé de peixe assado", "Salmão grelhado", "Atum grelhado", "Atum em água", "Sardinha", "Ovos mexidos", "Ovos cozidos", "Omelete", "Omelete de forno", "Tofu grelhado"],
         vegetais: ["Brócolis", "Couve-flor", "Abobrinha", "Cenoura", "Beterraba", "Vagem", "Berinjela", "Abóbora", "Chuchu", "Couve refogada", "Espinafre", "Alface", "Rúcula", "Agrião", "Tomate", "Pepino", "Pimentão", "Repolho", "Vinagrete"],
         gordurasPrincipal: ["Azeite de oliva", "Abacate", "Castanhas", "Amêndoas", "Nozes", "Pasta de amendoim natural", "Sementes de chia", "Sementes de linhaça", "Gergelim", "Gema do ovo"],
@@ -193,6 +193,21 @@ REGRAS ESPECÍFICAS DE MONTAGEM:
 - Jantar: 1 proteína + legumes + carboidrato moderado. Crie também uma "OPÇÃO SEM ARROZ E FEIJÃO" substituindo por outro carbo da lista principal.
 - Ceia (se houver): 1 proteína leve + porção pequena de fruta.
 
+OBSERVAÇÕES IMPORTANTES: 
+A. Use o valor nutricional dos alimentos após eles serem prontos e não cruz: ex: tapioca > use a informação nutricional dela pronta, arroz > use a informação nutricional dela pronta e assim por diante
+B. azeite de oliva use como fonte de gordura boa apenas no almoço e na janta
+C. ao final, no rodapé do pdf coloque esse texto de termo legal SEMPRE (em todos os pdf's gerados) : TERMO DE RESPONSABILIDADE E ORIENTAÇÕES
+
+Natureza do Plano: Este documento é uma sugestão de reeducação alimentar gerada por inteligência artificial, baseada nos alimentos e objetivos selecionados pelo usuário.
+
+Individualidade: Os resultados podem variar conforme o metabolismo, nível de atividade física e condições de saúde preexistentes.
+
+Saúde: Antes de iniciar qualquer mudança drástica em sua dieta ou rotina de exercícios, é indispensável a consulta com um médico ou nutricionista clínico, especialmente se você possui patologias (diabetes, hipertensão, alergias, etc.).
+
+Limitações: O Personal Jean Oliveira e o sistema de IA fornecem diretrizes educativas e de apoio à performance; este plano não configura prescrição médica ou tratamento de doenças.
+
+Hidratação: A recomendação de água é uma estimativa geral. Ajuste conforme sua transpiração e intensidade de treino. 
+
 ITENS COMPLEMENTARES:
 4. SUBSTITUIÇÕES: Liste equivalências entre os alimentos escolhidos.
 5. HIDRATAÇÃO: Informe a recomendação de ${(peso * 0.035).toFixed(1)}L de água por dia.
@@ -229,13 +244,14 @@ ITENS COMPLEMENTARES:
         doc.rect(0, 0, 210, 25, 'F');
         doc.setTextColor(255, 215, 0);
         doc.setFontSize(14);
-        doc.text("PLANO ALIMENTAR PERSONALIZADO - JEAN OLIVEIRA", 105, 15, { align: "center" });
+        doc.text("SUGESTÃO ALIMENTAR", 105, 15, { align: "center" });
         doc.setTextColor(40, 40, 40);
         doc.setFontSize(9);
         const lines = doc.splitTextToSize(conteudo, 180);
         doc.text(lines, 15, 35);
-        doc.save("Meu_Plano_Alimentar.pdf");
+        doc.save("Sugestão_Alimentar.pdf");
     }
 </script>
 </body>
+
 </html>
