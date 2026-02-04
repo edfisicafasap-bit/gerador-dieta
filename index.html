@@ -190,7 +190,7 @@
         if(!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
 
         const btn = document.getElementById('btn-gerar');
-        btn.innerText = "IA PROCESSANDO...";
+        btn.innerText = "PREPARANDO CARDÁPIO...";
         btn.disabled = true;
 
         const getCheckeds = (name) => Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(i => i.value).join(', ');
@@ -201,13 +201,21 @@
 
         const prompt = `Aja como um nutricionista esportivo de alta precisão. Crie um plano de reeducação alimentar de ${cal} calorias focado em ${obj} para um aluno de ${peso}kg.
 
+DIRETRIZES TÉCNICAS DE CÁLCULO (ESTRITAMENTE OBRIGATÓRIO):
+1. PROTEÍNA: Utilize entre 1.8g/kg e 2.2g/kg (ajuste conforme o objetivo: ${obj}).
+2. GORDURA: Utilize aproximadamente 1.0g/kg.
+3. CARBOIDRATOS: O restante das calorias deve ser preenchido com carboidratos.
+4. CALORIAS TOTAIS: O somatório final deve ser aproximadamente ${cal} kcal.
+
 REGRAS DE ESTRUTURA:
 1. QUANTIDADE DE REFEIÇÕES: Organize o plano em exatamente ${numRef} refeições diárias.
 2. DISTRIBUIÇÃO: Use a divisão escolhida (${document.getElementById('info-refeicoes').innerText}).
 
 REGRA DE EQUIVALÊNCIA DE SUBSTITUIÇÃO (OBRIGATÓRIO):
 Para cada alimento fonte de carboidrato e proteína indicado no Almoço e Jantar, você deve fornecer uma lista de substituição equivalente em MACRONUTRIENTES.
-Exemplo: Se a refeição principal pede 100g de Arroz Branco (aprox. 28g de carbo), a opção de substituição deve listar a gramatura exata do outro alimento escolhido para atingir os mesmos 28g de carbo (ex: 120g de Batata Doce ou 90g de Macarrão). Faça isso para todos os itens principais.
+Exemplo: Se a refeição principal pede 100g de Arroz Branco (aprox. 28g de carbo), a opção de substituição deve listar a gramatura exata do outro alimento escolhido para atingir os mesmos 28g de carbo (ex: 120g de Batata Doce ou 90g de Macarrão). Faça isso para todos os itens principais. coloque a substituição na frente do proprio alimento: ex: 100gr de arroz ou x gr de batata ou x gr de macarrão. 
+IMPORTANTE: O Arroz(independente de qual o usuário selecionar, se for integral ou não) deverá ser a  base obrigatória para o almoço e a janta (e deve estar disponivel apenas no almoço e na janta.) caso o usuário selecione arroz e feijão os dois devem ser base obrigatória do almoço e da janta (seguindo a mesma logica de caso selecione apenas o arroz).
+coloque como opção de substuição os alimentos equivalentes selecionado pelo usuário nas respectivas refeições. ex: usuário selecionou "Arroz" deverá conter na frente outras opções de carboidratos para ele. o mesmo serve para as proteinas. OBS IMPORTANTE: Caso o usuário selecione "arroz e feijão" a substiução deve ser equivalente ao arroz e ao feijão juntos. ex: 100gr de arroz, 30gr de feijão = x carbo. deverá ter como opção de substuição outra opção de carbo que tenha as mesmas quantidade de carboidrato que esses dois juntos.
 
 ALIMENTOS PERMITIDOS (USE APENAS ESTES):
 - Principais (Almoço/Jantar): Carbos: [${getCheckeds('lista-carbo-principal')}], Proteínas: [${getCheckeds('lista-proteina-principal')}], Legumes: [${getCheckeds('lista-vegetais')}], Gorduras: [${getCheckeds('lista-gorduras-principal')}].
@@ -216,11 +224,13 @@ ALIMENTOS PERMITIDOS (USE APENAS ESTES):
 ORIENTAÇÕES TÉCNICAS:
 - Use valores de alimentos PRONTOS/COZIDOS.
 - Café da manhã/Tarde: 1 carbo + 1 proteína + 1 fruta.
-- Almoço/Jantar: Proteína + Legumes + Carbo Principal. Apresente logo abaixo a seção "TABELA DE SUBSTITUIÇÃO EQUIVALENTE" com as gramaturas ajustadas.
+- Almoço/Jantar: Proteína + Legumes + Carbo Principal. + salada à vontade
 - Hidratação: ${(peso * 0.035).toFixed(1)}L/dia.
 
-RODAPÉ LEGAL OBRIGATÓRIO:
-TERMO DE RESPONSABILIDADE E ORIENTAÇÕES: Este plano é uma sugestão gerada por IA. Indispensável consulta médica para patologias. Limitações: Educativo e performance, não substitui prescrição clínica. Personal Jean Oliveira.
+RODAPÉ LEGAL (Obrigatório constar ao final do documento):
+---------------------------------------------------------
+AVISO LEGAL E NATUREZA DO DOCUMENTO: Este material constitui uma sugestão de reeducação alimentar com caráter meramente informativo e educativo, gerado por suporte tecnológico (IA). Este guia não substitui a prescrição de um Nutricionista ou acompanhamento Médico. O objetivo aqui é o suporte à performance e organização nutricional. O usuário declara estar ciente de que o equilíbrio metabólico é individual e que consultas clínicas são indispensáveis antes de qualquer alteração na dieta, especialmente em presença de patologias.
+---------------------------------------------------------
 
 DATA: ${new Date().toLocaleString()}.`;
 
@@ -270,8 +280,9 @@ DATA: ${new Date().toLocaleString()}.`;
             y += 5;
         });
 
-        doc.save("Minha_Dieta_Equivalente.pdf");
+        doc.save("Cardapio_Reeducacao.pdf");
     }
 </script>
 </body>
 </html>
+
