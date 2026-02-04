@@ -217,6 +217,13 @@ Exemplo: Se a refeição principal pede 100g de Arroz Branco (aprox. 28g de carb
 IMPORTANTE: O Arroz(independente de qual o usuário selecionar, se for integral ou não) deverá ser a  base obrigatória para o almoço e a janta (e deve estar disponivel apenas no almoço e na janta.) caso o usuário selecione arroz e feijão os dois devem ser base obrigatória do almoço e da janta (seguindo a mesma logica de caso selecione apenas o arroz).
 coloque como opção de substuição os alimentos equivalentes selecionado pelo usuário nas respectivas refeições. ex: usuário selecionou "Arroz" deverá conter na frente outras opções de carboidratos para ele. o mesmo serve para as proteinas. OBS IMPORTANTE: Caso o usuário selecione "arroz e feijão" a substiução deve ser equivalente ao arroz e ao feijão juntos. ex: 100gr de arroz, 30gr de feijão = x carbo. deverá ter como opção de substuição outra opção de carbo que tenha as mesmas quantidade de carboidrato que esses dois juntos.
 
+ESTRUTURA DOS ALIMENTOS DEVERÁ FICAR ASSIM QUANDO PRONTO:
+CARBO OU CARBO OPÇÃO B, OU CARBO OPÇÃO C
+PROTEINA OU PROTEINA OPÇÃO B O PROTEINA OPÇÃO C
+GORDURA 
+LEGUMES
+E NO ALMOÇO E JANTA, EM BAIXO ESCRITO A FRASE (SALADA  A VONTADE) 
+
 ALIMENTOS PERMITIDOS (USE APENAS ESTES):
 - Principais (Almoço/Jantar): Carbos: [${getCheckeds('lista-carbo-principal')}], Proteínas: [${getCheckeds('lista-proteina-principal')}], Legumes: [${getCheckeds('lista-vegetais')}], Gorduras: [${getCheckeds('lista-gorduras-principal')}].
 - Leves (Restante): Carbos: [${getCheckeds('lista-carbo-leve')}], Proteínas: [${getCheckeds('lista-proteina-leve')}], Frutas: [${getCheckeds('lista-frutas')}], Bases: [${getCheckeds('lista-bases')}].
@@ -227,7 +234,7 @@ ORIENTAÇÕES TÉCNICAS:
 - Almoço/Jantar: Proteína + Legumes + Carbo Principal. + salada à vontade
 - Hidratação: ${(peso * 0.035).toFixed(1)}L/dia.
 
-RODAPÉ LEGAL (Obrigatório constar ao final do documento):
+RODAPÉ LEGAL (Obrigatório constar ao final do documento no rodapé, use exatamente o final do documento para que fique no ultimo espaço em baixo na folha. coloque também a fonte arial tamanho 8, justificado e com a maior margem possivel):
 ---------------------------------------------------------
 AVISO LEGAL E NATUREZA DO DOCUMENTO: Este material constitui uma sugestão de reeducação alimentar com caráter meramente informativo e educativo, gerado por suporte tecnológico (IA). Este guia não substitui a prescrição de um Nutricionista ou acompanhamento Médico. O objetivo aqui é o suporte à performance e organização nutricional. O usuário declara estar ciente de que o equilíbrio metabólico é individual e que consultas clínicas são indispensáveis antes de qualquer alteração na dieta, especialmente em presença de patologias.
 ---------------------------------------------------------
@@ -285,4 +292,5 @@ DATA: ${new Date().toLocaleString()}.`;
 </script>
 </body>
 </html>
+
 
