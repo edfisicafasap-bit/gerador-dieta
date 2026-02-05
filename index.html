@@ -16,16 +16,12 @@
         button { width:100%; margin-top:30px; padding:18px; background:#FFD700; border:none; border-radius:8px; font-size:16px; font-weight:bold; color:#000; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
         button:disabled { background: #555; cursor: not-allowed; }
         
-        /* Estilos dos Expansíveis */
-        details { background: #0a0a0a; border: 1px solid #222; border-radius: 8px; margin-bottom: 15px; overflow: hidden; }
+        details { background: #0a0a0a; border: 1px solid #222; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
         summary { padding: 15px; cursor: pointer; color: #FFD700; font-weight: bold; font-size: 13px; text-transform: uppercase; list-style: none; display: flex; justify-content: space-between; align-items: center; }
-        summary::-webkit-details-marker { display: none; }
         summary::after { content: '▶'; font-size: 10px; transition: 0.3s; }
         details[open] summary::after { transform: rotate(90deg); }
-        details[open] summary { border-bottom: 1px solid #222; }
 
-        .secao-interna-titulo { color: #FFD700; font-weight: bold; margin-top: 20px; font-size: 11px; text-transform: uppercase; padding-left: 10px; border-left: 2px solid #FFD700; }
-        .grid-alimentos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; padding: 12px; border-radius: 8px; }
+        .grid-alimentos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
         .item-alimento { display: flex; align-items: center; font-size: 12px; color: #bbb; cursor: pointer; }
         .item-alimento input { width: auto; margin: 0 8px 0 0; }
         
@@ -38,14 +34,14 @@
 <div class="container">
     <div id="login-section">
         <h2>🍎 Reeducação Alimentar</h2>
-        <p class="subtitle">Seja bem vindo(a) | Calcule e selecione seus alimentos preferidos</p>
+        <p class="subtitle">Acesse para personalizar sua sugestão</p>
         <label>E-mail de Acesso</label>
         <input type="email" id="user-email" placeholder="Seu e-mail de cadastro">
         <button onclick="verificarAcesso()">ACESSAR SISTEMA</button>
     </div>
 
     <div id="dieta-section" style="display:none;">
-        <h2>⚙️ Personalizar Sugestão Alimentar</h2>
+        <h2>⚙️ Personalizar Plano</h2>
         
         <label>Seu Peso Atual (kg)</label>
         <input type="number" id="peso" placeholder="Ex: 80">
@@ -54,12 +50,11 @@
         <input type="number" id="calorias" placeholder="Ex: 2100">
         
         <label>Número de Refeições</label>
-        <select id="num-refeicoes" onchange="atualizarInfoRefeicoes()">
+        <select id="num-refeicoes">
             <option value="4">4 Refeições (Padrão)</option>
-            <option value="5">5 Refeições (+ Desjejum)</option>
-            <option value="6">6 Refeições (+ Desjejum e Ceia)</option>
+            <option value="5">5 Refeições</option>
+            <option value="6">6 Refeições</option>
         </select>
-        <p id="info-refeicoes" style="font-size: 11px; color: #FFD700; margin-top: 5px;"></p>
 
         <label>Objetivo</label>
         <select id="objetivo">
@@ -69,44 +64,12 @@
         </select>
 
         <hr>
-        <h3 style="color: #FFD700; font-size: 16px; text-align: center; margin-bottom: 20px;">SELEÇÃO DE ALIMENTOS</h3>
+        <h3 style="color: #FFD700; font-size: 16px; text-align: center;">SELEÇÃO DE ALIMENTOS</h3>
 
-        <details>
-            <summary>Alimentos para Almoço e Jantar</summary>
-            <div style="padding: 10px;">
-                <div class="secao-interna-titulo">Carboidratos Principais</div>
-                <div class="grid-alimentos" id="lista-carbo-principal"></div>
+        <div id="categorias-container"></div>
 
-                <div class="secao-interna-titulo">Proteínas Principais</div>
-                <div class="grid-alimentos" id="lista-proteina-principal"></div>
-
-                <div class="secao-interna-titulo">Legumes e Verduras</div>
-                <div class="grid-alimentos" id="lista-vegetais"></div>
-
-                <div class="secao-interna-titulo">Fontes de Gordura</div>
-                <div class="grid-alimentos" id="lista-gorduras-principal"></div>
-            </div>
-        </details>
-
-        <details>
-            <summary>Alimentos para Café, Lanches e Ceia</summary>
-            <div style="padding: 10px;">
-                <div class="secao-interna-titulo">Carboidratos Leves</div>
-                <div class="grid-alimentos" id="lista-carbo-leve"></div>
-
-                <div class="secao-interna-titulo">Proteínas Leves</div>
-                <div class="grid-alimentos" id="lista-proteina-leve"></div>
-
-                <div class="secao-interna-titulo">Frutas Disponíveis</div>
-                <div class="grid-alimentos" id="lista-frutas"></div>
-
-                <div class="secao-interna-titulo">Bases e Líquidos</div>
-                <div class="grid-alimentos" id="lista-bases"></div>
-            </div>
-        </details>
-
-        <div style="margin-top: 20px; font-size: 12px;">
-            <label style="display: flex; align-items: center; font-weight: normal;">
+        <div style="margin-top: 20px;">
+            <label style="display: flex; align-items: center; font-weight: normal; font-size: 12px;">
                 <input type="checkbox" id="aceite-clausula" style="width: 20px; margin-right: 10px;"> Li e aceito as orientações.
             </label>
         </div>
@@ -127,126 +90,101 @@
     const p4 = '4_51KFJnhtk1lWuDrnuiIRywTy6ErSDai9Qn54A';
     const FINAL_KEY = p1 + p2 + p3 + p4;
 
-    const alimentos = {
-        carboPrincipal: ["Arroz branco cozido", "Arroz integral cozido", "Arroz 7 grãos cozido", "Feijão preto cozido","Feijão vermelho cozido", "Lentilha", "Grão-de-bico", "Quinoa", "Macarrão integral cozido", "Cuscuz", "Cuscuz marroquino", "Batata inglesa", "Batata doce", "Mandioquinha", "Mandioca cozida", "Purê de batata", "Purê de batata doce", "Purê de abóbora", "Abóbora cozida", "Milho", "Tapioca"],
-        proteinaPrincipal: ["Filé de peito de frango grelhado", "Frango desfiado", "Frango em cubos", "Frango ao forno", "Carne moída (patinho)", "Hambúrguer caseiro de patinho", "Almôndega de carne magra", "Carne grelhada", "Carne de panela magra", "Tilápia grelhada", "Filé de peixe assado", "Salmão grelhado", "Atum grelhado", "Atum em água", "Sardinha", "Ovos mexidos", "Ovos cozidos", "Omelete", "Omelete de forno", "Tofu grelhado"],
-        vegetais: ["Brócolis", "Couve-flor", "Abobrinha", "Cenoura", "Beterraba", "Vagem", "Berinjela", "Abóbora", "Chuchu", "Couve refogada", "Espinafre", "Alface", "Rúcula", "Agrião", "Tomate", "Pepino", "Pimentão", "Repolho", "Vinagrete"],
-        gordurasPrincipal: ["Azeite de oliva", "Abacate", "Castanhas", "Amêndoas", "Nozes", "Pasta de amendoim natural", "Sementes de chia", "Sementes de linhaça", "Gergelim", "Gema do ovo"],
-        carboLeve: ["Pão integral", "Pão de sal", "Pão de forma tradicional", "Aveia", "Granola sem açúcar", "Torrada integral", "Wrap integral", "Tapioca", "Cuscuz", "Batata doce"],
-        proteinaLeve: ["Ovos mexidos", "Ovos cozidos", "Omelete", "Omelete de legumes", "Frango desfiado", "Atum", "Whey protein", "Iogurte natural", "Iogurte grego natural", "Ricota", "Queijo branco", "Pasta de amendoim natural"],
-        frutas: ["Banana", "Maçã", "Morango", "Mamão", "Abacate", "Frutas vermelhas", "Manga", "Pera"],
-        bases: ["Leite", "Leite vegetal", "Iogurte natural", "Iogurte grego", "Água", "Whey protein"]
+
+    // 1º PONTO: Alimentos reorganizados por categoria e ordem de comum/popularidade
+    const alimentosPorCategoria = {
+        "Carboidratos": ["Arroz branco", "Arroz integral", "Feijão", "Macarrão", "Batata inglesa", "Batata doce", "Pão de sal", "Pão integral", "Aveia", "Cuscuz", "Tapioca", "Mandioca", "Banana", "Maçã"],
+        "Proteínas": ["Filé de frango", "Ovos", "Carne moída (Patinho)", "Tilápia/Peixe", "Frango desfiado", "Carne bovina magra", "Atum", "Omelete"],
+        "Gorduras": ["Azeite de oliva", "Pasta de amendoim", "Abacate", "Castanhas", "Nozes", "Gema de ovo"],
+        "Legumes e Verduras": ["Alface", "Tomate", "Brócolis", "Cenoura", "Chuchu", "Abobrinha", "Vagem", "Beterraba", "Pepino"],
+        "Lácteos": ["Leite integral", "Leite desnatado", "Iogurte natural", "Queijo branco/Ricota", "Iogurte grego"],
+        "Suplementos": ["Whey Protein", "Albuminia", "Creatina"]
     };
 
-    function renderizarLista(id, lista) {
-        document.getElementById(id).innerHTML = lista.map(a => `<label class="item-alimento"><input type="checkbox" name="${id}" value="${a}"> ${a}</label>`).join('');
-    }
-
-    function inicializarListas() {
-        Object.keys(alimentos).forEach(key => {
-            const idMap = {
-                carboPrincipal: 'lista-carbo-principal',
-                proteinaPrincipal: 'lista-proteina-principal',
-                vegetais: 'lista-vegetais',
-                gordurasPrincipal: 'lista-gorduras-principal',
-                carboLeve: 'lista-carbo-leve',
-                proteinaLeve: 'lista-proteina-leve',
-                frutas: 'lista-frutas',
-                bases: 'lista-bases'
-            };
-            renderizarLista(idMap[key], alimentos[key]);
+    function inicializarInterface() {
+        const container = document.getElementById('categorias-container');
+        Object.keys(alimentosPorCategoria).forEach(cat => {
+            const html = `
+                <details>
+                    <summary>${cat}</summary>
+                    <div class="grid-alimentos">
+                        ${alimentosPorCategoria[cat].map(a => `
+                            <label class="item-alimento">
+                                <input type="checkbox" name="alimento-selecionado" data-cat="${cat}" value="${a}"> ${a}
+                            </label>
+                        `).join('')}
+                    </div>
+                </details>`;
+            container.innerHTML += html;
         });
-    }
-
-    function atualizarInfoRefeicoes() {
-        const val = document.getElementById('num-refeicoes').value;
-        const info = document.getElementById('info-refeicoes');
-        const textos = {
-            "4": "Incluso: Café da manhã, Almoço, Café da tarde e Jantar.",
-            "5": "Incluso: Desjejum, Café da manhã, Almoço, Café da tarde e Jantar.",
-            "6": "Incluso: Desjejum, Café da manhã, Almoço, Café da tarde, Jantar e Ceia."
-        };
-        info.innerText = textos[val];
     }
 
     async function verificarAcesso() {
         const email = document.getElementById('user-email').value.trim().toLowerCase();
-        let { data, error } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', email).single();
+        let { data } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', email).single();
         if (!data) return alert("E-mail não autorizado!");
         document.getElementById('login-section').style.display = 'none';
         document.getElementById('dieta-section').style.display = 'block';
-        inicializarListas();
-        atualizarInfoRefeicoes();
+        inicializarInterface();
     }
 
     async function gerarDieta() {
-        const categorias = ['lista-carbo-principal', 'lista-proteina-principal', 'lista-vegetais', 'lista-gorduras-principal', 'lista-carbo-leve', 'lista-proteina-leve', 'lista-frutas', 'lista-bases'];
-        for(let cat of categorias) {
-            if(document.querySelectorAll(`input[name="${cat}"]:checked`).length === 0) {
-                return alert("Por favor, selecione ao menos 1 item de cada categoria!");
-            }
-        }
-
-        if(!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
+        const selecionados = Array.from(document.querySelectorAll('input[name="alimento-selecionado"]:checked'));
+        if (selecionados.length < 5) return alert("Selecione mais alimentos para uma dieta variada!");
+        if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
 
         const btn = document.getElementById('btn-gerar');
-        btn.innerText = "PREPARANDO CARDÁPIO...";
+        btn.innerText = "IA ESTÁ COZINHANDO SEU PLANO...";
         btn.disabled = true;
 
-        const getCheckeds = (name) => Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(i => i.value).join(', ');
+        const listaAlimentos = selecionados.map(i => i.value).join(', ');
         const peso = document.getElementById('peso').value;
         const cal = document.getElementById('calorias').value;
         const obj = document.getElementById('objetivo').value;
         const numRef = document.getElementById('num-refeicoes').value;
 
-        const prompt = `Aja como um nutricionista esportivo de alta precisão. Crie um plano de reeducação alimentar de ${cal} calorias focado em ${obj} para um aluno de ${peso}kg.
+        // 2º PONTO: Prompt atualizado com as regras rígidas de preparações e horários
+        const prompt = `Aja como um nutricionista esportivo. Crie um plano de ${cal} kcal para ${obj} (${peso}kg), dividido em ${numRef} refeições.
 
 DIRETRIZES TÉCNICAS DE CÁLCULO (ESTRITAMENTE OBRIGATÓRIO):
 1. PROTEÍNA: Utilize entre 1.8g/kg e 2.2g/kg (ajuste conforme o objetivo: ${obj}).
 2. GORDURA: Utilize aproximadamente 1.0g/kg.
 3. CARBOIDRATOS: O restante das calorias deve ser preenchido com carboidratos.
 4. CALORIAS TOTAIS: O somatório final deve ser aproximadamente ${cal} kcal.
+5. FONTE DE DADOS: "Para os cálculos de macronutrientes e gramaturas de substituição, utilize estritamente as informações nutricionais baseadas em fontes científicas reconhecidas, priorizando a TACO (Tabela Brasileira de Composição de Alimentos - UNICAMP) ou a Tabela TBCA (USP). Não utilize estimativas genéricas.
 
-REGRAS DE ESTRUTURA:
-1. QUANTIDADE DE REFEIÇÕES: Organize o plano em exatamente ${numRef} refeições diárias.
-2. DISTRIBUIÇÃO: Use a divisão escolhida (${document.getElementById('info-refeicoes').innerText}).
-3. FONTE DE DADOS: "Para os cálculos de macronutrientes e gramaturas de substituição, utilize estritamente as informações nutricionais baseadas em fontes científicas reconhecidas, priorizando a TACO (Tabela Brasileira de Composição de Alimentos - UNICAMP) ou a Tabela TBCA (USP). Não utilize estimativas genéricas."
+REGRAS DE OURO DE PREPARAÇÃO:
+1. NUNCA entregue listas de alimentos soltos (ex: "Arroz, Frango, Azeite").
+2. SEMPRE transforme os alimentos em preparações reais.
+3. Use APENAS estes alimentos selecionados pelo usuário: [${listaAlimentos}].
 
-REGRA DE EQUIVALÊNCIA DE SUBSTITUIÇÃO (OBRIGATÓRIO):
-Para cada alimento fonte de carboidrato e proteína indicado no Almoço e Jantar, você deve fornecer uma lista de substituição equivalente em MACRONUTRIENTES.
-Exemplo: Se a refeição principal pede 100g de Arroz Branco (aprox. 28g de carbo), a opção de substituição deve listar a gramatura exata do outro alimento escolhido para atingir os mesmos 28g de carbo (ex: 120g de Batata Doce ou 90g de Macarrão). Faça isso para todos os itens principais. coloque a substituição na frente do proprio alimento: ex: 100gr de arroz ou x gr de batata ou x gr de macarrão. 
-IMPORTANTE: O Arroz(independente de qual o usuário selecionar, se for integral ou não) deverá ser a  base obrigatória para o almoço e a janta (e deve estar disponivel apenas no almoço e na janta.) caso o usuário selecione arroz e feijão os dois devem ser base obrigatória do almoço e da janta (seguindo a mesma logica de caso selecione apenas o arroz).
-coloque como opção de substuição os alimentos equivalentes selecionado pelo usuário nas respectivas refeições. ex: usuário selecionou "Arroz" deverá conter na frente outras opções de carboidratos para ele. o mesmo serve para as proteinas. OBS IMPORTANTE: Caso o usuário selecione "arroz e feijão" a substiução deve ser equivalente ao arroz e ao feijão juntos. ex: 100gr de arroz, 30gr de feijão = x carbo. deverá ter como opção de substuição outra opção de carbo que tenha as mesmas quantidade de carboidrato que esses dois juntos.
+LOGICA POR HORÁRIO:
+- CAFÉ DA MANHÃ: Máximo 3 itens. Devem ser preparações rápidas (Ex: Pão com ovo, Vitamina de fruta com leite/whey, Iogurte com aveia). PROIBIDO arroz ou carnes pesadas.
+- LANCHES: Práticos (Ex: Fruta com pasta de amendoim, Iogurte com aveia, Shake de whey).
+- ALMOÇO/JANTAR: Monte um prato completo. Base (Carbo) + Proteína + Legumes. O Arroz/Feijão/Batata deve ser a base. Sempre inclua "Salada à vontade".
 
-ESTRUTURA DOS ALIMENTOS DEVERÁ FICAR ASSIM QUANDO PRONTO:
-CARBO OU CARBO OPÇÃO B, OU CARBO OPÇÃO C
-PROTEINA OU PROTEINA OPÇÃO B O PROTEINA OPÇÃO C
-GORDURA 
-LEGUMES (LEGUMES E VERDURA DEVEM SEMPRE ESTAR INCLUIDOS NO ALMOÇO E NA JANTA!)
-E NO ALMOÇO E JANTA, EM BAIXO ESCRITO A FRASE (SALADA  A VONTADE) 
+SUBSTITUIÇÕES (OBRIGATÓRIO):
+Para cada Carbo e Proteína, ofereça a gramatura equivalente de outro alimento da lista do usuário.
+Ex: "100g de Arroz OU 120g de Batata Doce".
 
-ALIMENTOS PERMITIDOS (USE APENAS ESTES):
-- Principais (Almoço/Jantar): Carbos: [${getCheckeds('lista-carbo-principal')}], Proteínas: [${getCheckeds('lista-proteina-principal')}], Legumes: [${getCheckeds('lista-vegetais')}], Gorduras: [${getCheckeds('lista-gorduras-principal')}].
-- Leves (Restante): Carbos: [${getCheckeds('lista-carbo-leve')}], Proteínas: [${getCheckeds('lista-proteina-leve')}], Frutas: [${getCheckeds('lista-frutas')}], Bases: [${getCheckeds('lista-bases')}].
+VALIDAÇÃO: Antes de escrever cada linha, pergunte-se: "Isso parece uma refeição normal que um ser humano comeria neste horário?". Se for 200g de aveia pura ou frango no café da manhã (sem ser sanduíche), refaça.
 
-ORIENTAÇÕES TÉCNICAS:
-- Use valores de alimentos PRONTOS/COZIDOS.
-- Café da manhã/Tarde: 1 carbo + 1 proteína + 1 fruta.
-- Almoço/Jantar: Proteína + Legumes + Carbo Principal. + salada à vontade
-- Hidratação: ${(peso * 0.035).toFixed(1)}L/dia.
+ESTRUTURA FINAL:
+Refeição X - [Nome do Horário]
+- Preparação (Gramaturas e equivalentes)
+- Macros da refeição.
 
-RODAPÉ LEGAL (Obrigatório constar ao final do documento no rodapé)
-
-AVISO LEGAL E NATUREZA DO DOCUMENTO: Este material constitui uma sugestão de reeducação alimentar com caráter meramente informativo e educativo. Este guia não substitui a prescrição de um Nutricionista ou acompanhamento Médico. O objetivo aqui é o suporte à performance e organização nutricional. O usuário declara estar ciente de que o equilíbrio metabólico é individual e que consultas clínicas são indispensáveis antes de qualquer alteração na dieta, especialmente em presença de patologias.
-IMPORTANTE: use exatamente o final do documento para que fique no ultimo espaço em baixo na folha complete com espaço em branco até que o aviso legal fique fielmente no final do documento, oculpando as ultimas linhas e coloque também a fonte: arial e o tamanho da fonte: 8, justificado e com a maior margem possivel)
-
-DATA: ${new Date().toLocaleString()}.`;
+RODAPÉ LEGAL: Ao final, adicione o aviso legal sobre caráter educativo e consulta médica necessária em fonte pequena.`;
 
         try {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${FINAL_KEY}` },
-                body: JSON.stringify({ model: "gpt-3.5-turbo", messages: [{role: "user", content: prompt}], temperature: 0.7 })
+                body: JSON.stringify({ 
+                    model: "gpt-3.5-turbo", 
+                    messages: [{role: "system", content: "Você é um nutricionista que só sugere refeições reais e palatáveis."}, {role: "user", content: prompt}], 
+                    temperature: 0.7 
+                })
             });
             
             const result = await response.json();
@@ -256,7 +194,7 @@ DATA: ${new Date().toLocaleString()}.`;
             baixarPDF(texto);
 
         } catch (e) {
-            alert("Erro ao processar. Verifique sua conexão.");
+            alert("Erro na conexão com a IA.");
         } finally {
             btn.innerText = "GERAR E BAIXAR PLANO";
             btn.disabled = false;
@@ -266,31 +204,17 @@ DATA: ${new Date().toLocaleString()}.`;
     function baixarPDF(conteudo) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        
-        doc.setFillColor(30, 30, 30);
-        doc.rect(0, 0, 210, 20, 'F');
-        doc.setTextColor(255, 215, 0);
-        doc.setFontSize(14);
-        doc.text("PLANO DE REEDUCAÇÃO ALIMENTAR PERSONALIZADO", 105, 13, { align: "center" });
-        
-        doc.setTextColor(40, 40, 40);
+        doc.setFont("arial", "normal");
         doc.setFontSize(10);
-        
         const lines = doc.splitTextToSize(conteudo, 180);
-        
-        let y = 30;
+        let y = 20;
         lines.forEach(line => {
-            if (y > 280) {
-                doc.addPage();
-                y = 20;
-            }
+            if (y > 280) { doc.addPage(); y = 20; }
             doc.text(line, 15, y);
-            y += 5;
+            y += 6;
         });
-
-        doc.save("Cardapio_Reeducacao.pdf");
+        doc.save("Meu_Plano_Alimentar.pdf");
     }
 </script>
 </body>
 </html>
-
