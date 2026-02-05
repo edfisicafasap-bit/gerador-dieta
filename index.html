@@ -90,19 +90,18 @@
     const p4 = '4_51KFJnhtk1lWuDrnuiIRywTy6ErSDai9Qn54A';
     const FINAL_KEY = p1 + p2 + p3 + p4;
 
-
-    // 1º PONTO: Alimentos reorganizados por categoria e ordem de comum/popularidade
     const alimentosPorCategoria = {
         "Carboidratos": ["Arroz branco", "Arroz integral", "Feijão", "Macarrão", "Batata inglesa", "Batata doce", "Pão de sal", "Pão integral", "Aveia", "Cuscuz", "Tapioca", "Mandioca", "Banana", "Maçã"],
         "Proteínas": ["Filé de frango", "Ovos", "Carne moída (Patinho)", "Tilápia/Peixe", "Frango desfiado", "Carne bovina magra", "Atum", "Omelete"],
         "Gorduras": ["Azeite de oliva", "Pasta de amendoim", "Abacate", "Castanhas", "Nozes", "Gema de ovo"],
         "Legumes e Verduras": ["Alface", "Tomate", "Brócolis", "Cenoura", "Chuchu", "Abobrinha", "Vagem", "Beterraba", "Pepino"],
         "Lácteos": ["Leite integral", "Leite desnatado", "Iogurte natural", "Queijo branco/Ricota", "Iogurte grego"],
-        "Suplementos": ["Whey Protein", "Albuminia", "Creatina"]
+        "Suplementos": ["Whey Protein", "Albuminia"]
     };
 
     function inicializarInterface() {
         const container = document.getElementById('categorias-container');
+        container.innerHTML = '';
         Object.keys(alimentosPorCategoria).forEach(cat => {
             const html = `
                 <details>
@@ -137,44 +136,36 @@
         btn.innerText = "IA ESTÁ COZINHANDO SEU PLANO...";
         btn.disabled = true;
 
-        const listaAlimentos = selecionados.map(i => i.value).join(', ');
+        const listaAlimentos = selecionados.map(i => i.value.toUpperCase()).join(', ');
         const peso = document.getElementById('peso').value;
         const cal = document.getElementById('calorias').value;
         const obj = document.getElementById('objetivo').value;
         const numRef = document.getElementById('num-refeicoes').value;
 
-        // 2º PONTO: Prompt atualizado com as regras rígidas de preparações e horários
-        const prompt = `Aja como um nutricionista esportivo. Crie um plano de ${cal} kcal para ${obj} (${peso}kg), dividido em ${numRef} refeições.
+        const prompt = `Aja como um nutricionista esportivo de precisão. Crie um plano de ${cal} kcal para ${obj} (${peso}kg), dividido em ${numRef} refeições.
 
-DIRETRIZES TÉCNICAS DE CÁLCULO (ESTRITAMENTE OBRIGATÓRIO):
-1. PROTEÍNA: Utilize entre 1.8g/kg e 2.2g/kg (ajuste conforme o objetivo: ${obj}).
-2. GORDURA: Utilize aproximadamente 1.0g/kg.
-3. CARBOIDRATOS: O restante das calorias deve ser preenchido com carboidratos.
-4. CALORIAS TOTAIS: O somatório final deve ser aproximadamente ${cal} kcal.
-5. FONTE DE DADOS: "Para os cálculos de macronutrientes e gramaturas de substituição, utilize estritamente as informações nutricionais baseadas em fontes científicas reconhecidas, priorizando a TACO (Tabela Brasileira de Composição de Alimentos - UNICAMP) ou a Tabela TBCA (USP). Não utilize estimativas genéricas.
+### LISTA DE ALIMENTOS PERMITIDOS (ESTRITAMENTE OBRIGATÓRIO): ###
+${listaAlimentos}
+### FIM DA LISTA ###
 
-REGRAS DE OURO DE PREPARAÇÃO:
-1. NUNCA entregue listas de alimentos soltos (ex: "Arroz, Frango, Azeite").
-2. SEMPRE transforme os alimentos em preparações reais.
-3. Use APENAS estes alimentos selecionados pelo usuário: [${listaAlimentos}].
+REGRAS CRÍTICAS:
+1. PROIBIDO usar qualquer alimento fora da lista acima. Se não estiver nela, não inclua.
+2. NUNCA entregue alimentos soltos. Sempre transforme em PREPARAÇÕES RECONHECÍVEIS (ex: Sanduíche, Omelete, Shake, Vitamina, Prato Completo).
+3. ESTRUTURA POR REFEIÇÃO: Para cada horário (Café, Lanche, Almoço, Jantar), forneça DUAS OPÇÕES (Opção A e Opção B).
+4. LOGICA GASTRONÔMICA:
+   - Café/Lanches: Máximo 3 itens. Proibido refeições pesadas como arroz/feijão.
+   - Almoço/Janta: Prato completo (Base carbo + Proteína + Legumes). Salada à vontade.
+5. SUBSTITUIÇÕES: Dentro de cada opção, coloque gramaturas equivalentes (Ex: 100g de Arroz ou Xg de Batata).
+6. CÁLCULO: Proteína: 1.8-2.2g/kg, Gordura: 1g/kg, Carbo: Restante. Use bases científicas (TACO/TBCA).
 
-LOGICA POR HORÁRIO:
-- CAFÉ DA MANHÃ: Máximo 3 itens. Devem ser preparações rápidas (Ex: Pão com ovo, Vitamina de fruta com leite/whey, Iogurte com aveia). PROIBIDO arroz ou carnes pesadas.
-- LANCHES: Práticos (Ex: Fruta com pasta de amendoim, Iogurte com aveia, Shake de whey).
-- ALMOÇO/JANTAR: Monte um prato completo. Base (Carbo) + Proteína + Legumes. O Arroz/Feijão/Batata deve ser a base. Sempre inclua "Salada à vontade".
+VALIDAÇÃO FINAL: Verifique se a refeição faz sentido para o horário. Não sugira "200g de aveia pura".
 
-SUBSTITUIÇÕES (OBRIGATÓRIO):
-Para cada Carbo e Proteína, ofereça a gramatura equivalente de outro alimento da lista do usuário.
-Ex: "100g de Arroz OU 120g de Batata Doce".
+ESTRUTURA DE RESPOSTA:
+REFEIÇÃO X - [NOME DO HORÁRIO]
+OPÇÃO A: [Nome da Preparação] + Gramaturas + Macros.
+OPÇÃO B: [Nome da Preparação Alternativa] + Gramaturas + Macros.
 
-VALIDAÇÃO: Antes de escrever cada linha, pergunte-se: "Isso parece uma refeição normal que um ser humano comeria neste horário?". Se for 200g de aveia pura ou frango no café da manhã (sem ser sanduíche), refaça.
-
-ESTRUTURA FINAL:
-Refeição X - [Nome do Horário]
-- Preparação (Gramaturas e equivalentes)
-- Macros da refeição.
-
-RODAPÉ LEGAL: Ao final, adicione o aviso legal sobre caráter educativo e consulta médica necessária em fonte pequena.`;
+RODAPÉ LEGAL: Ao final, adicione o aviso legal em fonte pequena.`;
 
         try {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -182,8 +173,11 @@ RODAPÉ LEGAL: Ao final, adicione o aviso legal sobre caráter educativo e consu
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${FINAL_KEY}` },
                 body: JSON.stringify({ 
                     model: "gpt-3.5-turbo", 
-                    messages: [{role: "system", content: "Você é um nutricionista que só sugere refeições reais e palatáveis."}, {role: "user", content: prompt}], 
-                    temperature: 0.7 
+                    messages: [
+                        {role: "system", content: "Você é um nutricionista robô restrito. Você nunca inventa ingredientes. Você só usa o que o usuário selecionou e sempre oferece duas opções de preparações reais por refeição."},
+                        {role: "user", content: prompt}
+                    ], 
+                    temperature: 0.2 
                 })
             });
             
