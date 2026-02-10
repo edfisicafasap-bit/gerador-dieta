@@ -34,16 +34,24 @@ module.exports = async (req, res) => {
 
             console.log(`✅ Pagamento aprovado para: ${emailUsuario}`);
 
-            // ATUALIZA NO SUPABASE
+            // ATUALIZA OU CRIA NO SUPABASE (UPSERT)
+            // O upsert evita o erro 500 caso o usuário não esteja pré-cadastrado
             const { error } = await supabase
                 .from('Usuarios_Dieta')
-                .update({ pago: true })
-                .eq('email', emailUsuario.toLowerCase().trim());
+                .upsert(
+                    { 
+                        email: emailUsuario.toLowerCase().trim(), 
+                        pago: true 
+                    },
+                    { onConflict: 'email' } // Usa o e-mail para decidir se cria ou atualiza
+                );
 
             if (error) {
-                console.error("❌ Erro ao atualizar Supabase:", error);
+                console.error("❌ Erro ao salvar no Supabase:", error.message);
+                // Retornamos 500 aqui para o Stripe saber que o banco falhou
+                return res.status(500).json({ error: error.message });
             } else {
-                console.log("🚀 Supabase atualizado com sucesso!");
+                console.log("🚀 Usuário atualizado/criado com sucesso!");
             }
         }
 
@@ -57,6 +65,6 @@ module.exports = async (req, res) => {
 // CONFIGURAÇÃO CRUCIAL PARA A VERCEL
 export const config = {
     api: {
-        bodyParser: false, // Impede que a Vercel quebre a assinatura do Stripe
+        bodyParser: false, // Necessário para validar a assinatura do Stripe
     },
 };
