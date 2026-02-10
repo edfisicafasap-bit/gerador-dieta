@@ -7,7 +7,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        /* MANTIDO SEU ESTILO ORIGINAL */
         body { background:#000; margin:0; font-family:Arial, sans-serif; color: #fff; padding-bottom: 30px; }
         .container { max-width:600px; margin:auto; padding:20px; background:#000; }
         h2 { color:#FFD700; text-align: center; margin-bottom: 5px; font-size: 19px; text-transform: uppercase; }
@@ -95,12 +94,10 @@
 </div>
 
 <script>
-    // CONFIGURAÇÕES SUPABASE
     const S_URL = 'https://xyqqngskrjzhxbsackul.supabase.co';
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cXFuZ3Nrcmp6aHhic2Fja3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NTI3NzksImV4cCI6MjA4NTUyODc3OX0.B90q1Jv-vodVIV_dLFUCOekyshrv3HekVpPugpPaHRI';
     const _supabase = supabase.createClient(S_URL, S_KEY);
 
-    // CHAVE OPENAI (SEGURA)
     const p1 = 'sk-proj-iTWUZ8Lsr4Sd1qKmuH1Rc43q4IgdchSvYHYJ_'; 
     const p2 = 'qmaLxHRh9JptNkpoYgGEP7gERjSntNWnyjgA-T3Bl';
     const p3 = 'bkFJP0F5nitDThUcrohRynDAQuU0F8vYQ-ARete';
@@ -139,10 +136,32 @@
     const preparosCarnes = ["Cozido", "Desfiado", "Moído", "Refogado", "Assado", "Na Airfryer", "Na frigideira", "De panela", "Grelhado"];
     const preparosPeixes = ["Grelhado", "Assado", "Cozido no vapor", "Empanado na airfryer", "Ensopado"];
 
-    // FUNÇÃO QUE INICIA TUDO
-    function inicializarTudo() {
+    async function inicializarTudo() {
         renderizarInterface();
         recuperarDadosSalvos();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('pago') === 'true') {
+            const emailSalvo = localStorage.getItem('email_verificacao');
+            if (emailSalvo) {
+                console.log("Retorno detectado. Verificando acesso automático...");
+                setTimeout(() => verificarAcessoAutomatico(emailSalvo), 2500);
+            }
+        }
+    }
+
+    async function verificarAcessoAutomatico(email) {
+        let { data, error } = await _supabase
+            .from('Usuarios_Dieta')
+            .select('*')
+            .eq('email', email.toLowerCase().trim())
+            .single();
+
+        if (data && data.pago === true) {
+            gerarDieta();
+        } else {
+            alert("Pagamento em processamento. Aguarde um instante e clique em Gerar Plano.");
+        }
     }
 
     function renderizarInterface() {
@@ -173,8 +192,7 @@
         });
     }
 
-    // SALVA AS ESCOLHAS PARA NÃO PERDER AO SAIR DA PÁGINA
-    function salvarProgressoLocal() {
+    function salvarProgressoLocal(emailInput = null) {
         const dados = {
             peso: document.getElementById('peso').value,
             calorias: document.getElementById('calorias').value,
@@ -185,20 +203,19 @@
             preparoPeixe: Array.from(document.querySelectorAll('input[name="preparo-peixe"]:checked')).map(i => i.value)
         };
         localStorage.setItem('rascunho_dieta', JSON.stringify(dados));
+        if (emailInput) {
+            localStorage.setItem('email_verificacao', emailInput.toLowerCase().trim());
+        }
     }
 
-    // RECUPERA QUANDO O USUÁRIO VOLTA
     function recuperarDadosSalvos() {
         const salvo = localStorage.getItem('rascunho_dieta');
         if (!salvo) return;
         const d = JSON.parse(salvo);
-        
         document.getElementById('peso').value = d.peso || '';
         document.getElementById('calorias').value = d.calorias || '';
         document.getElementById('num-refeicoes').value = d.refeicoes || '4';
         document.getElementById('objetivo').value = d.objetivo || 'Emagrecimento';
-        
-        // Marca os checkboxes salvos
         d.alimentos?.forEach(val => {
             const el = document.querySelector(`input[name="alimento"][value="${val}"]`);
             if (el) el.checked = true;
@@ -210,13 +227,10 @@
         if (alimentos.length < 5) return alert("Selecione pelo menos 5 alimentos!");
         if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
         
-        // Salva tudo antes de qualquer coisa
-        salvarProgressoLocal();
-
-        const emailAcesso = prompt("Digite seu e-mail para verificar o acesso:");
+        const emailAcesso = prompt("Digite seu e-mail para acesso:");
         if (!emailAcesso) return;
+        salvarProgressoLocal(emailAcesso);
 
-        // TENTA BUSCAR NO SUPABASE
         let { data, error } = await _supabase
             .from('Usuarios_Dieta')
             .select('*')
@@ -232,7 +246,7 @@
 
     async function iniciarCheckout(priceId) {
         try {
-            salvarProgressoLocal(); // Garante o salvamento final
+            salvarProgressoLocal();
             const response = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
