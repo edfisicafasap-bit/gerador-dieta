@@ -216,8 +216,34 @@
         document.getElementById('payment-overlay').style.display = 'none';
     }
 
-    function iniciarCheckout(priceId) {
-        alert("Enviando para o Stripe com o plano: " + priceId);
+    async function iniciarCheckout(priceId) {
+    try {
+        // 1. Avisa o usuário que está carregando
+        const btnUnica = document.querySelector("button[onclick*='UNICA']");
+        const btnAnual = document.querySelector("button[onclick*='ANUAL']");
+        if(btnUnica) btnUnica.innerText = "CARREGANDO...";
+        
+        // 2. Faz a chamada para a sua API na Vercel
+        const response = await fetch('/api/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ priceId: priceId })
+        });
+
+        const session = await response.json();
+        
+        // 3. Se a API retornar o link do Stripe, envia o usuário para lá
+        if (session.url) {
+            window.location.href = session.url;
+        } else {
+            alert("Erro ao iniciar pagamento: " + (session.error || "Tente novamente"));
+            if(btnUnica) btnUnica.innerText = "🥗 DIETA ÚNICA - R$ 9,90";
+        }
+    } catch (err) {
+        console.error("Erro no checkout:", err);
+        alert("Erro na conexão com o servidor de pagamento.");
+    }
+}
     }
 
     // --- SUA LÓGICA ORIGINAL DA IA MANTIDA ---
@@ -275,4 +301,5 @@
 </script>
 </body>
 </html>
+
 
