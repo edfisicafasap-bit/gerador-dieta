@@ -16,13 +16,12 @@
         button { width:100%; margin-top:30px; padding:18px; background:#FFD700; border:none; border-radius:8px; font-size:16px; font-weight:bold; color:#000; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
         button:disabled { background: #555; cursor: not-allowed; }
         
-        /* Nova Hierarquia de Menu */
         .categoria-pai { 
             color: #FFD700; 
             font-size: 15px; 
             font-weight: bold; 
             margin: 25px 0 10px 0; 
-            padding-left: 5px;
+            padding-left: 10px;
             text-transform: uppercase;
             border-left: 3px solid #FFD700;
         }
@@ -120,27 +119,26 @@
             "Feijão": ["Carioca", "Preto", "Branco", "Fradinho", "Vermelho"],
             "Macarrão": ["Comum (Sêmola)", "Integral", "De arroz", "Sem glúten"],
             "Cuscuz": ["De milho", "Nordestino", "Marroquino (Sêmola)", "Integral", "De arroz", "De quinoa"],
-            "Batata Inglesa": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Chips forno/airfryer", "Amassada com temperos", "Gratinada", "Frita na airfryer", "Em cubos"],
-            "Batata Doce": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Chips forno/airfryer", "Amassada com temperos", "Gratinada", "Frita na airfryer", "Em cubos"],
-            "Mandioca": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Chips forno/airfryer", "Amassada com temperos", "Gratinada", "Frita na airfryer", "Em cubos"],
-            "Pão": ["Francês", "Forma branco", "Forma integral", "Integral light", "Integral com grãos", "Australiano", "De leite", "Sírio", "De milho", "De batata", "De aveia", "Multigrãos", "De queijo"],
-            "Panqueca": ["Tradicional", "Americana", "De banana", "De aveia", "Integral", "De tapioca"],
-            "Tapioca": ["Tradicional", "Hidratada", "Integral", "De mandioca", "Granulada"],
+            "Batata Inglesa": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Chips forno/airfryer", "Frita na airfryer"],
+            "Batata Doce": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Frita na airfryer"],
+            "Mandioca": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Frita na airfryer"],
+            "Pão": ["Francês", "Forma branco", "Forma integral", "Integral com grãos", "Sírio", "De aveia"],
+            "Panqueca": ["Tradicional", "Americana", "De banana", "De aveia", "Integral"],
+            "Tapioca": ["Tradicional", "Hidratada", "Integral"],
             "Aveia": ["Em flocos finos", "Em flocos", "Farinha", "Farelo"],
-            "Flocão de Milho": ["Tradicional", "Pré-cozido", "Integral", "Enriquecido"]
+            "Flocão de Milho": ["Tradicional", "Integral"]
         },
         "PROTEÍNAS": {
             "Frango": ["Filé de peito", "Coxa e sobrecoxa (sem pele)"],
-            "Boi": ["Patinho", "Coxão mole", "Coxão duro", "Lagarto", "Músculo", "Alcatra limpa", "Acém limpo"],
-            "Porco": ["Lombo suíno", "Filé mignon suíno", "Pernil suíno sem gordura", "Bisteca suína magra"],
-            "Ovos": ["Ovos Inteiros", "Claras de Ovos", "Ovos de Codorna"],
-            "Preparo de Ovos": ["Mexidos", "Cozidos", "Omelete", "Pochê", "Frito na água", "Frito com fio de azeite", "Mexidos com tomate/cebola"]
+            "Boi": ["Patinho", "Coxão mole", "Coxão duro", "Lagarto", "Músculo", "Alcatra limpa"],
+            "Porco": ["Lombo suíno", "Filé mignon suíno"],
+            "Ovos": ["Mexidos", "Cozidos", "Omelete", "Pochê", "Frito na água", "Frito com um fio de azeite", "Mexidos com tomate e cebola"]
         },
         "PEIXES": {
-            "Peixes": ["Filé de tilápia", "Filé de merluza", "Filé de linguado", "Filé de pescada", "Filé de atum fresco"]
+            "Peixes": ["Filé de tilápia", "Filé de merluza", "Filé de linguado", "Filé de atum fresco"]
         },
         "GORDURAS": {
-            "Gorduras Boas": ["Abacate", "Azeite de oliva extra virgem", "Castanha-do-pará", "Castanha de caju", "Amêndoas", "Nozes", "Macadâmia", "Pistache", "Amendoim (natural)", "Pasta de amendoim integral", "Pasta de amêndoas", "Manteiga"]
+            "Gorduras Boas": ["Abacate", "Azeite de oliva extra virgem", "Castanha-do-pará", "Castanha de caju", "Amêndoas", "Nozes", "Amendoim (natural)", "Pasta de amendoim integral", "Manteiga"]
         },
         "LEGUMES": {
             "Legumes": ["Cenoura", "Brócolis", "Couve-flor", "Abobrinha", "Abóbora", "Berinjela", "Espinafre", "Chuchu", "Quiabo", "Vagem", "Pepino", "Beterraba", "Pimentão", "Couve"]
@@ -149,26 +147,23 @@
             "Frutas": ["Banana", "Maçã", "Mamão", "Laranja", "Abacaxi", "Melancia", "Melão", "Manga", "Morango", "Uva", "Goiaba", "Pêra", "Kiwi", "Caju", "Limão", "Acerola", "Tangerina", "Abacate"]
         },
         "SEMENTES": {
-            "Sementes": ["Chia", "Linhaça", "Semente de abóbora", "Semente de girassol", "Gergelim", "Quinoa (semente)", "Semente de abóbora japonesa (kabocha)"]
+            "Sementes": ["Chia", "Linhaça", "Semente de abóbora", "Semente de girassol", "Gergelim", "Quinoa (semente)"]
         },
         "OUTROS": {
-            "Outros": ["Peito de peru", "Iogurte", "Leite", "Ricota", "Queijo", "Whey", "Albumina", "Mel"]
+            "Outros": ["Peito de peru", "Iogurte Natural", "Leite Integral", "Leite Desnatado", "Ricota", "Queijo Minas", "Whey Protein", "Mel"]
         }
     };
 
-    const preparosCarnes = ["Cozido", "Desfiado", "Moído", "Refogado", "Assado", "Na Airfryer", "Na frigideira", "De panela", "Hambúrguer", "Grelhado"];
-    const preparosPeixes = ["Grelhado", "Assado", "Cozido no vapor", "Empanado na airfryer", "Ensopado", "Desfiado", "Em cubos"];
+    const preparosCarnes = ["Cozido", "Desfiado", "Moído", "Refogado", "Assado", "Na Airfryer", "Na frigideira", "De panela", "Grelhado"];
+    const preparosPeixes = ["Grelhado", "Assado", "Cozido no vapor", "Empanado na airfryer", "Ensopado"];
 
     function inicializarInterface() {
         const container = document.getElementById('categorias-container');
         container.innerHTML = '';
         
         for (let cat in estruturaAlimentos) {
-            // Título da categoria fixo
             let html = `<div class="categoria-pai">${cat}</div>`;
-            
             for (let sub in estruturaAlimentos[cat]) {
-                // Subgrupos expansíveis
                 html += `
                     <details>
                         <summary>${sub}</summary>
@@ -217,30 +212,21 @@
         if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
 
         const btn = document.getElementById('btn-gerar');
-        btn.innerText = "IA ESTÁ COZINHANDO SEU PLANO...";
+        btn.innerText = "IA ESTÁ PROCESSANDO...";
         btn.disabled = true;
 
-        const prompt = `Aja como um nutricionista esportivo de precisão. Crie um plano de ${document.getElementById('calorias').value} kcal para ${document.getElementById('objetivo').value} (${document.getElementById('peso').value}kg), dividido em ${document.getElementById('num-refeicoes').value} refeições.
+        const prompt = `Aja como um nutricionista esportivo. Crie um plano de ${document.getElementById('calorias').value} kcal para ${document.getElementById('objetivo').value} (${document.getElementById('peso').value}kg), em ${document.getElementById('num-refeicoes').value} refeições.
 
-### REGRAS CRÍTICAS E INVIOLÁVEIS ###
-1. SÓ use estes alimentos e preparos selecionados: ${alimentos.join(', ')}.
-2. PARA CARNES (Frango, Boi, Porco), USE APENAS estes preparos: ${prepsCarnes.join(', ')}.
-3. PARA PEIXES, USE APENAS estes preparos: ${prepsPeixes.join(', ')}.
-4. PARA OVOS, use os modos de preparo listados nos alimentos selecionados.
-5. PROIBIDO inventar qualquer alimento ou modo de preparo fora das listas acima.
-6. Monte pratos REAIS (ex: Sanduíche, Prato Feito, Omelete). 
-7. Entregue DUAS OPÇÕES (A e B) por refeição com gramaturas e macros.
-8. NUNCA entregue alimentos soltos. Sempre transforme em PREPARAÇÕES RECONHECÍVEIS (ex: Sanduíche, Omelete, Shake, Vitamina, Prato Completo).
-9. LOGICA GASTRONÔMICA:
-   - Café/Lanches: Máximo 3 itens. Proibido refeições pesadas como arroz/feijão.
-   - Almoço/Janta: Prato completo (Base carbo + Proteína + Legumes). coloque sempre "Salada à vontade".
-10. SUBSTITUIÇÕES: Dentro de cada opção, coloque gramaturas equivalentes com base em macros.
-11. ao final coloque o total de macros e caloria total da dieta.
-
-ESTRUTURA:
-REFEIÇÃO X - [NOME]
-OPÇÃO A: [Preparação] + Detalhes.
-OPÇÃO B: [Preparação Alternativa] + Detalhes.`;
+### REGRAS CRÍTICAS ###
+1. SÓ use estes alimentos selecionados: ${alimentos.join(', ')}.
+2. PARA CARNES, USE APENAS: ${prepsCarnes.join(', ')}.
+3. PARA PEIXES, USE APENAS: ${prepsPeixes.join(', ')}.
+4. PARA OVOS, o usuário já selecionou o modo de preparo na lista (ex: "Ovos: Mexidos"). Utilize exatamente como selecionado.
+5. Monte pratos reais e saborosos. Entregue OPÇÃO A e B para cada refeição.
+6. Almoço e Jantar devem ter Base (Carbo) + Proteína + Legumes + Salada à vontade.
+7. Lanches devem ser práticos (Sanduíches, Shakes, Frutas com aveia, Ovos mexidos, etc).
+8. Forneça gramaturas exatas e macros por refeição.
+9. Finalize com o total diário de Proteínas, Carboidratos e Gorduras em gramas e Calorias.`;
 
         try {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -249,7 +235,7 @@ OPÇÃO B: [Preparação Alternativa] + Detalhes.`;
                 body: JSON.stringify({ 
                     model: "gpt-3.5-turbo", 
                     messages: [
-                        {role: "system", content: "Você é um nutricionista robô que segue ordens estritas. Você nunca usa ingredientes ou métodos de preparo que não foram selecionados pelo usuário."},
+                        {role: "system", content: "Você é um nutricionista rigoroso que só usa os ingredientes e preparos permitidos pelo usuário."},
                         {role: "user", content: prompt}
                     ], 
                     temperature: 0.2 
@@ -282,9 +268,8 @@ OPÇÃO B: [Preparação Alternativa] + Detalhes.`;
             doc.text(line, 15, y);
             y += 6;
         });
-        doc.save("Meu_Plano_Alimentar.pdf");
+        doc.save("Plano_Alimentar.pdf");
     }
 </script>
 </body>
 </html>
-
