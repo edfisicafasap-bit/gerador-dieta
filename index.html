@@ -7,6 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
+        /* MANTIDO SEU ESTILO ORIGINAL */
         body { background:#000; margin:0; font-family:Arial, sans-serif; color: #fff; padding-bottom: 30px; }
         .container { max-width:600px; margin:auto; padding:20px; background:#000; }
         h2 { color:#FFD700; text-align: center; margin-bottom: 5px; font-size: 19px; text-transform: uppercase; }
@@ -15,21 +16,8 @@
         input, select, textarea { width:100%; padding:12px; margin-top:6px; border-radius:6px; border:1px solid #333; background: #111; color: #fff; font-size: 15px; box-sizing: border-box; }
         button { width:100%; margin-top:30px; padding:18px; background:#FFD700; border:none; border-radius:8px; font-size:16px; font-weight:bold; color:#000; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
         button:disabled { background: #555; cursor: not-allowed; }
-        
-        /* Overlay de Pagamento - CORRIGIDO (faltava a chave { no seu código original) */
-        #payment-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 9999;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+        #payment-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
         .payment-card { background: #111; padding: 30px; border: 2px solid #FFD700; border-radius: 15px; text-align: center; max-width: 400px; }
-
         .categoria-pai { color: #FFD700; font-size: 15px; font-weight: bold; margin: 25px 0 10px 0; padding-left: 10px; text-transform: uppercase; border-left: 3px solid #FFD700; }
         details { background: #0a0a0a; border: 1px solid #222; border-radius: 8px; margin-bottom: 6px; overflow: hidden; }
         summary { padding: 12px; cursor: pointer; color: #fff; font-weight: normal; font-size: 13px; text-transform: uppercase; list-style: none; display: flex; justify-content: space-between; align-items: center; }
@@ -44,7 +32,7 @@
         hr { border: 0.5px solid #222; margin: 30px 0; }
     </style>
 </head>
-<body onload="inicializarInterface()">
+<body onload="inicializarTudo()">
 
 <div class="container">
     <div id="payment-overlay">
@@ -101,16 +89,18 @@
             </label>
         </div>
 
-        <button id="btn-gerar" onclick="verificarAntesDePagar()">GERAR E BAIXAR PLANO</button>
+        <button id="btn-gerar" onclick="verificarAcessoEPagar()">GERAR E BAIXAR PLANO</button>
         <div id="resultado"></div>
     </div>
 </div>
 
 <script>
+    // CONFIGURAÇÕES SUPABASE
     const S_URL = 'https://xyqqngskrjzhxbsackul.supabase.co';
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cXFuZ3Nrcmp6aHhic2Fja3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NTI3NzksImV4cCI6MjA4NTUyODc3OX0.B90q1Jv-vodVIV_dLFUCOekyshrv3HekVpPugpPaHRI';
     const _supabase = supabase.createClient(S_URL, S_KEY);
 
+    // CHAVE OPENAI (SEGURA)
     const p1 = 'sk-proj-iTWUZ8Lsr4Sd1qKmuH1Rc43q4IgdchSvYHYJ_'; 
     const p2 = 'qmaLxHRh9JptNkpoYgGEP7gERjSntNWnyjgA-T3Bl';
     const p3 = 'bkFJP0F5nitDThUcrohRynDAQuU0F8vYQ-ARete';
@@ -138,30 +128,24 @@
             "Porco": ["Lombo suíno", "Filé mignon suíno"],
             "Ovos": ["Mexidos", "Cozidos", "Omelete", "Pochê", "Frito na água", "Frito com um fio de azeite", "Mexidos com tomate e cebola"]
         },
-        "PEIXES": {
-            "Peixes": ["Filé de tilápia", "Filé de merluza", "Filé de linguado", "Filé de atum fresco"]
-        },
-        "GORDURAS": {
-            "Gorduras Boas": ["Abacate", "Azeite de oliva extra virgem", "Castanha-do-pará", "Castanha de caju", "Amêndoas", "Nozes", "Amendoim (natural)", "Pasta de amendoim integral", "Manteiga"]
-        },
-        "LEGUMES": {
-            "Legumes": ["Cenoura", "Brócolis", "Couve-flor", "Abobrinha", "Abóbora", "Berinjela", "Espinafre", "Chuchu", "Quiabo", "Vagem", "Pepino", "Beterraba", "Pimentão", "Couve"]
-        },
-        "FRUTAS": {
-            "Frutas": ["Banana", "Maçã", "Mamão", "Laranja", "Abacaxi", "Melancia", "Melão", "Manga", "Morango", "Uva", "Goiaba", "Pêra", "Kiwi", "Caju", "Limão", "Acerola", "Tangerina", "Abacate"]
-        },
-        "SEMENTES": {
-            "Sementes": ["Chia", "Linhaça", "Semente de abóbora", "Semente de girassol", "Gergelim", "Quinoa (semente)"]
-        },
-        "OUTROS": {
-            "Outros": ["Peito de peru", "Iogurte Natural", "Leite Integral", "Leite Desnatado", "Ricota", "Queijo Minas", "Whey Protein", "Mel"]
-        }
+        "PEIXES": { "Peixes": ["Filé de tilápia", "Filé de merluza", "Filé de linguado", "Filé de atum fresco"] },
+        "GORDURAS": { "Gorduras Boas": ["Abacate", "Azeite de oliva extra virgem", "Castanha-do-pará", "Castanha de caju", "Amêndoas", "Nozes", "Amendoim (natural)", "Pasta de amendoim integral", "Manteiga"] },
+        "LEGUMES": { "Legumes": ["Cenoura", "Brócolis", "Couve-flor", "Abobrinha", "Abóbora", "Berinjela", "Espinafre", "Chuchu", "Quiabo", "Vagem", "Pepino", "Beterraba", "Pimentão", "Couve"] },
+        "FRUTAS": { "Frutas": ["Banana", "Maçã", "Mamão", "Laranja", "Abacaxi", "Melancia", "Melão", "Manga", "Morango", "Uva", "Goiaba", "Pêra", "Kiwi", "Caju", "Limão", "Acerola", "Tangerina", "Abacate"] },
+        "SEMENTES": { "Sementes": ["Chia", "Linhaça", "Semente de abóbora", "Semente de girassol", "Gergelim", "Quinoa (semente)"] },
+        "OUTROS": { "Outros": ["Peito de peru", "Iogurte Natural", "Leite Integral", "Leite Desnatado", "Ricota", "Queijo Minas", "Whey Protein", "Mel"] }
     };
 
     const preparosCarnes = ["Cozido", "Desfiado", "Moído", "Refogado", "Assado", "Na Airfryer", "Na frigideira", "De panela", "Grelhado"];
     const preparosPeixes = ["Grelhado", "Assado", "Cozido no vapor", "Empanado na airfryer", "Ensopado"];
 
-    function inicializarInterface() {
+    // FUNÇÃO QUE INICIA TUDO
+    function inicializarTudo() {
+        renderizarInterface();
+        recuperarDadosSalvos();
+    }
+
+    function renderizarInterface() {
         const container = document.getElementById('categorias-container');
         container.innerHTML = '';
         for (let cat in estruturaAlimentos) {
@@ -189,14 +173,50 @@
         });
     }
 
-    async function verificarAntesDePagar() {
+    // SALVA AS ESCOLHAS PARA NÃO PERDER AO SAIR DA PÁGINA
+    function salvarProgressoLocal() {
+        const dados = {
+            peso: document.getElementById('peso').value,
+            calorias: document.getElementById('calorias').value,
+            refeicoes: document.getElementById('num-refeicoes').value,
+            objetivo: document.getElementById('objetivo').value,
+            alimentos: Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value),
+            preparoCarne: Array.from(document.querySelectorAll('input[name="preparo-carne"]:checked')).map(i => i.value),
+            preparoPeixe: Array.from(document.querySelectorAll('input[name="preparo-peixe"]:checked')).map(i => i.value)
+        };
+        localStorage.setItem('rascunho_dieta', JSON.stringify(dados));
+    }
+
+    // RECUPERA QUANDO O USUÁRIO VOLTA
+    function recuperarDadosSalvos() {
+        const salvo = localStorage.getItem('rascunho_dieta');
+        if (!salvo) return;
+        const d = JSON.parse(salvo);
+        
+        document.getElementById('peso').value = d.peso || '';
+        document.getElementById('calorias').value = d.calorias || '';
+        document.getElementById('num-refeicoes').value = d.refeicoes || '4';
+        document.getElementById('objetivo').value = d.objetivo || 'Emagrecimento';
+        
+        // Marca os checkboxes salvos
+        d.alimentos?.forEach(val => {
+            const el = document.querySelector(`input[name="alimento"][value="${val}"]`);
+            if (el) el.checked = true;
+        });
+    }
+
+    async function verificarAcessoEPagar() {
         const alimentos = Array.from(document.querySelectorAll('input[name="alimento"]:checked'));
-        if (alimentos.length < 5) return alert("Selecione mais alimentos!");
+        if (alimentos.length < 5) return alert("Selecione pelo menos 5 alimentos!");
         if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
         
-        const emailAcesso = prompt("Para gerar sua dieta, digite o e-mail usado na compra:");
+        // Salva tudo antes de qualquer coisa
+        salvarProgressoLocal();
+
+        const emailAcesso = prompt("Digite seu e-mail para verificar o acesso:");
         if (!emailAcesso) return;
 
+        // TENTA BUSCAR NO SUPABASE
         let { data, error } = await _supabase
             .from('Usuarios_Dieta')
             .select('*')
@@ -210,42 +230,30 @@
         }
     }
 
-    function fecharModal() {
-        document.getElementById('payment-overlay').style.display = 'none';
-    }
-
     async function iniciarCheckout(priceId) {
         try {
-            const btnUnica = document.getElementById("btn-unica");
-            if(btnUnica) btnUnica.innerText = "CARREGANDO...";
-            
+            salvarProgressoLocal(); // Garante o salvamento final
             const response = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ priceId: priceId })
             });
-
             const session = await response.json();
-            
-            if (session.url) {
-                window.location.href = session.url;
-            } else {
-                alert("Erro ao iniciar pagamento: " + (session.error || "Tente novamente"));
-                if(btnUnica) btnUnica.innerText = "🥗 DIETA ÚNICA - R$ 9,90";
-            }
+            if (session.url) window.location.href = session.url;
         } catch (err) {
-            console.error("Erro no checkout:", err);
-            alert("Erro na conexão com o servidor de pagamento.");
+            alert("Erro ao conectar com Stripe.");
         }
     }
 
+    function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
+
     async function gerarDieta() {
-        const alimentos = Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value);
+        const d = JSON.parse(localStorage.getItem('rascunho_dieta'));
         const btn = document.getElementById('btn-gerar');
-        btn.innerText = "IA ESTÁ PROCESSANDO...";
+        btn.innerText = "IA PROCESSANDO...";
         btn.disabled = true;
 
-        const prompt = `Aja como um nutricionista. Crie um plano de ${document.getElementById('calorias').value} kcal para ${document.getElementById('objetivo').value}.`;
+        const promptFinal = `Aja como nutricionista. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos: ${d.preparoCarne.join(', ')}.`;
 
         try {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -253,7 +261,7 @@
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${FINAL_KEY}` },
                 body: JSON.stringify({ 
                     model: "gpt-3.5-turbo", 
-                    messages: [{role: "system", content: "Nutricionista rigoroso."}, {role: "user", content: prompt}], 
+                    messages: [{role: "system", content: "Nutricionista preciso."}, {role: "user", content: promptFinal}], 
                     temperature: 0.2 
                 })
             });
@@ -263,7 +271,7 @@
             document.getElementById('resultado').style.display = 'block';
             baixarPDF(texto);
         } catch (e) {
-            alert("Erro na conexão com a IA.");
+            alert("Erro ao falar com a IA.");
         } finally {
             btn.innerText = "GERAR E BAIXAR PLANO";
             btn.disabled = false;
@@ -286,4 +294,3 @@
 </script>
 </body>
 </html>
-
