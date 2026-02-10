@@ -123,7 +123,6 @@
             "Batata Doce": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Frita na airfryer"],
             "Mandioca": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Frita na airfryer"],
             "Pão": ["Francês", "Forma branco", "Forma integral", "Integral com grãos", "Sírio", "De aveia"],
-            "Panqueca": ["Tradicional", "Americana", "De banana", "De aveia", "Integral"],
             "Tapioca": ["Tradicional", "Hidratada", "Integral"],
             "Aveia": ["Em flocos finos", "Em flocos", "Farinha", "Farelo"],
             "Flocão de Milho": ["Tradicional", "Integral"]
@@ -224,9 +223,26 @@
 4. PARA OVOS, o usuário já selecionou o modo de preparo na lista (ex: "Ovos: Mexidos"). Utilize exatamente como selecionado.
 5. Monte pratos reais e saborosos. Entregue OPÇÃO A e B para cada refeição.
 6. Almoço e Jantar devem ter Base (Carbo) + Proteína + Legumes + Salada à vontade.
+6.1 REGRA OBRIGATÓRIA PARA ALMOÇO E JANTAR. CRIE UMA OPÇÃO COM ARROZ (CASO SEJA SELECIONADO E CASO SEJA SELECIONADO O ARROZ E O FEIJÃO, DEVE TER OBRIGATÓRIAMENTE A REFEIÇÃO PRINCIPAL DO ALMOÇO E DA JANTA O ARROZ E FEIJAO. COLOQUE A OPÇÃO "B" SEM O ARROZ E SEM O FEIJÃO, MAS A OPÇÃO "A" DEVE SER OBRIGATÓRIAMENTE ARROZ E FEIJAO CASO SELECIONADOS, CASO NAO, O ARROZ).
 7. Lanches devem ser práticos (Sanduíches, Shakes, Frutas com aveia, Ovos mexidos, etc).
 8. Forneça gramaturas exatas e macros por refeição.
-9. Finalize com o total diário de Proteínas, Carboidratos e Gorduras em gramas e Calorias.`;
+9. Monte pratos REAIS (ex: Sanduíche, Prato Feito, Omelete). 
+10. Entregue DUAS OPÇÕES (A e B) por refeição com gramaturas e macros.
+11. NUNCA entregue alimentos soltos. Sempre transforme em PREPARAÇÕES RECONHECÍVEIS (ex: Sanduíche, Omelete, Shake, Vitamina, Prato Completo).
+12. LOGICA GASTRONÔMICA:
+   - Café/Lanches: Máximo 3 itens. Proibido refeições pesadas como arroz/feijão.
+   - Almoço/Janta: Prato completo (Base carbo + Proteína + Legumes). coloque sempre "Salada à vontade".
+13. SUBSTITUIÇÕES: Dentro de cada opção, coloque gramaturas equivalentes com base em macros.
+14. ao final coloque o total de macros e caloria total da dieta.
+15. Finalize com o total diário de Proteínas, Carboidratos e Gorduras em gramas e Calorias.`;
+
+REGRAS ESPECÍFICAS DE MONTAGEM:
+- Café da manhã: 1 carboidrato + 1 proteína + 1 fruta + 1 gordura boa.
+- Almoço: Arroz e Feijão (obrigatório se selecionado) + 1 proteína principal + legumes à vontade + 1 azeite (opcional). Crie também uma "OPÇÃO SEM ARROZ E FEIJÃO" substituindo por outro carbo da lista principal.
+- Café da tarde: 1 proteína + 1 carboidrato + (opcional) 1 fruta ou gordura.
+- Jantar: 1 proteína + legumes + carboidrato moderado. Crie também uma "OPÇÃO SEM ARROZ E FEIJÃO" substituindo por outro carbo da lista principal.
+- Ceia (se houver): 1 proteína leve + porção pequena de fruta.
+        
 
         try {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -273,3 +289,4 @@
 </script>
 </body>
 </html>
+
