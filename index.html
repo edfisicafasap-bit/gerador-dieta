@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sujestão de Reeducação Alimentar IA</title>
+    <title>Sugestão de Reeducação Alimentar IA</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
@@ -16,12 +16,22 @@
         button { width:100%; margin-top:30px; padding:18px; background:#FFD700; border:none; border-radius:8px; font-size:16px; font-weight:bold; color:#000; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
         button:disabled { background: #555; cursor: not-allowed; }
         
-        details { background: #0a0a0a; border: 1px solid #222; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
-        summary { padding: 15px; cursor: pointer; color: #FFD700; font-weight: bold; font-size: 13px; text-transform: uppercase; list-style: none; display: flex; justify-content: space-between; align-items: center; }
-        summary::after { content: '▶'; font-size: 10px; transition: 0.3s; }
-        details[open] summary::after { transform: rotate(90deg); }
+        /* Nova Hierarquia de Menu */
+        .categoria-pai { 
+            color: #FFD700; 
+            font-size: 15px; 
+            font-weight: bold; 
+            margin: 25px 0 10px 0; 
+            padding-left: 5px;
+            text-transform: uppercase;
+            border-left: 3px solid #FFD700;
+        }
 
-        .subgrupo-titulo { color: #aaa; font-size: 12px; margin: 10px 0 5px 12px; text-transform: uppercase; border-left: 2px solid #FFD700; padding-left: 8px; }
+        details { background: #0a0a0a; border: 1px solid #222; border-radius: 8px; margin-bottom: 6px; overflow: hidden; }
+        summary { padding: 12px; cursor: pointer; color: #fff; font-weight: normal; font-size: 13px; text-transform: uppercase; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+        summary::after { content: '▼'; font-size: 10px; color: #FFD700; transition: 0.3s; }
+        details[open] summary::after { transform: rotate(180deg); }
+
         .grid-alimentos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 12px 12px 12px; }
         .item-alimento { display: flex; align-items: center; font-size: 12px; color: #bbb; cursor: pointer; padding: 4px 0; }
         .item-alimento input { width: auto; margin: 0 8px 0 0; }
@@ -119,10 +129,12 @@
             "Aveia": ["Em flocos finos", "Em flocos", "Farinha", "Farelo"],
             "Flocão de Milho": ["Tradicional", "Pré-cozido", "Integral", "Enriquecido"]
         },
-        "PROTEÍNAS (FRANGO/BOI/PORCO)": {
+        "PROTEÍNAS": {
             "Frango": ["Filé de peito", "Coxa e sobrecoxa (sem pele)"],
             "Boi": ["Patinho", "Coxão mole", "Coxão duro", "Lagarto", "Músculo", "Alcatra limpa", "Acém limpo"],
-            "Porco": ["Lombo suíno", "Filé mignon suíno", "Pernil suíno sem gordura", "Bisteca suína magra"]
+            "Porco": ["Lombo suíno", "Filé mignon suíno", "Pernil suíno sem gordura", "Bisteca suína magra"],
+            "Ovos": ["Ovos Inteiros", "Claras de Ovos", "Ovos de Codorna"],
+            "Preparo de Ovos": ["Mexidos", "Cozidos", "Omelete", "Pochê", "Frito na água", "Frito com fio de azeite", "Mexidos com tomate/cebola"]
         },
         "PEIXES": {
             "Peixes": ["Filé de tilápia", "Filé de merluza", "Filé de linguado", "Filé de pescada", "Filé de atum fresco"]
@@ -152,27 +164,36 @@
         container.innerHTML = '';
         
         for (let cat in estruturaAlimentos) {
-            let html = `<details><summary>${cat}</summary>`;
+            // Título da categoria fixo
+            let html = `<div class="categoria-pai">${cat}</div>`;
+            
             for (let sub in estruturaAlimentos[cat]) {
-                html += `<div class="subgrupo-titulo">${sub}</div><div class="grid-alimentos">`;
+                // Subgrupos expansíveis
+                html += `
+                    <details>
+                        <summary>${sub}</summary>
+                        <div class="grid-alimentos">`;
+                
                 estruturaAlimentos[cat][sub].forEach(item => {
                     html += `
                         <label class="item-alimento">
                             <input type="checkbox" name="alimento" value="${sub}: ${item}"> ${item}
                         </label>`;
                 });
-                html += `</div>`;
+                
+                html += `</div></details>`;
             }
-            html += `</details>`;
             container.innerHTML += html;
         }
 
         const carnePrepCont = document.getElementById('preparo-carnes-container');
+        carnePrepCont.innerHTML = '';
         preparosCarnes.forEach(p => {
             carnePrepCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-carne" value="${p}"> ${p}</label>`;
         });
 
         const peixePrepCont = document.getElementById('preparo-peixes-container');
+        peixePrepCont.innerHTML = '';
         preparosPeixes.forEach(p => {
             peixePrepCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-peixe" value="${p}"> ${p}</label>`;
         });
@@ -202,23 +223,19 @@
         const prompt = `Aja como um nutricionista esportivo de precisão. Crie um plano de ${document.getElementById('calorias').value} kcal para ${document.getElementById('objetivo').value} (${document.getElementById('peso').value}kg), dividido em ${document.getElementById('num-refeicoes').value} refeições.
 
 ### REGRAS CRÍTICAS E INVIOLÁVEIS ###
-1. SÓ use estes alimentos: ${alimentos.join(', ')}.
+1. SÓ use estes alimentos e preparos selecionados: ${alimentos.join(', ')}.
 2. PARA CARNES (Frango, Boi, Porco), USE APENAS estes preparos: ${prepsCarnes.join(', ')}.
 3. PARA PEIXES, USE APENAS estes preparos: ${prepsPeixes.join(', ')}.
-4. PROIBIDO inventar qualquer alimento ou modo de preparo fora das listas acima.
-5. Monte pratos REAIS (ex: Sanduíche, Prato Feito, Omelete). 
-6. Entregue DUAS OPÇÕES (A e B) por refeição com gramaturas e macros.
-7. PROIBIDO usar qualquer alimento fora da lista acima. Se não estiver nela, não inclua.
-8. NUNCA entregue alimentos soltos. Sempre transforme em PREPARAÇÕES RECONHECÍVEIS, REAIS E QUE FAZEM SENTIDO (ex: Sanduíche, Omelete, Shake, Vitamina, Prato Completo).
-9. ESTRUTURA POR REFEIÇÃO: Para cada horário (Café, Lanche, Almoço, Jantar), forneça DUAS OPÇÕES (Opção A e Opção B).
-10. LOGICA GASTRONÔMICA:
-   - Café/Lanches: Máximo 3 itens. Proibido refeições pesadas como arroz/feijão. crie refeições reais.
+4. PARA OVOS, use os modos de preparo listados nos alimentos selecionados.
+5. PROIBIDO inventar qualquer alimento ou modo de preparo fora das listas acima.
+6. Monte pratos REAIS (ex: Sanduíche, Prato Feito, Omelete). 
+7. Entregue DUAS OPÇÕES (A e B) por refeição com gramaturas e macros.
+8. NUNCA entregue alimentos soltos. Sempre transforme em PREPARAÇÕES RECONHECÍVEIS (ex: Sanduíche, Omelete, Shake, Vitamina, Prato Completo).
+9. LOGICA GASTRONÔMICA:
+   - Café/Lanches: Máximo 3 itens. Proibido refeições pesadas como arroz/feijão.
    - Almoço/Janta: Prato completo (Base carbo + Proteína + Legumes). coloque sempre "Salada à vontade".
-11. SUBSTITUIÇÕES: Dentro de cada opção, coloque gramaturas equivalentes (Ex: 100 g de arroz branco cozido → ~28 g de carbo ou  165 g de batata cozida = 28 g carbo . utilize sempre como referencia a gramatura do nutriente principal, se é fonte de carbo compare o carbo, porem sem fugir muito das calorias)
-12. CÁLCULO: Proteína: 1.8-2.2g/kg, Gordura: 1g/kg, Carbo: Restante. Use bases científicas (TACO/TBCA). OBRIGATÓRIO: NÃO INVENTE OU CRIE INFORMAÇÕES FICTICIAS SOBRE OS ALIMENTOS!
-
-VALIDAÇÃO FINAL: se pergunte se a refeição faz sentido e se faz sentido para o horário. caso não, refaça.
-
+10. SUBSTITUIÇÕES: Dentro de cada opção, coloque gramaturas equivalentes com base em macros.
+11. ao final coloque o total de macros e caloria total da dieta.
 
 ESTRUTURA:
 REFEIÇÃO X - [NOME]
@@ -270,4 +287,3 @@ OPÇÃO B: [Preparação Alternativa] + Detalhes.`;
 </script>
 </body>
 </html>
-
