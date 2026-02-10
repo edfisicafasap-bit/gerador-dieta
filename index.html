@@ -190,13 +190,26 @@
         });
     }
 
-    // --- LÓGICA DE BLOQUEIO ---
-    function verificarAntesDePagar() {
+    // --- LÓGICA DE BLOQUEIO ALTERADA ---
+    async function verificarAntesDePagar() {
         const alimentos = Array.from(document.querySelectorAll('input[name="alimento"]:checked'));
         if (alimentos.length < 5) return alert("Selecione mais alimentos!");
         if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
         
-        document.getElementById('payment-overlay').style.display = 'flex';
+        const emailAcesso = prompt("Para gerar sua dieta, digite o e-mail usado na compra:");
+        if (!emailAcesso) return;
+
+        let { data, error } = await _supabase
+            .from('Usuarios_Dieta')
+            .select('*')
+            .eq('email', emailAcesso.toLowerCase().trim())
+            .single();
+
+        if (data && data.pago === true) {
+            gerarDieta();
+        } else {
+            document.getElementById('payment-overlay').style.display = 'flex';
+        }
     }
 
     function fecharModal() {
@@ -205,7 +218,6 @@
 
     function iniciarCheckout(priceId) {
         alert("Enviando para o Stripe com o plano: " + priceId);
-        // Aqui entraremos com a API da Vercel no próximo passo
     }
 
     // --- SUA LÓGICA ORIGINAL DA IA MANTIDA ---
