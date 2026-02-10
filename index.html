@@ -107,6 +107,9 @@
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cXFuZ3Nrcmp6aHhic2Fja3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NTI3NzksImV4cCI6MjA4NTUyODc3OX0.B90q1Jv-vodVIV_dLFUCOekyshrv3HekVpPugpPaHRI';
     const _supabase = supabase.createClient(S_URL, S_KEY);
 
+    // Variável para armazenar o usuário que logou
+    let usuarioLogado = null;
+
     const p1 = 'sk-proj-iTWUZ8Lsr4Sd1qKmuH1Rc43q4IgdchSvYHYJ_'; 
     const p2 = 'qmaLxHRh9JptNkpoYgGEP7gERjSntNWnyjgA-T3Bl';
     const p3 = 'bkFJP0F5nitDThUcrohRynDAQuU0F8vYQ-ARete';
@@ -194,14 +197,59 @@
         });
     }
 
+    // --- LOGICA DE ACESSO E PAGAMENTO ---
+
     async function verificarAcesso() {
         const email = document.getElementById('user-email').value.trim().toLowerCase();
-        let { data } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', email).single();
-        if (!data) return alert("E-mail não autorizado!");
-        document.getElementById('login-section').style.display = 'none';
-        document.getElementById('dieta-section').style.display = 'block';
-        inicializarInterface();
+        if (!email) return alert("Por favor, digite seu e-mail.");
+
+        let { data, error } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', email).single();
+        
+        if (error || !data) {
+            return alert("E-mail não autorizado! Cadastre-se para acessar.");
+        }
+
+        usuarioLogado = data; // Armazena o ID e os dados do usuário
+
+        // Verifica se o campo 'pago' é true no Supabase
+        if (data.pago === true) {
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('dieta-section').style.display = 'block';
+            inicializarInterface();
+        } else {
+            mostrarOpcoesPagamento();
+        }
     }
+
+    function mostrarOpcoesPagamento() {
+        const loginSection = document.getElementById('login-section');
+        loginSection.innerHTML = `
+            <h2>Escolha seu Plano</h2>
+            <p class="subtitle">Seu acesso ainda não foi liberado. Selecione uma opção abaixo para começar agora mesmo:</p>
+            
+            <button onclick="iniciarCheckout('price_ID_DA_DIETA_UNICA')">
+                🥗 DIETA ÚNICA - R$ 9,90
+            </button>
+            
+            <button style="background: #FFF; color: #000; margin-top: 10px;" 
+                    onclick="iniciarCheckout('price_ID_DO_PLANO_ANUAL')">
+                📅 PLANO ANUAL - R$ 29,90
+            </button>
+            
+            <p style="font-size: 12px; margin-top: 25px; cursor:pointer; color: #FFD700; text-decoration: underline;" 
+               onclick="location.reload()">
+                ← Tentar outro e-mail
+            </p>
+        `;
+    }
+
+    function iniciarCheckout(priceId) {
+        // No Passo 3, vamos substituir esse alerta pela chamada real do Stripe
+        alert("Iniciando checkout para: " + priceId + "\nID do Usuário: " + usuarioLogado.id);
+        console.log("Próximo passo: Criar a API Route para redirecionar para o Stripe.");
+    }
+
+    // --- LOGICA DA IA E PDF ---
 
     async function gerarDieta() {
         const alimentos = Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value);
