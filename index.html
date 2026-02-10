@@ -16,18 +16,19 @@
         button { width:100%; margin-top:30px; padding:18px; background:#FFD700; border:none; border-radius:8px; font-size:16px; font-weight:bold; color:#000; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
         button:disabled { background: #555; cursor: not-allowed; }
         
-        /* Estilo para o Modal de Pagamento */
+        /* Overlay de Pagamento */
         #payment-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95);
-            z-index: 1000;
+            z-index: 9999;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            text-align: center;
+            padding: 20px;
         }
-        .payment-card { background: #111; padding: 30px; border: 1px solid #FFD700; border-radius: 12px; width: 90%; max-width: 400px; }
+        .payment-card { background: #111; padding: 30px; border: 2px solid #FFD700; border-radius: 15px; text-align: center; max-width: 400px; }
 
         .categoria-pai { color: #FFD700; font-size: 15px; font-weight: bold; margin: 25px 0 10px 0; padding-left: 10px; text-transform: uppercase; border-left: 3px solid #FFD700; }
         details { background: #0a0a0a; border: 1px solid #222; border-radius: 8px; margin-bottom: 6px; overflow: hidden; }
@@ -48,25 +49,17 @@
 <div class="container">
     <div id="payment-overlay">
         <div class="payment-card">
-            <h2 style="font-size: 22px;">🚀 QUASE LÁ!</h2>
-            <p style="color: #ccc; font-size: 14px;">Sua dieta personalizada foi estruturada pela nossa IA. Libere o acesso para visualizar e baixar agora.</p>
-            
-            <button onclick="iniciarCheckout('price_ID_DA_DIETA_UNICA')">
-                🥗 LIBERAR DIETA - R$ 9,90
-            </button>
-            
-            <button style="background: #FFF; color: #000; margin-top: 10px;" 
-                    onclick="iniciarCheckout('price_ID_DO_PLANO_ANUAL')">
-                📅 PLANO ANUAL - R$ 29,90
-            </button>
-
-            <p style="font-size: 11px; margin-top: 20px; color: #777; cursor: pointer;" onclick="fecharModal()">Voltar e editar dados</p>
+            <h2 style="font-size: 24px; color: #FFD700;">PLANILHA PRONTA! 🚀</h2>
+            <p style="color: #eee; margin-bottom: 20px;">Nossa IA já estruturou seu plano. Escolha uma opção para liberar o acesso agora:</p>
+            <button onclick="iniciarCheckout('price_123_UNICA')">🥗 DIETA ÚNICA - R$ 9,90</button>
+            <button style="background: #fff; color: #000; margin-top: 10px;" onclick="iniciarCheckout('price_456_ANUAL')">📅 PLANO ANUAL - R$ 29,90</button>
+            <p style="margin-top: 20px; font-size: 12px; color: #888; cursor: pointer;" onclick="fecharModal()">← Voltar e editar</p>
         </div>
     </div>
 
     <div id="dieta-section">
-        <h2>🍎 Reeducação Alimentar IA</h2>
-        <p class="subtitle">Personalize seu plano abaixo</p>
+        <h2>🍎 Reeducação Alimentar</h2>
+        <p class="subtitle">Personalize seu plano sem custos iniciais</p>
         
         <label>Seu Peso Atual (kg)</label>
         <input type="number" id="peso" placeholder="Ex: 80">
@@ -94,12 +87,12 @@
 
         <div class="secao-especial">
             <h4>🍖 PREPARO DAS CARNES</h4>
-            <div class="grid-alimentos" id="preparo-carnes-container"></div>
+            <div id="preparo-carnes-container" class="grid-alimentos"></div>
         </div>
 
         <div class="secao-especial">
             <h4>🐟 PREPARO DOS PEIXES</h4>
-            <div class="grid-alimentos" id="preparo-peixes-container"></div>
+            <div id="preparo-peixes-container" class="grid-alimentos"></div>
         </div>
 
         <div style="margin-top: 20px;">
@@ -108,18 +101,17 @@
             </label>
         </div>
 
-        <button id="btn-gerar" onclick="tentarGerarDieta()">GERAR E BAIXAR PLANO</button>
+        <button id="btn-gerar" onclick="verificarAntesDePagar()">GERAR E BAIXAR PLANO</button>
         <div id="resultado"></div>
     </div>
 </div>
 
 <script>
-    // --- CONFIGURAÇÃO ---
+    // --- SUAS CHAVES MANTIDAS ---
     const S_URL = 'https://xyqqngskrjzhxbsackul.supabase.co';
-    const S_KEY = 'SUA_KEY_SUPABASE'; // Mantenha sua chave anon
+    const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cXFuZ3Nrcmp6aHhic2Fja3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NTI3NzksImV4cCI6MjA4NTUyODc3OX0.B90q1Jv-vodVIV_dLFUCOekyshrv3HekVpPugpPaHRI';
     const _supabase = supabase.createClient(S_URL, S_KEY);
 
-    // CHAVE DA IA (Oculta por partes conforme seu código original)
     const p1 = 'sk-proj-iTWUZ8Lsr4Sd1qKmuH1Rc43q4IgdchSvYHYJ_'; 
     const p2 = 'qmaLxHRh9JptNkpoYgGEP7gERjSntNWnyjgA-T3Bl';
     const p3 = 'bkFJP0F5nitDThUcrohRynDAQuU0F8vYQ-ARete';
@@ -128,25 +120,47 @@
 
     const estruturaAlimentos = {
         "CARBOIDRATOS": {
-            "Arroz": ["Branco", "Integral", "Parboilizado"],
-            "Feijão": ["Carioca", "Preto"],
-            "Batata Inglesa": ["Cozida", "Assada", "Purê"],
-            "Batata Doce": ["Cozida", "Assada"],
-            "Pão": ["Francês", "Forma integral"],
-            "Aveia": ["Flocos", "Farinha"]
+            "Arroz": ["Branco", "Integral", "Parboilizado", "Jasmine", "Basmati", "7 Grãos"],
+            "Feijão": ["Carioca", "Preto", "Branco", "Fradinho", "Vermelho"],
+            "Macarrão": ["Comum (Sêmola)", "Integral", "De arroz", "Sem glúten"],
+            "Cuscuz": ["De milho", "Nordestino", "Marroquino (Sêmola)", "Integral", "De arroz", "De quinoa"],
+            "Batata Inglesa": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Chips forno/airfryer", "Frita na airfryer"],
+            "Batata Doce": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Frita na airfryer"],
+            "Mandioca": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Frita na airfryer"],
+            "Pão": ["Francês", "Forma branco", "Forma integral", "Integral com grãos", "Sírio", "De aveia"],
+            "Panqueca": ["Tradicional", "Americana", "De banana", "De aveia", "Integral"],
+            "Tapioca": ["Tradicional", "Hidratada", "Integral"],
+            "Aveia": ["Em flocos finos", "Em flocos", "Farinha", "Farelo"],
+            "Flocão de Milho": ["Tradicional", "Integral"]
         },
         "PROTEÍNAS": {
-            "Frango": ["Filé de peito"],
-            "Boi": ["Patinho", "Alcatra"],
-            "Ovos": ["Mexidos", "Cozidos"]
+            "Frango": ["Filé de peito", "Coxa e sobrecoxa (sem pele)"],
+            "Boi": ["Patinho", "Coxão mole", "Coxão duro", "Lagarto", "Músculo", "Alcatra limpa"],
+            "Porco": ["Lombo suíno", "Filé mignon suíno"],
+            "Ovos": ["Mexidos", "Cozidos", "Omelete", "Pochê", "Frito na água", "Frito com um fio de azeite", "Mexidos com tomate e cebola"]
+        },
+        "PEIXES": {
+            "Peixes": ["Filé de tilápia", "Filé de merluza", "Filé de linguado", "Filé de atum fresco"]
+        },
+        "GORDURAS": {
+            "Gorduras Boas": ["Abacate", "Azeite de oliva extra virgem", "Castanha-do-pará", "Castanha de caju", "Amêndoas", "Nozes", "Amendoim (natural)", "Pasta de amendoim integral", "Manteiga"]
+        },
+        "LEGUMES": {
+            "Legumes": ["Cenoura", "Brócolis", "Couve-flor", "Abobrinha", "Abóbora", "Berinjela", "Espinafre", "Chuchu", "Quiabo", "Vagem", "Pepino", "Beterraba", "Pimentão", "Couve"]
+        },
+        "FRUTAS": {
+            "Frutas": ["Banana", "Maçã", "Mamão", "Laranja", "Abacaxi", "Melancia", "Melão", "Manga", "Morango", "Uva", "Goiaba", "Pêra", "Kiwi", "Caju", "Limão", "Acerola", "Tangerina", "Abacate"]
+        },
+        "SEMENTES": {
+            "Sementes": ["Chia", "Linhaça", "Semente de abóbora", "Semente de girassol", "Gergelim", "Quinoa (semente)"]
+        },
+        "OUTROS": {
+            "Outros": ["Peito de peru", "Iogurte Natural", "Leite Integral", "Leite Desnatado", "Ricota", "Queijo Minas", "Whey Protein", "Mel"]
         }
-        // ... (Você pode manter sua lista completa aqui)
     };
 
-    const preparosCarnes = ["Grelhado", "Assado", "Na Airfryer"];
-    const preparosPeixes = ["Grelhado", "Assado"];
-
-    // --- LÓGICA DE INTERFACE ---
+    const preparosCarnes = ["Cozido", "Desfiado", "Moído", "Refogado", "Assado", "Na Airfryer", "Na frigideira", "De panela", "Grelhado"];
+    const preparosPeixes = ["Grelhado", "Assado", "Cozido no vapor", "Empanado na airfryer", "Ensopado"];
 
     function inicializarInterface() {
         const container = document.getElementById('categorias-container');
@@ -162,24 +176,26 @@
             }
             container.innerHTML += html;
         }
-        preencherCheckboxes('preparo-carnes-container', 'preparo-carne', preparosCarnes);
-        preencherCheckboxes('preparo-peixes-container', 'preparo-peixe', preparosPeixes);
+
+        const carnePrepCont = document.getElementById('preparo-carnes-container');
+        carnePrepCont.innerHTML = '';
+        preparosCarnes.forEach(p => {
+            carnePrepCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-carne" value="${p}"> ${p}</label>`;
+        });
+
+        const peixePrepCont = document.getElementById('preparo-peixes-container');
+        peixePrepCont.innerHTML = '';
+        preparosPeixes.forEach(p => {
+            peixePrepCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-peixe" value="${p}"> ${p}</label>`;
+        });
     }
 
-    function preencherCheckboxes(id, name, lista) {
-        const cont = document.getElementById(id);
-        cont.innerHTML = '';
-        lista.forEach(p => { cont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="${name}" value="${p}"> ${p}</label>`; });
-    }
-
-    // --- LÓGICA DE BLOQUEIO (FREEMIUM) ---
-
-    function tentarGerarDieta() {
-        const alimentos = document.querySelectorAll('input[name="alimento"]:checked');
-        if (alimentos.length < 5) return alert("Selecione pelo menos 5 alimentos!");
+    // --- LÓGICA DE BLOQUEIO ---
+    function verificarAntesDePagar() {
+        const alimentos = Array.from(document.querySelectorAll('input[name="alimento"]:checked'));
+        if (alimentos.length < 5) return alert("Selecione mais alimentos!");
         if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
-
-        // Como o usuário não logou, mostramos o modal de pagamento direto
+        
         document.getElementById('payment-overlay').style.display = 'flex';
     }
 
@@ -188,13 +204,62 @@
     }
 
     function iniciarCheckout(priceId) {
-        // No Passo 3, isso vai para o Stripe
-        alert("Encaminhando para pagamento do plano: " + priceId);
+        alert("Enviando para o Stripe com o plano: " + priceId);
+        // Aqui entraremos com a API da Vercel no próximo passo
     }
 
-    // --- GERAÇÃO DA DIETA (SÓ SERÁ CHAMADA APÓS O WEBHOOK DO STRIPE) ---
-    // (A função gerarDieta continua igual no seu código, mas ela só será acessível
-    // via uma URL de sucesso ou verificação que faremos a seguir)
+    // --- SUA LÓGICA ORIGINAL DA IA MANTIDA ---
+    async function gerarDieta() {
+        const alimentos = Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value);
+        const prepsCarnes = Array.from(document.querySelectorAll('input[name="preparo-carne"]:checked')).map(i => i.value);
+        const prepsPeixes = Array.from(document.querySelectorAll('input[name="preparo-peixe"]:checked')).map(i => i.value);
+
+        const btn = document.getElementById('btn-gerar');
+        btn.innerText = "IA ESTÁ PROCESSANDO...";
+        btn.disabled = true;
+
+        const prompt = `Aja como um nutricionista esportivo. Crie um plano de ${document.getElementById('calorias').value} kcal para ${document.getElementById('objetivo').value} (${document.getElementById('peso').value}kg), em ${document.getElementById('num-refeicoes').value} refeições... (CONTINUAÇÃO DO SEU PROMPT)`;
+
+        try {
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${FINAL_KEY}` },
+                body: JSON.stringify({ 
+                    model: "gpt-3.5-turbo", 
+                    messages: [
+                        {role: "system", content: "Você é um nutricionista rigoroso."},
+                        {role: "user", content: prompt}
+                    ], 
+                    temperature: 0.2 
+                })
+            });
+            const result = await response.json();
+            const texto = result.choices[0].message.content;
+            document.getElementById('resultado').innerText = texto;
+            document.getElementById('resultado').style.display = 'block';
+            baixarPDF(texto);
+        } catch (e) {
+            alert("Erro na conexão com a IA.");
+        } finally {
+            btn.innerText = "GERAR E BAIXAR PLANO";
+            btn.disabled = false;
+        }
+    }
+
+    function baixarPDF(conteudo) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFont("arial", "normal");
+        doc.setFontSize(10);
+        const lines = doc.splitTextToSize(conteudo, 180);
+        let y = 20;
+        lines.forEach(line => {
+            if (y > 280) { doc.addPage(); y = 20; }
+            doc.text(line, 15, y);
+            y += 6;
+        });
+        doc.save("Plano_Alimentar.pdf");
+    }
 </script>
 </body>
 </html>
