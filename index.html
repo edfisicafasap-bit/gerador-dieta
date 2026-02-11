@@ -284,6 +284,11 @@
             document.getElementById('resultado').innerText = texto;
             document.getElementById('resultado').style.display = 'block';
             baixarPDF(texto);
+
+            // Limpa os dados salvos para que o app abra em branco na próxima vez
+            localStorage.removeItem('rascunho_dieta');
+            localStorage.removeItem('email_verificacao');
+
         } catch (e) {
             alert("Erro ao falar com a IA.");
         } finally {
