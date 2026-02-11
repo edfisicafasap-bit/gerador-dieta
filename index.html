@@ -15,6 +15,11 @@
         input, select, textarea { width:100%; padding:12px; margin-top:6px; border-radius:6px; border:1px solid #333; background: #111; color: #fff; font-size: 15px; box-sizing: border-box; }
         button { width:100%; margin-top:30px; padding:18px; background:#FFD700; border:none; border-radius:8px; font-size:16px; font-weight:bold; color:#000; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
         button:disabled { background: #555; cursor: not-allowed; }
+        
+        /* Estilo para o botão de status no topo */
+        #status-topo { display: none; background: #FFD700; color: #000; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 20px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
         #payment-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
         .payment-card { background: #111; padding: 30px; border: 2px solid #FFD700; border-radius: 15px; text-align: center; max-width: 400px; }
         .categoria-pai { color: #FFD700; font-size: 15px; font-weight: bold; margin: 25px 0 10px 0; padding-left: 10px; text-transform: uppercase; border-left: 3px solid #FFD700; }
@@ -48,6 +53,8 @@
         <h2>🍎 Reeducação Alimentar</h2>
         <p class="subtitle">Personalize seu plano sem custos iniciais</p>
         
+        <div id="status-topo">IA PROCESSANDO... AGUARDE</div>
+
         <label>Seu Peso Atual (kg)</label>
         <input type="number" id="peso" placeholder="Ex: 80">
         
@@ -264,6 +271,10 @@
     async function gerarDieta() {
         const d = JSON.parse(localStorage.getItem('rascunho_dieta'));
         const btn = document.getElementById('btn-gerar');
+        const statusTopo = document.getElementById('status-topo');
+
+        // Mostra o botão de status no topo e desabilita o principal
+        statusTopo.style.display = 'block';
         btn.innerText = "IA PROCESSANDO...";
         btn.disabled = true;
 
@@ -285,15 +296,18 @@
             document.getElementById('resultado').style.display = 'block';
             baixarPDF(texto);
 
-            // Limpa os dados salvos para que o app abra em branco na próxima vez
             localStorage.removeItem('rascunho_dieta');
             localStorage.removeItem('email_verificacao');
+
+            // Rola a tela até o resultado para o usuário ver
+            document.getElementById('resultado').scrollIntoView({ behavior: 'smooth' });
 
         } catch (e) {
             alert("Erro ao falar com a IA.");
         } finally {
             btn.innerText = "GERAR E BAIXAR PLANO";
             btn.disabled = false;
+            statusTopo.style.display = 'none'; // Esconde o aviso do topo após terminar
         }
     }
 
