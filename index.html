@@ -268,46 +268,37 @@
 
     function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
 
-    async function gerarDieta() {
+   async function gerarDieta() {
         const d = JSON.parse(localStorage.getItem('rascunho_dieta'));
+        if (!d) return alert("Erro ao recuperar dados.");
+        
         const btn = document.getElementById('btn-gerar');
         const statusTopo = document.getElementById('status-topo');
 
-        // Mostra o botão de status no topo e desabilita o principal
         statusTopo.style.display = 'block';
         btn.innerText = "ORGANIZANDO SUAS REFEIÇÕES......";
         btn.disabled = true;
 
-        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos: ${d.preparoCarne.join(', ')}.`;
-	
+        // O prompt deve estar dentro de uma crase (template string) para funcionar no JS
+        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos: ${d.preparoCarne.join(', ')}.
+
 🚨 DIRETRIZES SUPREMAS
-
 CÁLCULO DA DIETA: Proteína: 1.8-2.2g/kg, Gordura: 1g/kg, Carbo: Restante. Use bases científicas (TACO/TBCA), NÃO CRIE TABELAS DE MACRO NUTRIENTES FICTICIOS, UTILIZE SOMENTE MACROS REAIS DOS ALIMENTOS!.
-
 Alimentos permitidos: Utilize receitas e pratos somente que contenham os alimentos previamente selecionados, não crie receitas que não contenham alimentos mencionados.
-
 Proibido Alimentos Soltos: Nunca liste ingredientes isolados (ex: "30g de aveia"). Transforme-os em preparações (ex: "Mingau de aveia").
-
 Base Obrigatória: No Almoço e Jantar, se houver Arroz e/ou Feijão nos ingredientes, eles devem obrigatoriamente compor a base da refeição.
-
 Coerência Cultural: As refeições devem respeitar os hábitos brasileiros (Café, Almoço, Lanche, Jantar).
 
 🍽️ ESTRUTURA E OPÇÕES
 Para cada refeição, você deve apresentar duas opções com macros equivalentes:
-
 Opção A (Padrão): Segue as regras de cada horário. No almoço/jantar, priorize arroz e feijão como base.
-
 Opção B (Variação): Deve ter macros (Proteína, Gordura, Carbo) semelhantes à Opção A.
-
 Regra Especial Opção B: No Almoço e Jantar, a Opção B deve ser obrigatoriamente sem arroz e sem feijão (utilize batata, macarrão, mandioca, etc., como base).
 
 📋 REGRAS POR HORÁRIO
 CAFÉ DA MANHÃ: Máximo 3 itens. Transformar em: Bowl, Shake, Vitamina, Sanduíche ou Omelete.
-
 LANCHES: Foco em portabilidade e simplicidade.
-
 ALMOÇO/JANTAR: Estrutura [Base de Carboidrato] + [Proteína] + [Legumes/Salada].
-
 Jantar pode ser mais leve, mas deve manter a estrutura de refeição completa.
 
 📊 RESUMO DE MACROS
@@ -315,18 +306,16 @@ Ao final de todo o cardápio, apresente uma seção de "Macros Totais das Refei�
 
 🛠️ FORMATO DE SAÍDA (Exemplo)
 [NOME DA REFEIÇÃO]
-
 Opção A: [Nome do prato com arroz/feijão] + Ingredientes + Modo rápido de preparo.
-
 Opção B: [Nome do prato sem arroz/feijão] + Ingredientes + Modo rápido de preparo.
 
 ✅ PROTOCOLO DE VALIDAÇÃO
 Antes de exibir, valide: "A Opção B de almoço/jantar está sem arroz e feijão? Os macros estão equilibrados? O prato parece algo que se come no Brasil?"
 
 ITENS COMPLEMENTARES:
-1. HIDRATAÇÃO: Informe a recomendação de ${(peso * 0.035).toFixed(1)}L de água por dia.
-2. DATA: ${new Date().toLocaleString()}.`;
-3. RODAPÉ: Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional.
+1. HIDRATAÇÃO: Informe a recomendação de ${(parseFloat(d.peso) * 0.035).toFixed(1)}L de água por dia.
+2. DATA: ${new Date().toLocaleString()}.
+3. RODAPÉ: Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional.`;
 
         try {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -346,8 +335,6 @@ ITENS COMPLEMENTARES:
 
             localStorage.removeItem('rascunho_dieta');
             localStorage.removeItem('email_verificacao');
-
-            // Rola a tela até o resultado para o usuário ver
             document.getElementById('resultado').scrollIntoView({ behavior: 'smooth' });
 
         } catch (e) {
@@ -355,7 +342,7 @@ ITENS COMPLEMENTARES:
         } finally {
             btn.innerText = "GERAR E BAIXAR PLANO";
             btn.disabled = false;
-            statusTopo.style.display = 'none'; // Esconde o aviso do topo após terminar
+            statusTopo.style.display = 'none';
         }
     }
 
@@ -375,4 +362,5 @@ ITENS COMPLEMENTARES:
 </script>
 </body>
 </html>
+
 
