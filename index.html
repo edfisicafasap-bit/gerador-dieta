@@ -305,24 +305,28 @@
     }
 
     async function executarGeracaoComConsumo(tipo, email, contagemAtual = 0) {
+        // AJUSTE: O consumo é registrado NO BANCO antes da geração para evitar que falhas na IA permitam gerações infinitas
+        if (tipo === 'unica') {
+            await _supabase.from('Usuarios_Dieta').update({ creditos: 0, pago: false, ultima_geracao: new Date().toISOString() }).eq('email', email);
+        } else {
+            await _supabase.from('Usuarios_Dieta').update({ contagem_semanal: contagemAtual + 1, ultima_geracao: new Date().toISOString() }).eq('email', email);
+        }
+        
         const sucesso = await gerarDieta(); 
         if (sucesso) {
-            if (tipo === 'unica') {
-                await _supabase.from('Usuarios_Dieta').update({ creditos: 0, pago: false, ultima_geracao: new Date().toISOString() }).eq('email', email);
-            } else {
-                await _supabase.from('Usuarios_Dieta').update({ contagem_semanal: contagemAtual + 1, ultima_geracao: new Date().toISOString() }).eq('email', email);
-            }
-            limparDadosAposGeracao();
+            limparDadosInterface();
         }
     }
 
-    function limparDadosAposGeracao() {
+    function limparDadosInterface() {
         localStorage.removeItem('rascunho_dieta');
         document.getElementById('peso').value = '';
         document.getElementById('calorias').value = '';
         document.getElementById('num-refeicoes').value = '4';
         document.getElementById('objetivo').value = 'Emagrecimento';
-        document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        document.getElementById('aceite-clausula').checked = false;
+        document.querySelectorAll('input[name="alimento"]').forEach(cb => cb.checked = false);
+        document.querySelectorAll('input[name="preparo-geral"]').forEach(cb => cb.checked = false);
     }
 
     async function iniciarCheckout(priceId) {
