@@ -135,8 +135,6 @@
 </div>
 
 <script>
-    // Seus scripts permanecem iguais, a lógica está correta.
-    // Certifique-se apenas de que as chaves do Supabase e OpenAI estejam ativas.
     const S_URL = 'https://xyqqngskrjzhxbsackul.supabase.co';
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cXFuZ3Nrcmp6aHhic2Fja3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NTI3NzksImV4cCI6MjA4NTUyODc3OX0.B90q1Jv-vodVIV_dLFUCOekyshrv3HekVpPugpPaHRI';
     const _supabase = supabase.createClient(S_URL, S_KEY);
@@ -182,15 +180,35 @@
         renderizarInterface();
         recuperarDadosSalvos();
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('pago') === 'true') {
-            const emailSalvo = localStorage.getItem('email_verificacao');
-            if (emailSalvo) setTimeout(() => verificarAcessoAutomatico(emailSalvo), 2500);
+        const pago = urlParams.get('pago');
+        const tipoPlano = urlParams.get('tipo');
+        const emailSalvo = localStorage.getItem('email_verificacao');
+
+        if (pago === 'true' && emailSalvo && tipoPlano) {
+            const statusTopo = document.getElementById('status-topo');
+            statusTopo.style.display = 'block';
+            statusTopo.innerText = "🚀 ATIVANDO SEU ACESSO, AGUARDE...";
+            await ativarAcessoNoBanco(emailSalvo, tipoPlano);
         }
     }
 
-    async function verificarAcessoAutomatico(email) {
-        let { data } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', email.toLowerCase().trim()).single();
-        if (data && data.pago === true) gerarDieta();
+    async function ativarAcessoNoBanco(email, tipo) {
+        const proximoReset = new Date();
+        proximoReset.setDate(proximoReset.getDate() + 7);
+        const updates = {
+            pago: true,
+            tipo_plano: tipo,
+            creditos: (tipo === 'unica' ? 1 : 0),
+            contagem_semanal: 0,
+            data_reset: proximoReset.toISOString()
+        };
+        const { error } = await _supabase.from('Usuarios_Dieta').update(updates).eq('email', email.toLowerCase().trim());
+        if (!error) {
+            alert("✅ Plano ativado com sucesso!");
+            window.history.replaceState({}, document.title, window.location.pathname);
+            document.getElementById('status-topo').style.display = 'none';
+            gerarDieta();
+        }
     }
 
     function renderizarInterface() {
@@ -254,13 +272,47 @@
         
         const emailAcesso = prompt("Digite seu e-mail para acesso:");
         if (!emailAcesso) return;
-        salvarProgressoLocal(emailAcesso);
+        const emailLow = emailAcesso.toLowerCase().trim();
+        salvarProgressoLocal(emailLow);
 
-        let { data } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', emailAcesso.toLowerCase().trim()).single();
-        if (data && data.pago === true) {
-            gerarDieta();
-        } else {
+        let { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', emailLow).single();
+
+        if (!user || !user.pago) {
             document.getElementById('payment-overlay').style.display = 'flex';
+            return;
+        }
+
+        if (user.tipo_plano === 'unica') {
+            if (user.creditos <= 0) {
+                alert("Você já utilizou sua dieta única. Adquira o Plano Anual para continuar!");
+                document.getElementById('payment-overlay').style.display = 'flex';
+                return;
+            }
+            executarGeracaoComConsumo('unica', emailLow);
+        } else if (user.tipo_plano === 'anual') {
+            const agora = new Date();
+            const dataReset = user.data_reset ? new Date(user.data_reset) : agora;
+            if (agora >= dataReset) {
+                const novoReset = new Date();
+                novoReset.setDate(novoReset.getDate() + 7);
+                await _supabase.from('Usuarios_Dieta').update({ contagem_semanal: 0, data_reset: novoReset.toISOString() }).eq('email', emailLow);
+                user.contagem_semanal = 0;
+            }
+            if (user.contagem_semanal >= 2) {
+                return alert("Limite semanal de 2 trocas atingido. Seu limite reseta em: " + dataReset.toLocaleDateString());
+            }
+            executarGeracaoComConsumo('anual', emailLow, user.contagem_semanal);
+        }
+    }
+
+    async function executarGeracaoComConsumo(tipo, email, contagemAtual = 0) {
+        const sucesso = await gerarDieta(); 
+        if (sucesso) {
+            if (tipo === 'unica') {
+                await _supabase.from('Usuarios_Dieta').update({ creditos: 0, pago: false }).eq('email', email);
+            } else {
+                await _supabase.from('Usuarios_Dieta').update({ contagem_semanal: contagemAtual + 1 }).eq('email', email);
+            }
         }
     }
 
@@ -290,77 +342,44 @@
         btn.innerText = "IA PROCESSANDO...";
         btn.disabled = true;
 
-       const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
+        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
-
-
-       🚨 DIRETRIZES SUPREMAS
-
+        🚨 DIRETRIZES SUPREMAS
 CÁLCULO DA DIETA: Proteína: 1.8-2.2g/kg, Gordura: 1g/kg, Carbo: Restante. Use bases científicas (TACO/TBCA), NÃO CRIE TABELAS DE MACRO NUTRIENTES FICTICIOS, UTILIZE SOMENTE MACROS REAIS DOS ALIMENTOS!.
-
 Alimentos permitidos: Utilize receitas e pratos somente que contenham os alimentos previamente selecionados, não crie receitas que não contenham alimentos mencionados.
-
 Proibido Alimentos Soltos: Nunca liste ingredientes isolados (ex: "30g de aveia"). Transforme-os em preparações (ex: "Mingau de aveia").
-
 Base Obrigatória: No Almoço e Jantar, se houver Arroz e/ou Feijão nos ingredientes, eles devem obrigatoriamente compor a base da refeição.
-
 Coerência Cultural: As refeições devem respeitar os hábitos brasileiros (Café, Almoço, Lanche, Jantar).
 
-
-
 🍽️ ESTRUTURA E OPÇÕES
-
 Para cada refeição, você deve apresentar duas opções com macros equivalentes:
-
 Opção A (Padrão): Segue as regras de cada horário. No almoço/jantar, priorize arroz e feijão como base.
-
 Opção B (Variação): Deve ter macros (Proteína, Gordura, Carbo) semelhantes à Opção A.
-
 Regra Especial Opção B: No Almoço e Jantar, a Opção B deve ser obrigatoriamente sem arroz e sem feijão (utilize batata, macarrão, mandioca, etc., como base).
 
-
-
 📋 REGRAS POR HORÁRIO
-
 CAFÉ DA MANHÃ: Máximo 3 itens. Transformar em: Bowl, Shake, Vitamina, Sanduíche ou Omelete. 
-
 LANCHES: Foco em portabilidade e simplicidade.
-
 ALMOÇO/JANTAR: Estrutura [Base de Carboidrato] + [Proteína] + [Legumes/Salada].
-
 Jantar pode ser mais leve, mas deve manter a estrutura de refeição completa.
 
-
-
 📊 RESUMO DE MACROS
-
 Ao final de todo o cardápio, apresente uma seção de "Macros Totais das Refeições Principais", contendo a soma aproximada de Proteínas, Gorduras e Carboidratos de todas as refeições geradas. não crie tabela ficticia, use os dados reais dos alimentos.
 
-
-
 🛠️ FORMATO DE SAÍDA (Exemplo)
-
 [NOME DA REFEIÇÃO]
-
 Opção A: [Nome do prato com arroz/feijão] + Ingredientes + Modo rápido de preparo.
-
 Opção B: [Nome do prato sem arroz/feijão] + Ingredientes + Modo rápido de preparo.
 
-
-
 ✅ PROTOCOLO DE VALIDAÇÃO
-
 Antes de exibir, valide: "A Opção B de almoço/jantar está sem arroz e feijão? Os macros estão equilibrados? O prato parece algo que se come no Brasil?"
 
-
-
 ITENS COMPLEMENTARES:
-
 1. HIDRATAÇÃO: Informe a recomendação de ${(parseFloat(d.peso) * 0.035).toFixed(1)}L de água por dia.
-
 2. DATA: ${new Date().toLocaleString()}.
 
-3. RODAPÉ: Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional.`;
+ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional."`;
+
         try {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
@@ -376,8 +395,10 @@ ITENS COMPLEMENTARES:
             document.getElementById('resultado').innerText = texto;
             document.getElementById('resultado').style.display = 'block';
             baixarPDF(texto);
+            return true;
         } catch (e) { 
-            alert("Erro ao falar com a IA."); 
+            alert("Erro ao falar com a IA.");
+            return false;
         } finally {
             btn.innerText = "GERAR E BAIXAR PLANO";
             btn.disabled = false;
