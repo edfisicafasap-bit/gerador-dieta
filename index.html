@@ -317,14 +317,13 @@
 
     async function iniciarCheckout(priceId) {
         salvarProgressoLocal();
-        
         const LINK_UNICA = "https://buy.stripe.com/test_bJe7sLcqhcL0g0B9T9asg00";
-        const LINK_ANUAL = "COLE_AQUI_SEU_LINK_ANUAL"; // Substitua pelo seu link anual real
+        const LINK_ANUAL = "https://buy.stripe.com/test_3cI8wP0Hz9yO4hTc1hasg01"; 
 
         if (priceId === 'price_1Sz1w7GEaACih56ZWyTiPBAu') {
-            window.location.href = https://buy.stripe.com/test_bJe7sLcqhcL0g0B9T9asg00;
+            window.location.href = LINK_UNICA;
         } else if (priceId === 'price_1SzPP7GEaACih56ZkwV5mxN2') {
-            window.location.href = https://buy.stripe.com/test_3cI8wP0Hz9yO4hTc1hasg01;
+            window.location.href = LINK_ANUAL;
         }
     }
 
