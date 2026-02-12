@@ -305,22 +305,17 @@
     }
 
     async function executarGeracaoComConsumo(tipo, email, contagemAtual = 0) {
-        // Obter os dados locais ANTES de atualizar o banco ou limpar qualquer coisa
         const dadosLocais = localStorage.getItem('rascunho_dieta');
         if (!dadosLocais) return alert("Erro ao recuperar dados. Por favor, preencha o formulário.");
 
-        // Atualizar banco de dados para computar o uso
         if (tipo === 'unica') {
             await _supabase.from('Usuarios_Dieta').update({ creditos: 0, pago: false, ultima_geracao: new Date().toISOString() }).eq('email', email);
         } else {
             await _supabase.from('Usuarios_Dieta').update({ contagem_semanal: contagemAtual + 1, ultima_geracao: new Date().toISOString() }).eq('email', email);
         }
         
-        // Chamar a geração passando os dados diretamente para evitar erro de leitura
-        const sucesso = await gerarDieta(JSON.parse(dadosLocais)); 
-        if (sucesso) {
-            limparDadosInterface();
-        }
+        // Chamada da geração direta sem disparar limpeza prematura
+        await gerarDieta(JSON.parse(dadosLocais)); 
     }
 
     function limparDadosInterface() {
@@ -398,6 +393,9 @@
             y += 6;
         });
         doc.save("Sugestão_Alimentar.pdf");
+        
+        // Limpeza disparada apenas após a conclusão do download do PDF
+        limparDadosInterface();
     }
 </script>
 
