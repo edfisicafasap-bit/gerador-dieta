@@ -312,7 +312,17 @@
             } else {
                 await _supabase.from('Usuarios_Dieta').update({ contagem_semanal: contagemAtual + 1, ultima_geracao: new Date().toISOString() }).eq('email', email);
             }
+            limparDadosAposGeracao();
         }
+    }
+
+    function limparDadosAposGeracao() {
+        localStorage.removeItem('rascunho_dieta');
+        document.getElementById('peso').value = '';
+        document.getElementById('calorias').value = '';
+        document.getElementById('num-refeicoes').value = '4';
+        document.getElementById('objetivo').value = 'Emagrecimento';
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
     }
 
     async function iniciarCheckout(priceId) {
