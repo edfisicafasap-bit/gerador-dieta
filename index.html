@@ -247,15 +247,52 @@
     function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
 
     async function gerarDieta() {
-        const d = JSON.parse(localStorage.getItem('rascunho_dieta'));
-        if (!d) return alert("Erro ao recuperar dados.");
-        
-        const btn = document.getElementById('btn-gerar');
-        const statusTopo = document.getElementById('status-topo');
+    const d = JSON.parse(localStorage.getItem('rascunho_dieta'));
+    if (!d) return alert("Erro ao recuperar dados.");
+    
+    const btn = document.getElementById('btn-gerar');
+    const statusTopo = document.getElementById('status-topo');
 
-        statusTopo.style.display = 'block';
-        btn.innerText = "ORGANIZANDO SUAS REFEIÇÕES......";
-        btn.disabled = true;
+    statusTopo.style.display = 'block';
+    btn.innerText = "IA PROCESSANDO...";
+    btn.disabled = true;
+
+    // CORREÇÃO AQUI: Alterado de d.preparoCarne para d.preparos (que é o nome novo)
+    const promptFinal = `Aja como nutricionista. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados: ${d.preparos.join(', ')}.`;
+
+    try {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${FINAL_KEY}` },
+            body: JSON.stringify({ 
+                model: "gpt-3.5-turbo", 
+                messages: [{role: "system", content: "Nutricionista preciso."}, {role: "user", content: promptFinal}], 
+                temperature: 0.2 
+            })
+        });
+        const result = await response.json();
+        
+        // Verifica se a resposta da OpenAI é válida antes de prosseguir
+        if(!result.choices) throw new Error("Resposta inválida da IA");
+
+        const texto = result.choices[0].message.content;
+        document.getElementById('resultado').innerText = texto;
+        document.getElementById('resultado').style.display = 'block';
+        baixarPDF(texto);
+
+        localStorage.removeItem('rascunho_dieta');
+        localStorage.removeItem('email_verificacao');
+        document.getElementById('resultado').scrollIntoView({ behavior: 'smooth' });
+
+    } catch (e) { 
+        console.error(e);
+        alert("Erro ao falar com a IA. Verifique sua chave ou conexão."); 
+    } finally {
+        btn.innerText = "GERAR E BAIXAR PLANO";
+        btn.disabled = false;
+        statusTopo.style.display = 'none';
+    }
+}
 
         // PROMPT ORIGINAL RESTAURADO E ATUALIZADO COM AS NOVAS REGRAS
         const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
@@ -347,3 +384,4 @@ ITENS COMPLEMENTARES:
 </script>
 </body>
 </html>
+
