@@ -14,14 +14,12 @@
         label { display:block; margin-top:18px; font-size:14px; font-weight: bold; color: #eee; }
         input, select, textarea { width:100%; padding:12px; margin-top:6px; border-radius:6px; border:1px solid #333; background: #111; color: #fff; font-size: 15px; box-sizing: border-box; }
         
-        /* Botão Principal de Gerar */
         #btn-gerar { width:100%; margin-top:30px; padding:18px; background:#FFD700; border:none; border-radius:8px; font-size:16px; font-weight:bold; color:#000; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
         #btn-gerar:disabled { background: #555; cursor: not-allowed; }
         
         #status-topo { display: none; background: #FFD700; color: #000; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 20px; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
 
-        /* Overlay de Pagamento */
         #payment-overlay { 
             display: none; 
             position: fixed; 
@@ -319,8 +317,15 @@
 
     async function iniciarCheckout(priceId) {
         salvarProgressoLocal();
-        alert("Redirecionando para o pagamento...");
-        // Adicione aqui seu link do Stripe caso não esteja usando a API
+        
+        const LINK_UNICA = "https://buy.stripe.com/test_bJe7sLcqhcL0g0B9T9asg00";
+        const LINK_ANUAL = "COLE_AQUI_SEU_LINK_ANUAL"; // Substitua pelo seu link anual real
+
+        if (priceId === 'price_1Sz1w7GEaACih56ZWyTiPBAu') {
+            window.location.href = https://buy.stripe.com/test_bJe7sLcqhcL0g0B9T9asg00;
+        } else if (priceId === 'price_1SzPP7GEaACih56ZkwV5mxN2') {
+            window.location.href = https://buy.stripe.com/test_3cI8wP0Hz9yO4hTc1hasg01;
+        }
     }
 
     function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
@@ -337,7 +342,7 @@
         btn.disabled = true;
 
         const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados: ${d.preparos.join(', ')}.
-        🚨 DIRETRIZES: Macros Reais (Proteína: 2g/kg). Opção A (com arroz/feijão se selecionados) e Opção B (sem arroz/feijão). Informe a hidratação de ${(parseFloat(d.weight) * 35 / 1000).toFixed(1)}L.`;
+        🚨 DIRETRIZES: Macros Reais (Proteína: 2g/kg). Opção A (com arroz/feijão se selecionados) e Opção B (sem arroz/feijão). Informe a hidratação de ${(parseFloat(d.peso) * 35 / 1000).toFixed(1)}L.`;
 
         try {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
