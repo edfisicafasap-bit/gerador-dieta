@@ -55,6 +55,8 @@
         
         <div id="status-topo">ORGANIZANDO SUAS REFEIÇÕES...</div>
 
+        <input type="hidden" id="nome_usuario" value="">
+
         <label>Seu Peso Atual (kg)</label>
         <input type="number" id="peso" placeholder="Ex: 80">
         
@@ -70,9 +72,10 @@
 
         <label>Objetivo</label>
         <select id="objetivo">
-            <option>Emagrecimento</option>
-            <option>Hipertrofia</option>
-            <option>Definição</option>
+            <option value="Emagrecimento">Emagrecimento</option>
+            <option value="Hipertrofia">Hipertrofia</option>
+            <option value="Manutencao">Manutenção</option>
+            <option value="Definição">Definição</option>
         </select>
 
         <hr>
@@ -205,6 +208,7 @@
             calorias: document.getElementById('calorias').value,
             refeicoes: document.getElementById('num-refeicoes').value,
             objetivo: document.getElementById('objetivo').value,
+            nome: document.getElementById('nome_usuario').value,
             alimentos: Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value),
             preparoCarne: Array.from(document.querySelectorAll('input[name="preparo-carne"]:checked')).map(i => i.value),
             preparoPeixe: Array.from(document.querySelectorAll('input[name="preparo-peixe"]:checked')).map(i => i.value)
@@ -216,13 +220,28 @@
     }
 
     function recuperarDadosSalvos() {
+        // --- NOVA FUNÇÃO: CAPTURAR DADOS DA URL (Calculadora) ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const nomeUrl = urlParams.get('nome');
+        const caloriasUrl = urlParams.get('calorias');
+        const objetivoUrl = urlParams.get('objetivo');
+
+        if (nomeUrl) document.getElementById('nome_usuario').value = nomeUrl;
+        if (caloriasUrl) document.getElementById('calorias').value = caloriasUrl;
+        if (objetivoUrl) document.getElementById('objetivo').value = objetivoUrl;
+
+        // Recuperação do cache local (se houver)
         const salvo = localStorage.getItem('rascunho_dieta');
         if (!salvo) return;
         const d = JSON.parse(salvo);
+        
+        // Só preenche do cache se a URL não tiver trazido os dados prioritários
+        if (!caloriasUrl) document.getElementById('calorias').value = d.calorias || '';
+        if (!objetivoUrl) document.getElementById('objetivo').value = d.objetivo || 'Emagrecimento';
+        
         document.getElementById('peso').value = d.peso || '';
-        document.getElementById('calorias').value = d.calorias || '';
         document.getElementById('num-refeicoes').value = d.refeicoes || '4';
-        document.getElementById('objetivo').value = d.objetivo || 'Emagrecimento';
+        
         d.alimentos?.forEach(val => {
             const el = document.querySelector(`input[name="alimento"][value="${val}"]`);
             if (el) el.checked = true;
@@ -236,7 +255,7 @@
         
         const emailAcesso = prompt("Digite seu e-mail para acesso:");
         if (!emailAcesso) return;
-        salvarProgressoLocal(emailAcesso);
+        salvorProgressoLocal(emailAcesso);
 
         let { data, error } = await _supabase
             .from('Usuarios_Dieta')
@@ -279,8 +298,7 @@
         btn.innerText = "ORGANIZANDO SUAS REFEIÇÕES......";
         btn.disabled = true;
 
-        // O prompt deve estar dentro de uma crase (template string) para funcionar no JS
-        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos: ${d.preparoCarne.join(', ')}.
+        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Nome do Cliente: ${d.nome || 'Cliente'}. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos: ${d.preparoCarne.join(', ')}.
 
 🚨 DIRETRIZES SUPREMAS
 CÁLCULO DA DIETA: Proteína: 1.8-2.2g/kg, Gordura: 1g/kg, Carbo: Restante. Use bases científicas (TACO/TBCA), NÃO CRIE TABELAS DE MACRO NUTRIENTES FICTICIOS, UTILIZE SOMENTE MACROS REAIS DOS ALIMENTOS!.
@@ -362,5 +380,3 @@ ITENS COMPLEMENTARES:
 </script>
 </body>
 </html>
-
-
