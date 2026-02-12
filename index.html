@@ -39,14 +39,38 @@
 
 <div class="container">
     <div id="payment-overlay">
-        <div class="payment-card">
-            <h2 style="font-size: 24px; color: #FFD700;">PLANILHA PRONTA! 🚀</h2>
-            <p style="color: #eee; margin-bottom: 20px;">Nossa IA já estruturou seu plano. Escolha uma opção para liberar o acesso agora:</p>
-            <button id="btn-unica" onclick="iniciarCheckout('price_1Sz1w7GEaACih56ZWyTiPBAu')">🥗 DIETA ÚNICA - R$ 9,90</button>
-            <button id="btn-anual" style="background: #fff; color: #000; margin-top: 10px;" onclick="iniciarCheckout('price_1SzPP7GEaACih56ZkwV5mxN2')">📅 PLANO ANUAL - R$ 29,90</button>
-            <p style="margin-top: 20px; font-size: 12px; color: #888; cursor: pointer;" onclick="fecharModal()">← Voltar e editar</p>
+        <div class="payment-card" style="background: #1e1e1e; padding: 30px; border-radius: 15px; text-align: center; max-width: 350px; border: 1px solid #333; font-family: sans-serif; margin: 0 auto;">
+            <h2 style="font-size: 24px; color: #FFD700; margin-top: 0;">CARDÁPIO GERADO! 🚀</h2>
+            <p style="color: #eee; margin-bottom: 25px; font-size: 15px;">Para acessar o seu cardápio escolha um dos planos abaixo:</p>
+            
+            <div style="margin-bottom: 30px;">
+                <button id="btn-unica" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-weight: bold; cursor: pointer; background: #fff; color: #000;" onclick="iniciarCheckout('price_1Sz1w7GEaACih56ZWyTiPBAu')">
+                    🥗 DIETA ÚNICA - R$ 9,90
+                </button>
+                <p style="color: #fff; font-size: 13px; margin-top: 8px; line-height: 1.4; margin-bottom: 0;">
+                    Você receberá o acesso a <b>um único plano alimentar</b> agora.
+                </p>
+            </div>
+
+            <div style="position: relative; margin-top: 20px;">
+                <span style="position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: #FFD700; color: #000; padding: 3px 12px; border-radius: 50px; font-size: 10px; font-weight: bold; white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 2;">
+                    ⭐ MELHOR CUSTO-BENEFÍCIO
+                </span>
+                
+                <button id="btn-anual" style="width: 100%; padding: 12px; border: 2px solid #FFD700; border-radius: 8px; font-weight: bold; cursor: pointer; background: #fff; color: #000;" onclick="iniciarCheckout('price_1SzPP7GEaACih56ZkwV5mxN2')">
+                    📅 ACESSO ANUAL - R$ 29,90
+                </button>
+                <p style="color: #fff; font-size: 13px; margin-top: 8px; line-height: 1.4; margin-bottom: 0;">
+                    Pagamento único de 29,90. Acesse o aplicativo quando quiser e selecione os alimentos para atualizar suas refeições. <b>(acesso válido por 1 ano - limitado a 2 trocas por semana)</b>
+                </p>
+            </div>
+
+            <p style="margin-top: 30px; font-size: 12px; color: #888; cursor: pointer; text-decoration: underline;" onclick="fecharModal()">
+                ← Voltar e editar
+            </p>
         </div>
     </div>
+</div>
 
     <div id="dieta-section">
         <h2>🍎 Reeducação Alimentar</h2>
@@ -343,4 +367,5 @@ ITENS COMPLEMENTARES:
 </script>
 </body>
 </html>
+
 
