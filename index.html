@@ -35,6 +35,8 @@
             padding: 20px; 
         }
 
+        .payment-card { background: #1e1e1e; padding: 30px; border-radius: 15px; text-align: center; max-width: 350px; border: 1px solid #333; font-family: sans-serif; }
+
         .categoria-pai { color: #FFD700; font-size: 15px; font-weight: bold; margin: 25px 0 10px 0; padding-left: 10px; text-transform: uppercase; border-left: 3px solid #FFD700; }
         details { background: #0a0a0a; border: 1px solid #222; border-radius: 8px; margin-bottom: 6px; overflow: hidden; }
         summary { padding: 12px; cursor: pointer; color: #fff; font-weight: normal; font-size: 13px; text-transform: uppercase; list-style: none; display: flex; justify-content: space-between; align-items: center; }
@@ -314,7 +316,6 @@
             await _supabase.from('Usuarios_Dieta').update({ contagem_semanal: contagemAtual + 1, ultima_geracao: new Date().toISOString() }).eq('email', email);
         }
         
-        // Chamada da geração direta sem disparar limpeza prematura
         await gerarDieta(JSON.parse(dadosLocais)); 
     }
 
@@ -393,8 +394,6 @@
             y += 6;
         });
         doc.save("Sugestão_Alimentar.pdf");
-        
-        // Limpeza disparada apenas após a conclusão do download do PDF
         limparDadosInterface();
     }
 </script>
