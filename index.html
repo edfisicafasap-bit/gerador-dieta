@@ -271,7 +271,7 @@
         if (alimentos.length < 5) return alert("Selecione pelo menos 5 alimentos!");
         if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
         
-        const emailAcesso = prompt("Digite seu e-mail para acesso:");
+        const emailAcesso = prompt("Cadastre seu e-mail para liberar o conteúdo.");
         if (!emailAcesso) return;
         const emailLow = emailAcesso.toLowerCase().trim();
         salvarProgressoLocal(emailLow);
@@ -350,17 +350,12 @@
         const statusTopo = document.getElementById('status-topo');
 
         statusTopo.style.display = 'block';
-        btn.innerText = "IA PROCESSANDO...";
+        btn.innerText = "AGUARDE...";
         btn.disabled = true;
 
        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
 🚨 DIRETRIZES SUPREMAS
-IMPORTANTE: 
-- PARA 4 REFEIÇÕES: CAFÉ DA MANHA, ALMOÇO, CAFÉ DA TARDE E JANTA
-- PARA 5 REFEIÇÕES: DESJEJUM, CAFÉ DA MANHÃ, ALMOÇO, CAFÉ DA TARDE E JANTA
-- PARA 6 REFEIÇÕES: DESJEJUM, CAFÉ DA MANHÃ, ALMOÇO, CAFÉ DA TARDE, JANTA E CEIA
-
 CÁLCULO DA DIETA: Proteína: 1.8-2.2g/kg, Gordura: 1g/kg, Carbo: Restante. Use bases científicas (TACO/TBCA), NÃO CRIE TABELAS DE MACRO NUTRIENTES FICTICIOS, UTILIZE SOMENTE MACROS REAIS DOS ALIMENTOS!.
 Alimentos permitidos: Utilize receitas e pratos somente que contenham os alimentos previamente selecionados, não crie receitas que não contenham alimentos mencionados.
 Proibido Alimentos Soltos: Nunca liste ingredientes isolados (ex: "30g de aveia"). Transforme-os em preparações (ex: "Mingau de aveia").
@@ -380,16 +375,15 @@ ALMOÇO/JANTAR: Estrutura [Base de Carboidrato] + [Proteína] + [Legumes/Salada]
 Jantar pode ser mais leve, mas deve manter a estrutura de refeição completa.
 CEIA: REFEIÇÕES SUPER LEVES, COMO UMA FRUTA, OU FRUTA + WHEY, OU IOGURTE...
 
-📊 RESUMO DE MACROS
-Ao final de todo o cardápio, apresente uma seção de "Macros Totais das Refeições Principais", contendo a soma aproximada de Proteínas, Gorduras e Carboidratos de todas as refeições geradas. não crie tabela ficticia, use os dados reais dos alimentos.
-
 🛠️ FORMATO DE SAÍDA (Exemplo)
-[NOME DA REFEIÇÃO]
-Opção A: [Nome do prato com arroz/feijão] + Ingredientes + Modo rápido de preparo.
-Opção B: [Nome do prato sem arroz/feijão] + Ingredientes + Modo rápido de preparo.
+Opção A: [Nome do prato com arroz/feijão] + Ingredientes 
+Opção B: [Nome do prato sem arroz/feijão] + Ingredientes 
+
+📊 RESUMO DE MACROS
+Ao final de todo o cardápio, apresente uma seção de "Macros Totais das Refeições Principais", contendo a soma aproximada de Proteínas, Gorduras e Carboidratos de todas as refeições geradas. não crie tabela ficticia E use apenas os dados reais dos alimentos.
 
 ✅ PROTOCOLO DE VALIDAÇÃO
-Antes de exibir, valide: "A Opção B de almoço/jantar está sem arroz e feijão? Os macros estão equilibrados? O prato parece algo que se come no Brasil?"
+Antes de exibir, valide: "A Opção B de almoço/jantar está sem arroz e feijão? Os macros estão equilibrados? O prato parece algo que se come no Brasil? só prossiga caso seja refeições reais, caso contrário, refaça!"
 
 ITENS COMPLEMENTARES:
 1. HIDRATAÇÃO: Informe a recomendação de ${(parseFloat(d.peso) * 0.035).toFixed(1)}L de água por dia.
@@ -442,4 +436,5 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 
 </body>
 </html>
+
 
