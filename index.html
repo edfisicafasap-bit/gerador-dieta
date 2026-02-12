@@ -16,7 +16,6 @@
         button { width:100%; margin-top:30px; padding:18px; background:#FFD700; border:none; border-radius:8px; font-size:16px; font-weight:bold; color:#000; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
         button:disabled { background: #555; cursor: not-allowed; }
         
-        /* Estilo para o botão de status no topo */
         #status-topo { display: none; background: #FFD700; color: #000; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 20px; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
 
@@ -94,7 +93,7 @@
 
         <div style="margin-top: 20px;">
             <label style="display: flex; align-items: center; font-weight: normal; font-size: 12px;">
-                <input type="checkbox" id="aceite-clausula" style="width: 20px; margin-right: 10px;"> Confirmo estar ciente de que este plano alimentar é gerado com finalidade educativa e de que o programa não substitui acompanhamento médico ou nutricional. Caso eu tenha alguma condição de saúde, restrição alimentar ou utilize medicamentos, estou ciente de que devo procurar um profissional de saúde antes de seguir as orientações..
+                <input type="checkbox" id="aceite-clausula" style="width: 20px; margin-right: 10px;"> Confirmo estar ciente de que este plano alimentar é gerado com finalidade educativa e de que o programa não substitui acompanhamento médico ou nutricional...
             </label>
         </div>
 
@@ -154,24 +153,14 @@
         if (urlParams.get('pago') === 'true') {
             const emailSalvo = localStorage.getItem('email_verificacao');
             if (emailSalvo) {
-                console.log("Retorno detectado. Verificando acesso automático...");
                 setTimeout(() => verificarAcessoAutomatico(emailSalvo), 2500);
             }
         }
     }
 
     async function verificarAcessoAutomatico(email) {
-        let { data, error } = await _supabase
-            .from('Usuarios_Dieta')
-            .select('*')
-            .eq('email', email.toLowerCase().trim())
-            .single();
-
-        if (data && data.pago === true) {
-            gerarDieta();
-        } else {
-            alert("Pagamento em processamento. Aguarde um instante e clique em Gerar Plano.");
-        }
+        let { data } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', email.toLowerCase().trim()).single();
+        if (data && data.pago === true) gerarDieta();
     }
 
     function renderizarInterface() {
@@ -191,15 +180,11 @@
 
         const carnePrepCont = document.getElementById('preparo-carnes-container');
         carnePrepCont.innerHTML = '';
-        preparosCarnes.forEach(p => {
-            carnePrepCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-carne" value="${p}"> ${p}</label>`;
-        });
+        preparosCarnes.forEach(p => { carnePrepCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-carne" value="${p}"> ${p}</label>`; });
 
         const peixePrepCont = document.getElementById('preparo-peixes-container');
         peixePrepCont.innerHTML = '';
-        preparosPeixes.forEach(p => {
-            peixePrepCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-peixe" value="${p}"> ${p}</label>`;
-        });
+        preparosPeixes.forEach(p => { peixePrepCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-peixe" value="${p}"> ${p}</label>`; });
     }
 
     function salvarProgressoLocal(emailInput = null) {
@@ -214,34 +199,30 @@
             preparoPeixe: Array.from(document.querySelectorAll('input[name="preparo-peixe"]:checked')).map(i => i.value)
         };
         localStorage.setItem('rascunho_dieta', JSON.stringify(dados));
-        if (emailInput) {
-            localStorage.setItem('email_verificacao', emailInput.toLowerCase().trim());
-        }
+        if (emailInput) localStorage.setItem('email_verificacao', emailInput.toLowerCase().trim());
     }
 
     function recuperarDadosSalvos() {
-        // --- NOVA FUNÇÃO: CAPTURAR DADOS DA URL (Calculadora) ---
         const urlParams = new URLSearchParams(window.location.search);
         const nomeUrl = urlParams.get('nome');
         const caloriasUrl = urlParams.get('calorias');
         const objetivoUrl = urlParams.get('objetivo');
+        const pesoUrl = urlParams.get('peso'); // CAPTURA O PESO AQUI
 
         if (nomeUrl) document.getElementById('nome_usuario').value = nomeUrl;
         if (caloriasUrl) document.getElementById('calorias').value = caloriasUrl;
         if (objetivoUrl) document.getElementById('objetivo').value = objetivoUrl;
+        if (pesoUrl) document.getElementById('peso').value = pesoUrl; // PREENCHE O CAMPO PESO
 
-        // Recuperação do cache local (se houver)
         const salvo = localStorage.getItem('rascunho_dieta');
         if (!salvo) return;
         const d = JSON.parse(salvo);
         
-        // Só preenche do cache se a URL não tiver trazido os dados prioritários
         if (!caloriasUrl) document.getElementById('calorias').value = d.calorias || '';
         if (!objetivoUrl) document.getElementById('objetivo').value = d.objetivo || 'Emagrecimento';
+        if (!pesoUrl) document.getElementById('peso').value = d.peso || '';
         
-        document.getElementById('peso').value = d.peso || '';
         document.getElementById('num-refeicoes').value = d.refeicoes || '4';
-        
         d.alimentos?.forEach(val => {
             const el = document.querySelector(`input[name="alimento"][value="${val}"]`);
             if (el) el.checked = true;
@@ -255,34 +236,19 @@
         
         const emailAcesso = prompt("Digite seu e-mail para acesso:");
         if (!emailAcesso) return;
-        salvorProgressoLocal(emailAcesso);
+        salvarProgressoLocal(emailAcesso);
 
-        let { data, error } = await _supabase
-            .from('Usuarios_Dieta')
-            .select('*')
-            .eq('email', emailAcesso.toLowerCase().trim())
-            .single();
-
-        if (data && data.pago === true) {
-            gerarDieta();
-        } else {
-            document.getElementById('payment-overlay').style.display = 'flex';
-        }
+        let { data } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', emailAcesso.toLowerCase().trim()).single();
+        if (data && data.pago === true) { gerarDieta(); } else { document.getElementById('payment-overlay').style.display = 'flex'; }
     }
 
     async function iniciarCheckout(priceId) {
         try {
             salvarProgressoLocal();
-            const response = await fetch('/api/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ priceId: priceId })
-            });
+            const response = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ priceId: priceId }) });
             const session = await response.json();
             if (session.url) window.location.href = session.url;
-        } catch (err) {
-            alert("Erro ao conectar com Stripe.");
-        }
+        } catch (err) { alert("Erro ao conectar com Stripe."); }
     }
 
     function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
@@ -290,74 +256,28 @@
    async function gerarDieta() {
         const d = JSON.parse(localStorage.getItem('rascunho_dieta'));
         if (!d) return alert("Erro ao recuperar dados.");
-        
         const btn = document.getElementById('btn-gerar');
         const statusTopo = document.getElementById('status-topo');
-
         statusTopo.style.display = 'block';
         btn.innerText = "ORGANIZANDO SUAS REFEIÇÕES......";
         btn.disabled = true;
 
-        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Nome do Cliente: ${d.nome || 'Cliente'}. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos: ${d.preparoCarne.join(', ')}.
-
-🚨 DIRETRIZES SUPREMAS
-CÁLCULO DA DIETA: Proteína: 1.8-2.2g/kg, Gordura: 1g/kg, Carbo: Restante. Use bases científicas (TACO/TBCA), NÃO CRIE TABELAS DE MACRO NUTRIENTES FICTICIOS, UTILIZE SOMENTE MACROS REAIS DOS ALIMENTOS!.
-Alimentos permitidos: Utilize receitas e pratos somente que contenham os alimentos previamente selecionados, não crie receitas que não contenham alimentos mencionados.
-Proibido Alimentos Soltos: Nunca liste ingredientes isolados (ex: "30g de aveia"). Transforme-os em preparações (ex: "Mingau de aveia").
-Base Obrigatória: No Almoço e Jantar, se houver Arroz e/ou Feijão nos ingredientes, eles devem obrigatoriamente compor a base da refeição.
-Coerência Cultural: As refeições devem respeitar os hábitos brasileiros (Café, Almoço, Lanche, Jantar).
-
-🍽️ ESTRUTURA E OPÇÕES
-Para cada refeição, você deve apresentar duas opções com macros equivalentes:
-Opção A (Padrão): Segue as regras de cada horário. No almoço/jantar, priorize arroz e feijão como base.
-Opção B (Variação): Deve ter macros (Proteína, Gordura, Carbo) semelhantes à Opção A.
-Regra Especial Opção B: No Almoço e Jantar, a Opção B deve ser obrigatoriamente sem arroz e sem feijão (utilize batata, macarrão, mandioca, etc., como base).
-
-📋 REGRAS POR HORÁRIO
-CAFÉ DA MANHÃ: Máximo 3 itens. Transformar em: Bowl, Shake, Vitamina, Sanduíche ou Omelete.
-LANCHES: Foco em portabilidade e simplicidade.
-ALMOÇO/JANTAR: Estrutura [Base de Carboidrato] + [Proteína] + [Legumes/Salada].
-Jantar pode ser mais leve, mas deve manter a estrutura de refeição completa.
-
-📊 RESUMO DE MACROS
-Ao final de todo o cardápio, apresente uma seção de "Macros Totais das Refeições Principais", contendo a soma aproximada de Proteínas, Gorduras e Carboidratos de todas as refeições geradas.
-
-🛠️ FORMATO DE SAÍDA (Exemplo)
-[NOME DA REFEIÇÃO]
-Opção A: [Nome do prato com arroz/feijão] + Ingredientes + Modo rápido de preparo.
-Opção B: [Nome do prato sem arroz/feijão] + Ingredientes + Modo rápido de preparo.
-
-✅ PROTOCOLO DE VALIDAÇÃO
-Antes de exibir, valide: "A Opção B de almoço/jantar está sem arroz e feijão? Os macros estão equilibrados? O prato parece algo que se come no Brasil?"
-
-ITENS COMPLEMENTARES:
-1. HIDRATAÇÃO: Informe a recomendação de ${(parseFloat(d.peso) * 0.035).toFixed(1)}L de água por dia.
-2. DATA: ${new Date().toLocaleString()}.
-3. RODAPÉ: Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional.`;
+        const promptFinal = `Atue como um Nutricionista Prático. Nome do Cliente: ${d.nome || 'Cliente'}. Peso Atual: ${d.peso}kg. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos: ${d.preparoCarne.join(', ')}. 🚨 DIRETRIZES: Proteína: 1.8-2.2g/kg, Gordura: 1g/kg, Carbo: Restante. Transforme ingredientes em pratos reais. No almoço/jantar, Opção A com arroz/feijão e Opção B sem arroz/feijão.`;
 
         try {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${FINAL_KEY}` },
-                body: JSON.stringify({ 
-                    model: "gpt-3.5-turbo", 
-                    messages: [{role: "system", content: "Nutricionista preciso."}, {role: "user", content: promptFinal}], 
-                    temperature: 0.2 
-                })
+                body: JSON.stringify({ model: "gpt-3.5-turbo", messages: [{role: "system", content: "Nutricionista preciso."}, {role: "user", content: promptFinal}], temperature: 0.2 })
             });
             const result = await response.json();
             const texto = result.choices[0].message.content;
             document.getElementById('resultado').innerText = texto;
             document.getElementById('resultado').style.display = 'block';
             baixarPDF(texto);
-
             localStorage.removeItem('rascunho_dieta');
             localStorage.removeItem('email_verificacao');
-            document.getElementById('resultado').scrollIntoView({ behavior: 'smooth' });
-
-        } catch (e) {
-            alert("Erro ao falar com a IA.");
-        } finally {
+        } catch (e) { alert("Erro ao falar com a IA."); } finally {
             btn.innerText = "GERAR E BAIXAR PLANO";
             btn.disabled = false;
             statusTopo.style.display = 'none';
