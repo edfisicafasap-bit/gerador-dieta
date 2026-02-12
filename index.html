@@ -305,14 +305,19 @@
     }
 
     async function executarGeracaoComConsumo(tipo, email, contagemAtual = 0) {
-        // AJUSTE: O consumo é registrado NO BANCO antes da geração para evitar que falhas na IA permitam gerações infinitas
+        // Obter os dados locais ANTES de atualizar o banco ou limpar qualquer coisa
+        const dadosLocais = localStorage.getItem('rascunho_dieta');
+        if (!dadosLocais) return alert("Erro ao recuperar dados. Por favor, preencha o formulário.");
+
+        // Atualizar banco de dados para computar o uso
         if (tipo === 'unica') {
             await _supabase.from('Usuarios_Dieta').update({ creditos: 0, pago: false, ultima_geracao: new Date().toISOString() }).eq('email', email);
         } else {
             await _supabase.from('Usuarios_Dieta').update({ contagem_semanal: contagemAtual + 1, ultima_geracao: new Date().toISOString() }).eq('email', email);
         }
         
-        const sucesso = await gerarDieta(); 
+        // Chamar a geração passando os dados diretamente para evitar erro de leitura
+        const sucesso = await gerarDieta(JSON.parse(dadosLocais)); 
         if (sucesso) {
             limparDadosInterface();
         }
@@ -325,8 +330,7 @@
         document.getElementById('num-refeicoes').value = '4';
         document.getElementById('objetivo').value = 'Emagrecimento';
         document.getElementById('aceite-clausula').checked = false;
-        document.querySelectorAll('input[name="alimento"]').forEach(cb => cb.checked = false);
-        document.querySelectorAll('input[name="preparo-geral"]').forEach(cb => cb.checked = false);
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
     }
 
     async function iniciarCheckout(priceId) {
@@ -343,9 +347,8 @@
 
     function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
 
-    async function gerarDieta() {
-        const d = JSON.parse(localStorage.getItem('rascunho_dieta'));
-        if (!d) return alert("Erro ao recuperar dados.");
+    async function gerarDieta(d) {
+        if (!d) return alert("Dados insuficientes.");
         
         const btn = document.getElementById('btn-gerar');
         const statusTopo = document.getElementById('status-topo');
@@ -354,7 +357,7 @@
         btn.innerText = "IA PROCESSANDO...";
         btn.disabled = true;
 
-        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados: ${d.preparos.join(', ')}.
+        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real. Gere um plano de ${d.calorias}kcal for ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados: ${d.preparos.join(', ')}.
         🚨 DIRETRIZES: Macros Reais (Proteína: 2g/kg). Opção A (com arroz/feijão se selecionados) e Opção B (sem arroz/feijão). Informe a hidratação de ${(parseFloat(d.peso) * 35 / 1000).toFixed(1)}L.`;
 
         try {
