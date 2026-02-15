@@ -123,17 +123,6 @@
             <div id="preparos-unificados-container" class="grid-alimentos"></div>
         </div>
 
-        <div id="pergunta-extra-container" style="margin-top: 25px;">
-            <label>Sentil falta de algum alimento?</label>
-            <select id="escolha-extra" onchange="toggleCaixaExtra()">
-                <option value="nao">NÃO</option>
-                <option value="sim">SIM</option>
-            </select>
-            <div id="caixa-extra" style="display: none; margin-top: 10px;">
-                <textarea id="alimentos-extras" placeholder="Digite aqui os alimentos adicionais que deseja incluir no seu plano..."></textarea>
-            </div>
-        </div>
-
         <div style="margin-top: 20px;">
             <label style="display: flex; align-items: center; font-weight: normal; font-size: 12px;">
                 <input type="checkbox" id="aceite-clausula" style="width: 20px; margin-right: 10px;"> Confirmo estar ciente de que este plano alimentar é gerado com finalidade educativa e de que o programa não substitui acompanhamento médico ou nutricional.
@@ -186,11 +175,6 @@
     };
 
     const preparosUnificados = ["Cozido", "Assado", "Grelhado", "Refogado", "Na Airfryer", "Na frigideira", "Moído", "Desfiado", "Cozido no vapor", "Ensopado"];
-
-    function toggleCaixaExtra() {
-        const escolha = document.getElementById('escolha-extra').value;
-        document.getElementById('caixa-extra').style.display = (escolha === 'sim') ? 'block' : 'none';
-    }
 
     async function inicializarTudo() {
         renderizarInterface();
@@ -258,8 +242,7 @@
             objetivo: document.getElementById('objetivo').value,
             nome: document.getElementById('nome_usuario').value,
             alimentos: Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value),
-            preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value),
-            extras: document.getElementById('escolha-extra').value === 'sim' ? document.getElementById('alimentos-extras').value : ''
+            preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value)
         };
         localStorage.setItem('rascunho_dieta', JSON.stringify(dados));
         if (emailInput) localStorage.setItem('email_verificacao', emailInput.toLowerCase().trim());
@@ -344,9 +327,6 @@
         document.getElementById('objetivo').value = 'Emagrecimento';
         document.getElementById('aceite-clausula').checked = false;
         document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-        document.getElementById('alimentos-extras').value = '';
-        document.getElementById('escolha-extra').value = 'nao';
-        toggleCaixaExtra();
     }
 
     async function iniciarCheckout(priceId) {
@@ -373,12 +353,7 @@
         btn.innerText = "AGUARDE...";
         btn.disabled = true;
 
-        const todosAlimentos = d.alimentos.join(', ') + (d.extras ? ', ' + d.extras : '');
-
-       const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. 
-
-Alimentos disponíveis (SOMENTE estes podem ser usados): ${todosAlimentos}. 
-Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
+       const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
 🚨 DIRETRIZES SUPREMAS
 CÁLCULO DA DIETA: Proteína: 1.8-2.2g/kg, Gordura: 1g/kg, Carbo: Restante. Use bases científicas (TACO/TBCA), NÃO CRIE TABELAS DE MACRO NUTRIENTES FICTICIOS, UTILIZE SOMENTE MACROS REAIS DOS ALIMENTOS!.
@@ -387,34 +362,28 @@ Proibido Alimentos Soltos: Nunca liste ingredientes isolados (ex: "30g de aveia"
 Base Obrigatória: No Almoço e Jantar, se houver Arroz e/ou Feijão nos ingredientes, eles devem obrigatoriamente compor a base da refeição.
 Coerência Cultural: As refeições devem respeitar os hábitos brasileiros (Café, Almoço, Lanche, Jantar).
 
-🚨 ESTRUTURA OBRIGATÓRIA DE REFEIÇÕES:
-Se o usuário escolheu 4 refeições, use exatamente: CAFÉ DA MANHA, ALMOÇO, CAFÉ DA TARDE e JANTA.
-Se o usuário escolheu 5 refeições, use exatamente: CAFÉ DA MANHA, ALMOÇO, CAFÉ DA TARDE, JANTA e CEIA.
-Se o usuário escolheu 6 refeições, use exatamente: DESJEJUM, CAFÉ DA MANHA, ALMOÇO, CAFÉ DA TARDE, JANTA e CEIA.
-
 🍽️ ESTRUTURA E OPÇÕES
 Para cada refeição, você deve apresentar duas opções com macros equivalentes:
 Opção A (Padrão): Segue as regras de cada horário. No almoço/jantar, priorize arroz e feijão como base.
 Opção B (Variação): Deve ter macros (Proteína, Gordura, Carbo) semelhantes à Opção A.
 Regra Especial Opção B: No Almoço e Jantar, a Opção B deve ser obrigatoriamente sem arroz e sem feijão (utilize batata, macarrão, mandioca, etc., como base).
-Regra obrigatória: salada deve ser adicionada somente em sanduíches, almoço e janta.
 
 📋 REGRAS POR HORÁRIO
 CAFÉ DA MANHÃ: Máximo 3 itens. Transformar em: Bowl, Shake, Vitamina, Sanduíche ou Omelete. 
-LANCHES: Foco em portabilidade e simplicidade.
+LANCHES, DESJEJUM E CAFÉ DA TARDE: Foco em portabilidade e simplicidade.
 ALMOÇO/JANTAR: Estrutura [Base de Carboidrato] + [Proteína] + [Legumes/Salada].
 Jantar pode ser mais leve, mas deve manter a estrutura de refeição completa.
-
-📊 RESUMO DE MACROS
-Ao final de todo o cardápio, apresente uma seção de "Macros Totais das Refeições Principais", contendo a soma aproximada de Proteínas, Gorduras e Carboidratos de todas as refeições geradas. não crie tabela ficticia, use os dados reais dos alimentos.
+CEIA: REFEIÇÕES SUPER LEVES, COMO UMA FRUTA, OU FRUTA + WHEY, OU IOGURTE...
 
 🛠️ FORMATO DE SAÍDA (Exemplo)
-[NOME DA REFEIÇÃO]
-Opção A: [Nome do prato com arroz/feijão] + Ingredientes + salada à vontade.
-Opção B: [Nome do prato sem arroz/feijão] + Ingredientes + salada à vontade.
+Opção A: [Nome do prato com arroz/feijão] + Ingredientes 
+Opção B: [Nome do prato sem arroz/feijão] + Ingredientes 
+
+📊 RESUMO DE MACROS
+Ao final de todo o cardápio, apresente uma seção de "Macros Totais das Refeições Principais", contendo a soma aproximada de Proteínas, Gorduras e Carboidratos de todas as refeições geradas. não crie tabela ficticia E use apenas os dados reais dos alimentos.
 
 ✅ PROTOCOLO DE VALIDAÇÃO
-Antes de exibir, valide: "A Opção B de almoço/jantar está sem arroz e feijão? Os macros estão equilibrados? O prato parece algo que se come no Brasil?"
+Antes de exibir, valide: "A Opção B de almoço/jantar está sem arroz e feijão? Os macros estão equilibrados? O prato parece algo que se come no Brasil? só prossiga caso seja refeições reais, caso contrário, refaça!"
 
 ITENS COMPLEMENTARES:
 1. HIDRATAÇÃO: Informe a recomendação de ${(parseFloat(d.peso) * 0.035).toFixed(1)}L de água por dia.
@@ -467,3 +436,6 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 
 </body>
 </html>
+
+
+
