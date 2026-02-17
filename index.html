@@ -365,7 +365,7 @@ const pesoNum = parseFloat(d.peso);
 
        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
-🚨 DIRETRIZES SUPREMAS
+DIRETRIZES SUPREMAS
 
 DETERMINAÇÃO DE REFEIÇÕES (SIGA RIGOROSAMENTE):
 - O plano deve ter EXATAMENTE ${d.refeicoes} REFEIÇÕES. Nem mais, nem menos.
@@ -374,7 +374,7 @@ DETERMINAÇÃO DE REFEIÇÕES (SIGA RIGOROSAMENTE):
 - Se 6 refeições: 1. Desjejum, 2. Café da Manhã, 3. Almoço, 4. Café da Tarde, 5. Jantar, 6. Ceia.
 
 
-📋 REGRAS POR HORÁRIO
+REGRAS POR HORÁRIO
 CAFÉ DA MANHÃ: Máximo 3 itens. Transformar em: Bowl, Shake, Vitamina, Sanduíche ou Omelete. 
 LANCHES, DESJEJUM E CAFÉ DA TARDE: Foco em portabilidade e simplicidade.
 ALMOÇO/JANTAR: Estrutura [Base de Carboidrato] + [Proteína] + [Legumes/Salada].
@@ -389,7 +389,7 @@ Base Obrigatória: No Almoço e Jantar, se houver Arroz e/ou Feijão nos ingredi
 Coerência Cultural: As refeições devem respeitar os hábitos brasileiros (Café, Almoço, Lanche, Jantar).
 
 PLANEJAMENTO ALIMENTAR ESTRUTURADO
-🟦 BLOCO 1: OPÇÕES A (PADRÃO)
+BLOCO 1: OPÇÕES A (PADRÃO)
 Nesta seção, as refeições seguem a base tradicional, priorizando arroz e feijão no almoço e jantar. ex:
 
 Café da Manhã
@@ -404,12 +404,12 @@ Ingredientes: [Lista detalhada com quantidades]
 Jantar: 
 Ingredientes: [Lista detalhada com arroz, feijão e proteína + legumes + salada à vontade]
 
-📊 RESUMO DE MACROS (OPÇÕES A)
+RESUMO DE MACROS (OPÇÕES A)
 Proteínas Totais: [Soma Real]g
 Carboidratos Totais: [Soma Real]g
 Gorduras Totais: [Soma Real]g
 
-🟧 BLOCO 2: OPÇÕES B (VARIAÇÃO)
+BLOCO 2: OPÇÕES B (VARIAÇÃO)
 Nesta seção, as refeições possuem macros equivalentes ao Bloco 1. No almoço e jantar, é proibido o uso de arroz e feijão.
 
 Café da Manhã: 
@@ -424,13 +424,14 @@ Ingredientes: [Lista detalhada com macros equivalentes à Opção A]
 Jantar: 
 Ingredientes: [Base de batata, macarrão, mandioca ou similar + proteína + legumes + salada à vontade]
 
-📊 RESUMO DE MACROS (OPÇÕES B)
+RESUMO DE MACROS (OPÇÕES B)
 Proteínas Totais: [Soma Real]g
 Carboidratos Totais: [Soma Real]g
 Gorduras Totais: [Soma Real]g
 
-✅ PROTOCOLO DE VALIDAÇÃO
+PROTOCOLO DE VALIDAÇÃO
 Antes de exibir, valide: "A Opção B de almoço/jantar está sem arroz e feijão? Os macros estão equilibrados? O prato parece algo que se come no Brasil? só prossiga caso seja refeições reais, caso contrário, refaça!"
+IMPORTANTE: Valide internamente, mas não escreva esta validação ou protocolo no resultado final.
 
 ITENS COMPLEMENTARES:
 1. HIDRATAÇÃO: Informe a recomendação de ${(parseFloat(d.peso) * 0.035).toFixed(1)}L de água por dia.
@@ -483,6 +484,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 
 </body>
 </html>
+
 
 
 
