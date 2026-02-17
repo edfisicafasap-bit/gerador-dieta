@@ -155,7 +155,6 @@
             "Batata Doce": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Frita na airfryer"],
             "Mandioca": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Frita na airfryer"],
             "Pão": ["Francês", "Forma branco", "Forma integral", "Integral com grãos", "Sírio", "De aveia"],
-            "Panqueca": ["Tradicional", "Americana", "De banana", "De aveia", "Integral"],
             "Tapioca": ["Tradicional", "Hidratada", "Integral"],
             "Aveia": ["Em flocos finos", "Em flocos", "Farinha", "Farelo"],
             "Flocão de Milho": ["Tradicional", "Integral"]
@@ -167,11 +166,11 @@
             "Ovos": ["Mexidos", "Cozidos", "Omelete", "Pochê", "Frito na água", "Frito com um fio de azeite", "Mexidos com tomate e cebola"]
         },
         "PEIXES": { "Peixes": ["Filé de tilápia", "Filé de merluza", "Filé de linguado", "Filé de atum fresco"] },
-        "GORDURAS": { "Gorduras Boas": ["Abacate", "Azeite de oliva extra virgem", "Castanha-do-pará", "Castanha de caju", "Amêndoas", "Nozes", "Amendoim (natural)", "Pasta de amendoim integral", "Manteiga"] },
+        "GORDURAS": { "Gorduras Boas": ["Abacate", "Azeite de oliva extra virgem", "Castanha-do-pará", "Castanha de caju", "Amêndoas", "Nozes", "Amendoim (natural)", "Pasta de amendoim integral"] },
         "LEGUMES": { "Legumes": ["Cenoura", "Brócolis", "Couve-flor", "Abobrinha", "Abóbora", "Berinjela", "Espinafre", "Chuchu", "Quiabo", "Vagem", "Pepino", "Beterraba", "Pimentão", "Couve"] },
         "FRUTAS": { "Frutas": ["Banana", "Maçã", "Mamão", "Laranja", "Abacaxi", "Melancia", "Melão", "Manga", "Morango", "Uva", "Goiaba", "Pêra", "Kiwi", "Caju", "Limão", "Acerola", "Tangerina", "Abacate"] },
         "SEMENTES": { "Sementes": ["Chia", "Linhaça", "Semente de abóbora", "Semente de girassol", "Gergelim", "Quinoa (semente)"] },
-        "OUTROS": { "Outros": ["Peito de peru", "Iogurte Natural", "Leite Integral", "Leite Desnatado", "Ricota", "Queijo Minas", "Whey Protein", "Mel"] }
+    "OUTROS": { "Outros": ["Peito de peru", "Iogurte Natural", "Leite Integral", "Leite Desnatado",  "Leite s/Lactose", "Leite De Amendoas", "Leite de soja", "Ricota", "Queijo Minas", "Queijo Muçarela", "Whey Protein", "Mel"] }
     };
 
     const preparosUnificados = ["Cozido", "Assado", "Grelhado", "Refogado", "Na Airfryer", "Na frigideira", "Moído", "Desfiado", "Cozido no vapor", "Ensopado"];
@@ -367,11 +366,13 @@ const pesoNum = parseFloat(d.peso);
 
 DIRETRIZES SUPREMAS
 
-DETERMINAÇÃO DE REFEIÇÕES (SIGA RIGOROSAMENTE):
-- O plano deve ter EXATAMENTE ${d.refeicoes} REFEIÇÕES. Nem mais, nem menos.
-- Se 4 refeições: 1. Café da Manhã, 2. Almoço, 3. Café da Tarde, 4. Jantar.
-- Se 5 refeições: 1. Café da Manhã, 2. Almoço, 3. Café da Tarde, 4. Jantar, 5. Ceia.
-- Se 6 refeições: 1. Desjejum, 2. Café da Manhã, 3. Almoço, 4. Café da Tarde, 5. Jantar, 6. Ceia.
+DETERMINAÇÃO DE REFEIÇÕES:
+Voce deve gerar EXATAMENTE ${d.refeicoes} refeicoes.
+- Se ${d.refeicoes} for 4: Use (1. Cafe da Manha, 2. Almoco, 3. Cafe da Tarde, 4. Jantar).
+- Se ${d.refeicoes} for 5: Use (1. Cafe da Manha, 2. Almoco, 3. Cafe da Tarde, 4. Jantar, 5. Ceia).
+- Se ${d.refeicoes} for 6: Use (1. Desjejum, 2. Cafe da Manha, 3. Almoco, 4. Cafe da Tarde, 5. Jantar, 6. Ceia).
+
+DICA: Nunca pule o Cafe da Tarde entre o Almoco e o Jantar.
 
 
 REGRAS POR HORÁRIO
@@ -389,45 +390,25 @@ Base Obrigatória: No Almoço e Jantar, se houver Arroz e/ou Feijão nos ingredi
 Coerência Cultural: As refeições devem respeitar os hábitos brasileiros (Café, Almoço, Lanche, Jantar).
 
 PLANEJAMENTO ALIMENTAR ESTRUTURADO
+PLANEJAMENTO ALIMENTAR ESTRUTURADO
+
 BLOCO 1: OPÇÕES A (PADRÃO)
-Nesta seção, as refeições seguem a base tradicional, priorizando arroz e feijão no almoço e jantar. ex:
-
-Café da Manhã
-Ingredientes: [Lista detalhada com quantidades]
-
-Almoço:
-Ingredientes: [Lista detalhada com arroz, feijão e proteína + legumes + salada à vontade]
-
-Lanche:
-Ingredientes: [Lista detalhada com quantidades]
-
-Jantar: 
-Ingredientes: [Lista detalhada com arroz, feijão e proteína + legumes + salada à vontade]
+Nesta seção, gere as ${d.refeicoes} refeições seguindo os nomes definidos nas "DIRETRIZES SUPREMAS". Priorize arroz e feijão no almoço e jantar.
+Para cada uma das ${d.refeicoes} refeições, liste:
+- Nome da Refeicao
+- Ingredientes (com quantidades)
 
 RESUMO DE MACROS (OPÇÕES A)
-Proteínas Totais: [Soma Real]g
-Carboidratos Totais: [Soma Real]g
-Gorduras Totais: [Soma Real]g
+Proteinas Totais: [Soma Real]g | Carboidratos Totais: [Soma Real]g | Gorduras Totais: [Soma Real]g
 
 BLOCO 2: OPÇÕES B (VARIAÇÃO)
-Nesta seção, as refeições possuem macros equivalentes ao Bloco 1. No almoço e jantar, é proibido o uso de arroz e feijão.
-
-Café da Manhã: 
-Ingredientes: [Lista detalhada com macros equivalentes à Opção A]
-
-Almoço: 
-Ingredientes: [Base de batata, macarrão, mandioca ou similar + proteína + legumes + salada à vontade]
-
-Lanche: 
-Ingredientes: [Lista detalhada com macros equivalentes à Opção A]
-
-Jantar: 
-Ingredientes: [Base de batata, macarrão, mandioca ou similar + proteína + legumes + salada à vontade]
+Nesta seção, gere as mesmas ${d.refeicoes} refeições com macros equivalentes ao Bloco 1. No almoço e jantar, é proibido o uso de arroz e feijão.
+Para cada uma das ${d.refeicoes} refeições, liste:
+- Nome da Refeicao
+- Ingredientes (com quantidades)
 
 RESUMO DE MACROS (OPÇÕES B)
-Proteínas Totais: [Soma Real]g
-Carboidratos Totais: [Soma Real]g
-Gorduras Totais: [Soma Real]g
+Proteinas Totais: [Soma Real]g | Carboidratos Totais: [Soma Real]g | Gorduras Totais: [Soma Real]g
 
 PROTOCOLO DE VALIDAÇÃO
 Antes de exibir, valide: "A Opção B de almoço/jantar está sem arroz e feijão? Os macros estão equilibrados? O prato parece algo que se come no Brasil? só prossiga caso seja refeições reais, caso contrário, refaça!"
@@ -484,6 +465,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 
 </body>
 </html>
+
 
 
 
