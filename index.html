@@ -353,14 +353,25 @@
         btn.innerText = "AGUARDE...";
         btn.disabled = true;
 
+const pesoNum = parseFloat(d.peso);
+    const calTotal = parseInt(d.calorias);
+    
+    const gProteina = (pesoNum * 2).toFixed(0); // 2g por kg
+    const gGordura = (pesoNum * 1).toFixed(0);  // 1g por kg
+    
+    // Cálculo do Carboidrato: (Total de Calorias - Calorias de Prot e Gord) / 4
+    const calRestantes = calTotal - ((gProteina * 4) + (gGordura * 9));
+    const gCarbo = (calRestantes / 4).toFixed(0);
+
        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
 🚨 DIRETRIZES SUPREMAS
 
-REGRA OBRIGATÓRIA PARA MONTAGEM DAS REFEIÇÕES: 
-- SE SELECIONADO 4 REFEIÇÕES A MONTAGEM DA DIETA SERÁ: 1- CAFÉ DA MANHA, 2 ALMOÇO, 3 CAFÉ DA TARDE, 4 JANTA
-- SE SELECIONADO 5 REFEIÇÕES A MONTAGEM DA DIETA SERÁ: 1- CAFÉ DA MANHA, 2 ALMOÇO, 3 CAFÉ DA TARDE, 4 JANTA, 5 CEIA
-- SE SELECIONADO 6 REFEIÇÕES A MONTAGEM DA DIETA SERÁ: 1- DESJEJUM, 2 CAFÉ DA MANHA, 3 ALMOÇO, 4 CAFÉ DA TARDE, 5 JANTA, 6 CEIA
+DETERMINAÇÃO DE REFEIÇÕES (SIGA RIGOROSAMENTE):
+- O plano deve ter EXATAMENTE ${d.refeicoes} REFEIÇÕES. Nem mais, nem menos.
+- Se 4 refeições: 1. Café da Manhã, 2. Almoço, 3. Café da Tarde, 4. Jantar.
+- Se 5 refeições: 1. Café da Manhã, 2. Almoço, 3. Café da Tarde, 4. Jantar, 5. Ceia.
+- Se 6 refeições: 1. Desjejum, 2. Café da Manhã, 3. Almoço, 4. Café da Tarde, 5. Jantar, 6. Ceia.
 
 
 📋 REGRAS POR HORÁRIO
@@ -405,9 +416,9 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${FINAL_KEY}` },
                 body: JSON.stringify({ 
-                    model: "gpt-3.5-turbo", 
+                    model: "gpt-4o-mini", 
                     messages: [{role: "system", content: "Nutricionista preciso."}, {role: "user", content: promptFinal}], 
-                    temperature: 0.2 
+                    temperature: 0.3 
                 })
             });
             const result = await response.json();
@@ -444,6 +455,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 
 </body>
 </html>
+
 
 
 
