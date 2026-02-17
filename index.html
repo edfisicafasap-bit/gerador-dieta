@@ -397,6 +397,7 @@ Nesta seção, gere as ${d.refeicoes} refeições seguindo os nomes definidos na
 Para cada uma das ${d.refeicoes} refeições, liste:
 - Nome da Refeicao
 - Ingredientes (com quantidades)
+IMPORTANTE: não repita "nome da refeicao" apenas escreva ela. Ex: oq não fazer: - Nome da Refeição: Omelete de Brócolis e Queijo | o que fazer: Omelete de Brócolis e Queijo
 
 RESUMO DE MACROS (OPÇÕES A)
 Proteinas Totais: [Soma Real]g | Carboidratos Totais: [Soma Real]g | Gorduras Totais: [Soma Real]g
@@ -406,7 +407,7 @@ Nesta seção, gere as mesmas ${d.refeicoes} refeições com macros equivalentes
 Para cada uma das ${d.refeicoes} refeições, liste:
 - Nome da Refeicao
 - Ingredientes (com quantidades)
-
+IMPORTANTE: não repita "nome da refeicao" apenas escreva ela. Ex: oq não fazer: - Nome da Refeição: Omelete de Brócolis e Queijo | o que fazer: Omelete de Brócolis e Queijo
 RESUMO DE MACROS (OPÇÕES B)
 Proteinas Totais: [Soma Real]g | Carboidratos Totais: [Soma Real]g | Gorduras Totais: [Soma Real]g
 
@@ -450,6 +451,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
     function baixarPDF(conteudo) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
+        const textoLimpo = conteudo.replace(/[#*]/g, '');
         doc.setFontSize(10);
         const lines = doc.splitTextToSize(conteudo, 180);
         let y = 20;
@@ -465,6 +467,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 
 </body>
 </html>
+
 
 
 
