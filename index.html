@@ -356,7 +356,22 @@
        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
 🚨 DIRETRIZES SUPREMAS
-CÁLCULO DA DIETA: Proteína: 1.8-2.2g/kg, Gordura: 1g/kg, Carbo: Restante. Use bases científicas (TACO/TBCA), NÃO CRIE TABELAS DE MACRO NUTRIENTES FICTICIOS, UTILIZE SOMENTE MACROS REAIS DOS ALIMENTOS!.
+
+REGRA OBRIGATÓRIA PARA MONTAGEM DAS REFEIÇÕES: 
+- SE SELECIONADO 4 REFEIÇÕES A MONTAGEM DA DIETA SERÁ: 1- CAFÉ DA MANHA, 2 ALMOÇO, 3 CAFÉ DA TARDE, 4 JANTA
+- SE SELECIONADO 5 REFEIÇÕES A MONTAGEM DA DIETA SERÁ: 1- CAFÉ DA MANHA, 2 ALMOÇO, 3 CAFÉ DA TARDE, 4 JANTA, 5 CEIA
+- SE SELECIONADO 6 REFEIÇÕES A MONTAGEM DA DIETA SERÁ: 1- DESJEJUM, 2 CAFÉ DA MANHA, 3 ALMOÇO, 4 CAFÉ DA TARDE, 5 JANTA, 6 CEIA
+
+
+📋 REGRAS POR HORÁRIO
+CAFÉ DA MANHÃ: Máximo 3 itens. Transformar em: Bowl, Shake, Vitamina, Sanduíche ou Omelete. 
+LANCHES, DESJEJUM E CAFÉ DA TARDE: Foco em portabilidade e simplicidade.
+ALMOÇO/JANTAR: Estrutura [Base de Carboidrato] + [Proteína] + [Legumes/Salada].
+Jantar pode ser mais leve, mas deve manter a estrutura de refeição completa.
+CEIA: REFEIÇÕES SUPER LEVES, COMO UMA FRUTA, OU FRUTA + WHEY, OU IOGURTE...
+
+CÁLCULO DA DIETA:   A PROTEINA DEVE TER O ENTRE 1.8 A 2.2g POR kg CORPORAL DA PESSOA, a Gordura 1g por kg corporal e o Carboidrato deve complementar o Restante das calorias, seja o mais rigoroso possivel nesse critério para chegar o mais proximo da meta possivel!  Use bases científicas (TACO/TBCA), NÃO CRIE TABELAS DE MACRO NUTRIENTES FICTICIOS, UTILIZE SOMENTE MACROS REAIS DOS ALIMENTOS!.
+
 Alimentos permitidos: Utilize receitas e pratos somente que contenham os alimentos previamente selecionados, não crie receitas que não contenham alimentos mencionados.
 Proibido Alimentos Soltos: Nunca liste ingredientes isolados (ex: "30g de aveia"). Transforme-os em preparações (ex: "Mingau de aveia").
 Base Obrigatória: No Almoço e Jantar, se houver Arroz e/ou Feijão nos ingredientes, eles devem obrigatoriamente compor a base da refeição.
@@ -368,19 +383,12 @@ Opção A (Padrão): Segue as regras de cada horário. No almoço/jantar, priori
 Opção B (Variação): Deve ter macros (Proteína, Gordura, Carbo) semelhantes à Opção A.
 Regra Especial Opção B: No Almoço e Jantar, a Opção B deve ser obrigatoriamente sem arroz e sem feijão (utilize batata, macarrão, mandioca, etc., como base).
 
-📋 REGRAS POR HORÁRIO
-CAFÉ DA MANHÃ: Máximo 3 itens. Transformar em: Bowl, Shake, Vitamina, Sanduíche ou Omelete. 
-LANCHES, DESJEJUM E CAFÉ DA TARDE: Foco em portabilidade e simplicidade.
-ALMOÇO/JANTAR: Estrutura [Base de Carboidrato] + [Proteína] + [Legumes/Salada].
-Jantar pode ser mais leve, mas deve manter a estrutura de refeição completa.
-CEIA: REFEIÇÕES SUPER LEVES, COMO UMA FRUTA, OU FRUTA + WHEY, OU IOGURTE...
-
 🛠️ FORMATO DE SAÍDA (Exemplo)
 Opção A: [Nome do prato com arroz/feijão] + Ingredientes 
 Opção B: [Nome do prato sem arroz/feijão] + Ingredientes 
 
 📊 RESUMO DE MACROS
-Ao final de todo o cardápio, apresente uma seção de "Macros Totais das Refeições Principais", contendo a soma aproximada de Proteínas, Gorduras e Carboidratos de todas as refeições geradas. não crie tabela ficticia E use apenas os dados reais dos alimentos.
+Ao final de toda refeição, apresente uma seção de "Macros Totais das Refeições Principais", contendo a soma de Proteínas, Gorduras e Carboidratos de todas as refeições geradas. não crie tabela ficticia E use apenas os dados reais dos alimentos.
 
 ✅ PROTOCOLO DE VALIDAÇÃO
 Antes de exibir, valide: "A Opção B de almoço/jantar está sem arroz e feijão? Os macros estão equilibrados? O prato parece algo que se come no Brasil? só prossiga caso seja refeições reais, caso contrário, refaça!"
@@ -436,6 +444,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 
 </body>
 </html>
+
 
 
 
