@@ -422,31 +422,36 @@ ITENS COMPLEMENTARES:
 ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional."`;
 
 
-        try {
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${FINAL_KEY}` },
-                body: JSON.stringify({ 
-                    model: "gpt-4o-mini", 
-                    messages: [{role: "system", content: "Nutricionista preciso."}, {role: "user", content: promptFinal}], 
-                    temperature: 0.3 
-                })
-            });
-            const result = await response.json();
-            const texto = result.choices[0].message.content;
-            document.getElementById('resultado').innerText = texto;
-            document.getElementById('resultado').style.display = 'block';
-            baixarPDF(texto);
-            return true;
-        } catch (e) { 
-            alert("Erro ao falar com a IA.");
-            return false;
-        } finally {
-            btn.innerText = "GERAR E BAIXAR PLANO";
-            btn.disabled = false;
-            statusTopo.style.display = 'none';
-        }
-    }
+try {
+    const response = await fetch('/api/gerar-dieta', {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+            prompt: promptFinal
+        })
+    });
+
+    const result = await response.json();
+
+    const texto = result.choices[0].message.content;
+
+    document.getElementById('resultado').innerText = texto;
+    document.getElementById('resultado').style.display = 'block';
+    baixarPDF(texto);
+    return true;
+
+} catch (e) { 
+    console.error(e);
+    alert("Erro ao falar com a IA.");
+    return false;
+
+} finally {
+    btn.innerText = "GERAR E BAIXAR PLANO";
+    btn.disabled = false;
+    statusTopo.style.display = 'none';
+}
 
     function baixarPDF(conteudo) {
         const { jsPDF } = window.jspdf;
@@ -467,6 +472,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 
 </body>
 </html>
+
 
 
 
