@@ -1,16 +1,22 @@
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
-import { supabase } from './supabase'; // importa o client Supabase
+import { supabase } from './supabase'; // Certifique-se que este arquivo usa a SERVICE_ROLE_KEY
 
-// Função para gerar o PDF
+// 1. Função para gerar o PDF no diretório temporário da Vercel
 async function gerarPDF(conteudo, usuarioId) {
-  const caminhoArquivo = path.join('/tmp', `dieta-${usuarioId}.pdf`);
+  // Limpa o email para usar como nome de arquivo (remove @ e .)
+  const nomeLimpo = usuarioId.replace(/[^a-zA-Z0-9]/g, '_');
+  const caminhoArquivo = path.join('/tmp', `dieta-${nomeLimpo}.pdf`);
+  
   const doc = new PDFDocument();
   const stream = fs.createWriteStream(caminhoArquivo);
   doc.pipe(stream);
 
-  doc.fontSize(16).text(conteudo, { align: 'left' });
+  // Formatação básica do PDF
+  doc.fontSize(20).text('Seu Plano Alimentar', { align: 'center' });
+  doc.moveDown();
+  doc.fontSize(12).text(conteudo, { align: 'left' });
   doc.end();
 
   return new Promise((resolve, reject) => {
@@ -19,13 +25,13 @@ async function gerarPDF(conteudo, usuarioId) {
   });
 }
 
-// Função para fazer upload do PDF para Supabase e gerar link assinado
+// 2. Função para fazer upload do PDF para o Bucket do Supabase
 async function uploadPDFSupabase(caminhoLocal, nomeArquivo) {
   const file = fs.readFileSync(caminhoLocal);
 
   const { error } = await supabase
     .storage
-    .from('dietas-pdf')
+    .from('dietas-pdf') // Certifique-se que o bucket tem esse nome exato
     .upload(nomeArquivo, file, {
       contentType: 'application/pdf',
       upsert: true
@@ -33,22 +39,23 @@ async function uploadPDFSupabase(caminhoLocal, nomeArquivo) {
 
   if (error) throw error;
 
+  // Gera um link assinado válido por 24 horas
   const { data, error: signedError } = await supabase
     .storage
     .from('dietas-pdf')
-    .createSignedUrl(nomeArquivo, 60 * 60 * 24); // link válido 24h
+    .createSignedUrl(nomeArquivo, 60 * 60 * 24);
 
   if (signedError) throw signedError;
 
   return data.signedUrl;
 }
 
-// Função para salvar a URL do PDF no banco
-async function salvarPDFUrlNoBanco(usuarioId, url) {
+// 3. Função para salvar a URL no banco de dados usando o EMAIL como chave
+async function salvarPDFUrlNoBanco(emailUsuario, url) {
   const { error } = await supabase
     .from('Usuarios_Dieta')
     .update({ pdf_url: url })
-    .eq('id', usuarioId);
+    .eq('email', emailUsuario); // MUDANÇA CRÍTICA: Busca por email, não por id
 
   if (error) throw error;
 }
@@ -59,13 +66,13 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { prompt, usuarioId } = req.body;
+    const { prompt, usuarioId } = req.body; // usuarioId aqui deve receber o e-mail do frontend
 
     if (!usuarioId) {
-      return res.status(400).json({ error: 'usuarioId é obrigatório' });
+      return res.status(400).json({ error: 'E-mail do usuário é obrigatório' });
     }
 
-    // 1️⃣ Chamar OpenAI para gerar a dieta
+    // 1️⃣ Chamar OpenAI para gerar o texto da dieta
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -83,28 +90,28 @@ export default async function handler(req, res) {
     const dietaTexto = data.choices?.[0]?.message?.content;
 
     if (!dietaTexto) {
-      return res.status(500).json({ error: 'OpenAI não retornou uma resposta válida' });
+      return res.status(500).json({ error: 'A IA não retornou um conteúdo válido' });
     }
 
-    // 2️⃣ Gerar PDF
+    // 2️⃣ Gerar o arquivo PDF fisicamente na Vercel
     const caminhoPDF = await gerarPDF(dietaTexto, usuarioId);
-    const nomeArquivo = `dieta-${usuarioId}.pdf`;
+    const nomeArquivoNoStorage = `dieta-${usuarioId.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
 
-    // 3️⃣ Upload para Supabase e gerar link assinado
-    const pdfUrl = await uploadPDFSupabase(caminhoPDF, nomeArquivo);
+    // 3️⃣ Upload para o Storage do Supabase
+    const pdfUrl = await uploadPDFSupabase(caminhoPDF, nomeArquivoNoStorage);
 
-    // 4️⃣ Salvar link no banco
+    // 4️⃣ Salvar o link gerado na linha do usuário no banco
     await salvarPDFUrlNoBanco(usuarioId, pdfUrl);
 
-    // 5️⃣ Retornar link para o frontend
+    // 5️⃣ Retornar tudo para o frontend
     return res.status(200).json({
-      message: 'PDF gerado e salvo com sucesso',
+      message: 'Sucesso!',
       pdfUrl,
       dietaTexto
     });
 
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'Erro ao gerar dieta ou PDF' });
+    console.error('ERRO NO BACKEND:', error);
+    return res.status(500).json({ error: 'Erro interno ao processar dieta e PDF' });
   }
 }
