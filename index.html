@@ -171,18 +171,24 @@
 
     async function inicializarTudo() {
         renderizarInterface();
-        recuperarDadosSalvos();
         
         const urlParams = new URLSearchParams(window.location.search);
         const pago = urlParams.get('pago');
         const tipoPlano = urlParams.get('tipo');
         const emailSalvo = localStorage.getItem('email_verificacao');
 
-        if (pago === 'true' && emailSalvo && tipoPlano) {
-            const statusTopo = document.getElementById('status-topo');
-            statusTopo.style.display = 'block';
-            statusTopo.innerText = "🚀 PAGAMENTO CONFIRMADO! GERANDO SEU PLANO...";
-            await ativarAcessoNoBanco(emailSalvo, tipoPlano);
+        // Se estiver voltando de um pagamento bem-sucedido
+        if (pago === 'true') {
+            recuperarDadosSalvos();
+            if (emailSalvo && tipoPlano) {
+                const statusTopo = document.getElementById('status-topo');
+                statusTopo.style.display = 'block';
+                statusTopo.innerText = "🚀 PAGAMENTO CONFIRMADO! GERANDO SEU PLANO...";
+                await ativarAcessoNoBanco(emailSalvo, tipoPlano);
+            }
+        } else {
+            // Se for entrada comum, garante que comece limpo
+            localStorage.removeItem('rascunho_dieta');
         }
     }
 
@@ -268,15 +274,21 @@
         if (alimentos.length < 5) return alert("Selecione pelo menos 5 alimentos!");
         if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
         
+        // 1. PRIMEIRO: Pede o e-mail se não houver um
         let emailAcesso = localStorage.getItem('email_verificacao');
-        if (!emailAcesso) {
-            emailAcesso = prompt("Cadastre seu e-mail para liberar o conteúdo.");
+        if (!emailAcesso || emailAcesso === "null" || emailAcesso === "") {
+            emailAcesso = prompt("Para gerar seu plano, cadastre seu melhor e-mail:");
         }
         
-        if (!emailAcesso) return;
-        const emailLow = emailAcesso.toLowerCase().trim();
-        salvarProgressoLocal(emailLow);
+        if (!emailAcesso || !emailAcesso.includes('@')) {
+            return alert("E-mail inválido. É necessário um e-mail para prosseguir.");
+        }
 
+        const emailLow = emailAcesso.toLowerCase().trim();
+        localStorage.setItem('email_verificacao', emailLow); // Salva o e-mail validado
+        salvarProgressoLocal(emailLow); // Salva os alimentos selecionados
+
+        // 2. DEPOIS: Verifica no Supabase
         let { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', emailLow).single();
 
         if (!user || !user.pago) {
@@ -322,10 +334,15 @@
 
     function limparDadosInterface() {
         localStorage.removeItem('rascunho_dieta');
-        // Mantemos o e-mail para facilitar a próxima troca do usuário anual
         document.getElementById('peso').value = '';
         document.getElementById('calorias').value = '';
+        document.getElementById('aceite-clausula').checked = false;
+        
+        // Desmarca checkboxes
         document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        
+        // Fecha os details
+        document.querySelectorAll('details').forEach(d => d.open = false);
     }
 
     async function iniciarCheckout(priceId) {
@@ -413,13 +430,12 @@ ITENS COMPLEMENTARES:
 
 ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional."`;
 
-            // Chamada para o Back-end unificado (Gera texto + PDF + Salva no Supabase)
             const response = await fetch('/api/gerar-dieta', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     prompt: promptFinal,
-                    usuarioId: emailUsuario // Backend usará isso para salvar na linha correta
+                    usuarioId: emailUsuario 
                 })
             });
 
@@ -427,12 +443,10 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 
             const result = await response.json();
             
-            // Exibe o texto na tela
             const divResultado = document.getElementById('resultado');
             divResultado.innerText = result.dietaTexto;
             divResultado.style.display = 'block';
 
-            // Mostra o link do PDF no topo
             if (result.pdfUrl) {
                 statusTopo.innerHTML = `✅ CONCLUÍDO! <a href="${result.pdfUrl}" target="_blank" style="color: #000; font-weight: bold; text-decoration: underline;">CLIQUE AQUI PARA BAIXAR SEU PDF</a>`;
                 window.open(result.pdfUrl, '_blank');
