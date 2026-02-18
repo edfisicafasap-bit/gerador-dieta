@@ -1,139 +1,3 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reeducação Alimentar</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <style>
-        body { background:#000; margin:0; font-family:Arial, sans-serif; color: #fff; padding-bottom: 30px; }
-        .container { max-width:600px; margin:auto; padding:20px; background:#000; }
-        h2 { color:#FFD700; text-align: center; margin-bottom: 5px; font-size: 19px; text-transform: uppercase; }
-        p.subtitle { text-align: center; color: #ccc; font-size: 14px; margin-bottom: 25px; }
-        label { display:block; margin-top:18px; font-size:14px; font-weight: bold; color: #eee; }
-        input, select, textarea { width:100%; padding:12px; margin-top:6px; border-radius:6px; border:1px solid #333; background: #111; color: #fff; font-size: 15px; box-sizing: border-box; }
-        
-        #btn-gerar { width:100%; margin-top:30px; padding:18px; background:#FFD700; border:none; border-radius:8px; font-size:16px; font-weight:bold; color:#000; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
-        #btn-gerar:disabled { background: #555; cursor: not-allowed; }
-        
-        #status-topo { display: none; background: #FFD700; color: #000; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 20px; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
-
-        #payment-overlay { 
-            display: none; 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.95); 
-            z-index: 9999; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
-            padding: 20px; 
-        }
-
-        .payment-card { background: #1e1e1e; padding: 30px; border-radius: 15px; text-align: center; max-width: 350px; border: 1px solid #333; font-family: sans-serif; }
-
-        .categoria-pai { color: #FFD700; font-size: 15px; font-weight: bold; margin: 25px 0 10px 0; padding-left: 10px; text-transform: uppercase; border-left: 3px solid #FFD700; }
-        details { background: #0a0a0a; border: 1px solid #222; border-radius: 8px; margin-bottom: 6px; overflow: hidden; }
-        summary { padding: 12px; cursor: pointer; color: #fff; font-weight: normal; font-size: 13px; text-transform: uppercase; list-style: none; display: flex; justify-content: space-between; align-items: center; }
-        summary::after { content: '▼'; font-size: 10px; color: #FFD700; transition: 0.3s; }
-        details[open] summary::after { transform: rotate(180deg); }
-        .grid-alimentos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 12px 12px 12px; }
-        .item-alimento { display: flex; align-items: center; font-size: 12px; color: #bbb; cursor: pointer; padding: 4px 0; }
-        .item-alimento input { width: auto; margin: 0 8px 0 0; }
-        .secao-especial { background: #111; border: 1px dashed #FFD700; padding: 15px; border-radius: 8px; margin: 20px 0; }
-        .secao-especial h4 { margin-top: 0; color: #FFD700; font-size: 14px; }
-        #resultado { margin-top: 30px; white-space: pre-wrap; background: #111; padding: 20px; border-radius: 8px; display: none; border: 1px solid #FFD700; font-size: 14px; line-height: 1.6; }
-        hr { border: 0.5px solid #222; margin: 30px 0; }
-    </style>
-</head>
-<body onload="inicializarTudo()">
-
-<div id="payment-overlay">
-    <div class="payment-card" style="background: #1e1e1e; padding: 30px; border-radius: 15px; text-align: center; max-width: 350px; border: 1px solid #333; font-family: sans-serif;">
-        <h2 style="font-size: 24px; color: #FFD700; margin-top: 0;">CARDÁPIO GERADO! 🚀</h2>
-        <p style="color: #eee; margin-bottom: 25px; font-size: 15px;">Para acessar o seu cardápio, escolha um dos planos abaixo:</p>
-        
-        <div style="margin-bottom: 25px; text-align: center;">
-            <button id="btn-unica" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-weight: bold; cursor: pointer; background: #fff; color: #000;" onclick="iniciarCheckout('price_1Sz1w7GEaACih56ZWyTiPBAu')">
-                🥗 DIETA ÚNICA - R$ 9,90
-            </button>
-            <p style="color: #fff; font-size: 13px; margin-top: 8px; line-height: 1.4;">
-                Você receberá o acesso a <b>um único plano alimentar</b> agora.
-            </p>
-        </div>
-
-        <div style="position: relative; margin-top: 35px; text-align: center;">
-            <span style="position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: #FFD700; color: #000; padding: 2px 12px; border-radius: 50px; font-size: 10px; font-weight: 900; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.5); z-index: 10; border: 1px solid #000;">
-                ⭐ MELHOR CUSTO-BENEFÍCIO
-            </span>
-            <button id="btn-anual" style="width: 100%; padding: 12px; border: 2.5px solid #FFD700; border-radius: 8px; font-weight: bold; cursor: pointer; background: #fff; color: #000;" onclick="iniciarCheckout('price_1SzPP7GEaACih56ZkwV5mxN2')">
-                📅 ACESSO ANUAL - R$ 29,90
-            </button>
-            <p style="color: #fff; font-size: 13px; margin-top: 8px; line-height: 1.4;">
-                Pagamento único de 29,90. Acesse o aplicativo quando quiser e selecione os alimentos para atualizar suas refeições. <b>(acesso válido por 1 ano - limitado a 2 trocas por semana)</b>
-            </p>
-        </div>
-
-        <p style="margin-top: 30px; font-size: 12px; color: #888; cursor: pointer; text-decoration: underline;" onclick="fecharModal()">
-            ← Voltar e editar
-        </p>
-    </div>
-</div>
-
-<div class="container">
-    <div id="dieta-section">
-        <h2>🍎 Reeducação Alimentar</h2>
-        <p class="subtitle">Selecione os alimentos e o modo de preparo que deseja em seu plano alimentar</p>
-        
-        <div id="status-topo">ORGANIZANDO SUAS REFEIÇÕES...</div>
-
-        <input type="hidden" id="nome_usuario" value="">
-
-        <label>Seu Peso Atual (kg)</label>
-        <input type="number" id="peso" placeholder="Ex: 80">
-        
-        <label>Meta de Calorias Diárias</label>
-        <input type="number" id="calorias" placeholder="Ex: 2100">
-        
-        <label>Número de Refeições</label>
-        <select id="num-refeicoes">
-            <option value="4">4 Refeições</option>
-            <option value="5">5 Refeições</option>
-            <option value="6">6 Refeições</option>
-        </select>
-
-        <label>Objetivo</label>
-        <select id="objetivo">
-            <option value="Emagrecimento">Emagrecimento</option>
-            <option value="Hipertrofia">Hipertrofia</option>
-            <option value="Definição">Definição</option>
-        </select>
-
-        <hr>
-        <h3 style="color: #FFD700; font-size: 16px; text-align: center;">SELEÇÃO DE ALIMENTOS</h3>
-        <div id="categorias-container"></div>
-
-        <div class="secao-especial">
-            <h4>🍳 MODOS DE PREPARO</h4>
-            <div id="preparos-unificados-container" class="grid-alimentos"></div>
-        </div>
-
-        <div style="margin-top: 20px;">
-            <label style="display: flex; align-items: center; font-weight: normal; font-size: 12px;">
-                <input type="checkbox" id="aceite-clausula" style="width: 20px; margin-right: 10px;"> Confirmo estar ciente de que este plano alimentar é gerado com finalidade educativa e de que o programa não substitui acompanhamento médico ou nutricional.
-            </label>
-        </div>
-
-        <button id="btn-gerar" onclick="verificarAcessoEPagar()">GERAR E BAIXAR PLANO</button>
-        <div id="resultado"></div>
-    </div>
-</div>
-
 <script>
     const S_URL = 'https://xyqqngskrjzhxbsackul.supabase.co';
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cXFuZ3Nrcmp6aHhic2Fja3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NTI3NzksImV4cCI6MjA4NTUyODc3OX0.B90q1Jv-vodVIV_dLFUCOekyshrv3HekVpPugpPaHRI';
@@ -164,7 +28,7 @@
         "LEGUMES": { "Legumes": ["Cenoura", "Brócolis", "Couve-flor", "Abobrinha", "Abóbora", "Berinjela", "Espinafre", "Chuchu", "Quiabo", "Vagem", "Pepino", "Beterraba", "Pimentão", "Couve"] },
         "FRUTAS": { "Frutas": ["Banana", "Maçã", "Mamão", "Laranja", "Abacaxi", "Melancia", "Melão", "Manga", "Morango", "Uva", "Goiaba", "Pêra", "Kiwi", "Caju", "Limão", "Acerola", "Tangerina", "Abacate"] },
         "SEMENTES": { "Sementes": ["Chia", "Linhaça", "Semente de abóbora", "Semente de girassol", "Gergelim", "Quinoa (semente)"] },
-    "OUTROS": { "Outros": ["Peito de peru", "Iogurte Natural", "Leite Integral", "Leite Desnatado",  "Leite s/Lactose", "Leite De Amendoas", "Leite de soja", "Ricota", "Queijo Minas", "Queijo Muçarela", "Whey Protein", "Mel"] }
+        "OUTROS": { "Outros": ["Peito de peru", "Iogurte Natural", "Leite Integral", "Leite Desnatado",  "Leite s/Lactose", "Leite De Amendoas", "Leite de soja", "Ricota", "Queijo Minas", "Queijo Muçarela", "Whey Protein", "Mel"] }
     };
 
     const preparosUnificados = ["Cozido", "Assado", "Grelhado", "Refogado", "Na Airfryer", "Na frigideira", "Moído", "Desfiado", "Cozido no vapor", "Ensopado"];
@@ -207,6 +71,7 @@
 
     function renderizarInterface() {
         const container = document.getElementById('categorias-container');
+        if(!container) return;
         container.innerHTML = '';
         for (let cat in estruturaAlimentos) {
             let html = `<div class="categoria-pai">${cat}</div>`;
@@ -346,17 +211,8 @@
         btn.innerText = "AGUARDE...";
         btn.disabled = true;
 
-const pesoNum = parseFloat(d.peso);
-    const calTotal = parseInt(d.calorias);
-    
-    const gProteina = (pesoNum * 2).toFixed(0); // 2g por kg
-    const gGordura = (pesoNum * 1).toFixed(0);  // 1g por kg
-    
-    // Cálculo do Carboidrato: (Total de Calorias - Calorias de Prot e Gord) / 4
-    const calRestantes = calTotal - ((gProteina * 4) + (gGordura * 9));
-    const gCarbo = (calRestantes / 4).toFixed(0);
-
-       const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
+        try {
+            const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
 DIRETRIZES SUPREMAS
 
@@ -415,108 +271,67 @@ ITENS COMPLEMENTARES:
 
 ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional."`;
 
-
-        try {
             const response = await fetch('/api/gerar-dieta', {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-            prompt: promptFinal
-        })
-    });
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: promptFinal })
+            });
 
-    const result = await response.json();
+            const result = await response.json();
+            const texto = result.choices[0].message.content;
 
-    const texto = result.choices[0].message.content;
-
-    document.getElementById('resultado').innerText = texto;
-document.getElementById('resultado').style.display = 'block';
-const usuarioId = document.getElementById('nome_usuario').value || "user-temp-id";
-
-// Pergunta ao usuário qual modo de salvar
-try {
-    const salvarNo = prompt("Digite 'local' para baixar PDF no navegador ou 'supabase' para salvar online:");
-    const usuarioId = document.getElementById('nome_usuario').value || "user-temp-id";
-
-    if (salvarNo === 'local') {
-        // PDF local
-        baixarPDF(texto);
-    } else if (salvarNo === 'supabase') {
-        // PDF Supabase
-        const pdfUrl = await salvarPDFSupabase(texto, usuarioId);
-        if (pdfUrl) {
-            document.getElementById('resultado').innerHTML = `
-                Dieta gerada com sucesso! <br>
-                <a href="${pdfUrl}" target="_blank" style="color:#FFD700; text-decoration:underline; font-weight:bold;">
-                    Clique aqui para baixar seu PDF
-                </a>
-            `;
+            document.getElementById('resultado').innerText = texto;
             document.getElementById('resultado').style.display = 'block';
-        } else {
-            alert("Erro ao gerar PDF no Supabase.");
+
+            const salvarNo = prompt("Digite 'local' para baixar PDF no navegador ou 'supabase' para salvar online:");
+            const usuarioId = document.getElementById('nome_usuario').value || "user-temp-id";
+
+            if (salvarNo === 'local') {
+                baixarPDF(texto);
+            } else if (salvarNo === 'supabase') {
+                const pdfUrl = await salvarPDFSupabase(texto, usuarioId);
+                if (pdfUrl) {
+                    document.getElementById('resultado').innerHTML = `Dieta gerada! <a href="${pdfUrl}" target="_blank">Baixar PDF</a>`;
+                }
+            }
+        } catch (e) { 
+            console.error(e);
+            alert("Erro ao gerar a dieta.");
+        } finally {
+            btn.innerText = "GERAR E BAIXAR PLANO";
+            btn.disabled = false;
+            statusTopo.style.display = 'none';
         }
     }
 
-    return true;
-
-} catch (e) { 
-    console.error(e);
-    alert("Erro ao falar com a IA.");
-    return false;
-
-} finally {
-    btn.innerText = "GERAR E BAIXAR PLANO";
-    btn.disabled = false;
-    statusTopo.style.display = 'none';
-}
-
-async function salvarPDFSupabase(conteudo, usuarioId) {
-    try {
-        const response = await fetch('/api/gerar-pdf', {  // novo endpoint
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ texto: conteudo, usuarioId })
-        });
-        const data = await response.json();
-        if (data.pdfUrl) return data.pdfUrl;
-        else throw new Error("PDF não foi gerado no Supabase");
-    } catch (e) {
-        console.error(e);
-        return null;
+    async function salvarPDFSupabase(conteudo, usuarioId) {
+        try {
+            const response = await fetch('/api/gerar-pdf', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ texto: conteudo, usuarioId })
+            });
+            const data = await response.json();
+            return data.pdfUrl || null;
+        } catch (e) {
+            console.error(e);
+            return null;
+        }
     }
-}
 
-function baixarPDF(conteudo) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const textoLimpo = conteudo.replace(/[#*]/g, '');
-    doc.setFontSize(10);
-    const lines = doc.splitTextToSize(textoLimpo, 180);
-    let y = 20;
-    lines.forEach(line => {
-        if (y > 280) { doc.addPage(); y = 20; }
-        doc.text(line, 15, y);
-        y += 6;
-    });
-    doc.save("Sugestão_Alimentar.pdf");
-    limparDadosInterface();
-}
+    function baixarPDF(conteudo) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const textoLimpo = conteudo.replace(/[#*]/g, '');
+        doc.setFontSize(10);
+        const lines = doc.splitTextToSize(textoLimpo, 180);
+        let y = 20;
+        lines.forEach(line => {
+            if (y > 280) { doc.addPage(); y = 20; }
+            doc.text(line, 15, y);
+            y += 6;
+        });
+        doc.save("Sugestão_Alimentar.pdf");
+        limparDadosInterface();
+    }
 </script>
-
-</body>
-</html>
-
-
-
-
-
-
-
-
-
-
-
-
-
