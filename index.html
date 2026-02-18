@@ -436,25 +436,28 @@ document.getElementById('resultado').style.display = 'block';
 const usuarioId = document.getElementById('nome_usuario').value || "user-temp-id";
 
 // Pergunta ao usuário qual modo de salvar
-const salvarNo = prompt("Digite 'local' para baixar PDF no navegador ou 'supabase' para salvar online:");
+try {
+    const salvarNo = prompt("Digite 'local' para baixar PDF no navegador ou 'supabase' para salvar online:");
+    const usuarioId = document.getElementById('nome_usuario').value || "user-temp-id";
 
-if (salvarNo === 'local') {
-    // PDF local
-    baixarPDF(texto);
-} else if (salvarNo === 'supabase') {
-    // PDF Supabase
-    const pdfUrl = await salvarPDFSupabase(texto, usuarioId);
-    if (pdfUrl) {
-        document.getElementById('resultado').innerHTML = `
-            Dieta gerada com sucesso! <br>
-            <a href="${pdfUrl}" target="_blank" style="color:#FFD700; text-decoration:underline; font-weight:bold;">
-                Clique aqui para baixar seu PDF
-            </a>
-        `;
-        document.getElementById('resultado').style.display = 'block';
-    } else {
-        alert("Erro ao gerar PDF no Supabase.");
-}
+    if (salvarNo === 'local') {
+        // PDF local
+        baixarPDF(texto);
+    } else if (salvarNo === 'supabase') {
+        // PDF Supabase
+        const pdfUrl = await salvarPDFSupabase(texto, usuarioId);
+        if (pdfUrl) {
+            document.getElementById('resultado').innerHTML = `
+                Dieta gerada com sucesso! <br>
+                <a href="${pdfUrl}" target="_blank" style="color:#FFD700; text-decoration:underline; font-weight:bold;">
+                    Clique aqui para baixar seu PDF
+                </a>
+            `;
+            document.getElementById('resultado').style.display = 'block';
+        } else {
+            alert("Erro ao gerar PDF no Supabase.");
+        }
+    }
 
     return true;
 
@@ -467,8 +470,7 @@ if (salvarNo === 'local') {
     btn.innerText = "GERAR E BAIXAR PLANO";
     btn.disabled = false;
     statusTopo.style.display = 'none';
-        }
-    }
+}
 
 async function salvarPDFSupabase(conteudo, usuarioId) {
     try {
@@ -486,22 +488,21 @@ async function salvarPDFSupabase(conteudo, usuarioId) {
     }
 }
 
-
-    function baixarPDF(conteudo) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const textoLimpo = conteudo.replace(/[#*]/g, '');
-        doc.setFontSize(10);
-        const lines = doc.splitTextToSize(conteudo, 180);
-        let y = 20;
-        lines.forEach(line => {
-            if (y > 280) { doc.addPage(); y = 20; }
-            doc.text(line, 15, y);
-            y += 6;
-        });
-        doc.save("Sugestão_Alimentar.pdf");
-        limparDadosInterface();
-    }
+function baixarPDF(conteudo) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const textoLimpo = conteudo.replace(/[#*]/g, '');
+    doc.setFontSize(10);
+    const lines = doc.splitTextToSize(textoLimpo, 180);
+    let y = 20;
+    lines.forEach(line => {
+        if (y > 280) { doc.addPage(); y = 20; }
+        doc.text(line, 15, y);
+        y += 6;
+    });
+    doc.save("Sugestão_Alimentar.pdf");
+    limparDadosInterface();
+}
 </script>
 
 </body>
