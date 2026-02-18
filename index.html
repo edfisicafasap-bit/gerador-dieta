@@ -432,28 +432,28 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
     const texto = result.choices[0].message.content;
 
     document.getElementById('resultado').innerText = texto;
-    document.getElementById('resultado').style.display = 'block';
-    const usuarioId = document.getElementById('nome_usuario').value || "user-temp-id";
+document.getElementById('resultado').style.display = 'block';
+const usuarioId = document.getElementById('nome_usuario').value || "user-temp-id";
 
-const pdfResponse = await fetch('/api/gerar-dieta', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ 
-        prompt: promptFinal,
-        usuarioId: usuarioId
-    })
-});
+// Pergunta ao usuário qual modo de salvar
+const salvarNo = prompt("Digite 'local' para baixar PDF no navegador ou 'supabase' para salvar online:");
 
-const pdfResult = await pdfResponse.json();
-
-if (pdfResult.pdfUrl) {
-    document.getElementById('resultado').innerHTML = `
-        Dieta gerada com sucesso! <br>
-        <a href="${pdfResult.pdfUrl}" target="_blank" style="color:#FFD700; text-decoration:underline; font-weight:bold;">Clique aqui para baixar seu PDF</a>
-    `;
-    document.getElementById('resultado').style.display = 'block';
-} else {
-    alert("Erro ao gerar PDF no backend.");
+if (salvarNo === 'local') {
+    // PDF local
+    baixarPDF(texto);
+} else if (salvarNo === 'supabase') {
+    // PDF Supabase
+    const pdfUrl = await salvarPDFSupabase(texto, usuarioId);
+    if (pdfUrl) {
+        document.getElementById('resultado').innerHTML = `
+            Dieta gerada com sucesso! <br>
+            <a href="${pdfUrl}" target="_blank" style="color:#FFD700; text-decoration:underline; font-weight:bold;">
+                Clique aqui para baixar seu PDF
+            </a>
+        `;
+        document.getElementById('resultado').style.display = 'block';
+    } else {
+        alert("Erro ao gerar PDF no Supabase.");
 }
 
     return true;
@@ -469,6 +469,23 @@ if (pdfResult.pdfUrl) {
     statusTopo.style.display = 'none';
         }
     }
+
+async function salvarPDFSupabase(conteudo, usuarioId) {
+    try {
+        const response = await fetch('/api/gerar-pdf', {  // novo endpoint
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ texto: conteudo, usuarioId })
+        });
+        const data = await response.json();
+        if (data.pdfUrl) return data.pdfUrl;
+        else throw new Error("PDF não foi gerado no Supabase");
+    } catch (e) {
+        console.error(e);
+        return null;
+    }
+}
+
 
     function baixarPDF(conteudo) {
         const { jsPDF } = window.jspdf;
@@ -489,6 +506,7 @@ if (pdfResult.pdfUrl) {
 
 </body>
 </html>
+
 
 
 
