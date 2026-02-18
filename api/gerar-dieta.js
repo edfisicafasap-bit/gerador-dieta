@@ -1,7 +1,7 @@
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
-import { supabase } from './supabase'; 
+import { supabase } from './supabase.js'; 
 
 async function gerarPDF(conteudo, usuarioId) {
   const nomeLimpo = usuarioId.replace(/[^a-zA-Z0-9]/g, '_');
