@@ -6,18 +6,21 @@ export default async function handler(req, res) {
   // A Vercel precisa que você use 'res.status().json()' neste formato de arquivo
   if (req.method === 'POST') {
     try {
-      const { priceId } = req.body;
+      const { priceId, tipoPlano } = req.body;
 
       const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        line_items: [{
-          price: priceId,
-          quantity: 1,
-        }],
-        mode: 'payment',
-        success_url: `${req.headers.origin}/?pago=true`,
-        cancel_url: `${req.headers.origin}/`,
-      });
+  payment_method_types: ['card'],
+  line_items: [{
+    price: priceId,
+    quantity: 1,
+  }],
+  mode: 'payment',
+  success_url: `${req.headers.origin}/?pago=true`,
+  cancel_url: `${req.headers.origin}/`,
+  metadata: {
+    tipo_plano: tipoPlano
+  }
+});
 
       return res.status(200).json({ url: session.url });
     } catch (err) {
