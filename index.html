@@ -54,7 +54,7 @@
 <body onload="inicializarTudo()">
 
 <div id="payment-overlay">
-    <div class="payment-card" style="background: #1e1e1e; padding: 30px; border-radius: 15px; text-align: center; max-width: 350px; border: 1px solid #333; font-family: sans-serif;">
+    <div class="payment-card">
         <h2 style="font-size: 24px; color: #FFD700; margin-top: 0;">CARDÁPIO GERADO! 🚀</h2>
         <p style="color: #eee; margin-bottom: 25px; font-size: 15px;">Para acessar o seu cardápio, escolha um dos planos abaixo:</p>
         
@@ -75,7 +75,7 @@
                 📅 ACESSO ANUAL - R$ 29,90
             </button>
             <p style="color: #fff; font-size: 13px; margin-top: 8px; line-height: 1.4;">
-                Pagamento único de 29,90. Acesse o aplicativo quando quiser e selecione os alimentos para atualizar suas refeições. <b>(acesso válido por 1 ano - limitado a 2 trocas por semana)</b>
+                Pagamento único de 29,90. Acesse o aplicativo quando quiser e selecione os alimentos para atualizar suas refeições. <b>(acesso válido por 1 ano)</b>
             </p>
         </div>
 
@@ -172,6 +172,7 @@
     async function inicializarTudo() {
         renderizarInterface();
         recuperarDadosSalvos();
+        
         const urlParams = new URLSearchParams(window.location.search);
         const pago = urlParams.get('pago');
         const tipoPlano = urlParams.get('tipo');
@@ -243,19 +244,21 @@
     }
 
     function recuperarDadosSalvos() {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('nome')) document.getElementById('nome_usuario').value = urlParams.get('nome');
-        if (urlParams.get('calorias')) document.getElementById('calorias').value = urlParams.get('calorias');
-        
         const salvo = localStorage.getItem('rascunho_dieta');
         if (!salvo) return;
         const d = JSON.parse(salvo);
+        
         document.getElementById('peso').value = d.peso || '';
         document.getElementById('calorias').value = d.calorias || '';
         document.getElementById('num-refeicoes').value = d.refeicoes || '4';
+        document.getElementById('objetivo').value = d.objetivo || 'Emagrecimento';
         
         d.alimentos?.forEach(val => {
             const el = document.querySelector(`input[name="alimento"][value="${val}"]`);
+            if (el) el.checked = true;
+        });
+        d.preparos?.forEach(val => {
+            const el = document.querySelector(`input[name="preparo-geral"][value="${val}"]`);
             if (el) el.checked = true;
         });
     }
@@ -265,7 +268,11 @@
         if (alimentos.length < 5) return alert("Selecione pelo menos 5 alimentos!");
         if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
         
-        const emailAcesso = prompt("Cadastre seu e-mail para liberar o conteúdo.");
+        let emailAcesso = localStorage.getItem('email_verificacao');
+        if (!emailAcesso) {
+            emailAcesso = prompt("Cadastre seu e-mail para liberar o conteúdo.");
+        }
+        
         if (!emailAcesso) return;
         const emailLow = emailAcesso.toLowerCase().trim();
         salvarProgressoLocal(emailLow);
@@ -302,10 +309,10 @@
 
     async function executarGeracaoComConsumo(tipo, email, contagemAtual = 0) {
         const dadosLocais = localStorage.getItem('rascunho_dieta');
-        if (!dadosLocais) return alert("Erro ao recuperar dados. Por favor, preencha o formulário.");
+        if (!dadosLocais) return alert("Erro ao recuperar dados.");
 
         if (tipo === 'unica') {
-            await _supabase.from('Usuarios_Dieta').update({ creditos: 0, pago: false, ultima_geracao: new Date().toISOString() }).eq('email', email);
+            await _supabase.from('Usuarios_Dieta').update({ creditos: 0, pago: true, ultima_geracao: new Date().toISOString() }).eq('email', email);
         } else {
             await _supabase.from('Usuarios_Dieta').update({ contagem_semanal: contagemAtual + 1, ultima_geracao: new Date().toISOString() }).eq('email', email);
         }
@@ -315,11 +322,9 @@
 
     function limparDadosInterface() {
         localStorage.removeItem('rascunho_dieta');
+        // Mantemos o e-mail para facilitar a próxima troca do usuário anual
         document.getElementById('peso').value = '';
         document.getElementById('calorias').value = '';
-        document.getElementById('num-refeicoes').value = '4';
-        document.getElementById('objetivo').value = 'Emagrecimento';
-        document.getElementById('aceite-clausula').checked = false;
         document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
     }
 
@@ -342,9 +347,11 @@
         
         const btn = document.getElementById('btn-gerar');
         const statusTopo = document.getElementById('status-topo');
+        const emailUsuario = localStorage.getItem('email_verificacao');
 
         statusTopo.style.display = 'block';
-        btn.innerText = "AGUARDE...";
+        statusTopo.innerText = "⏳ A IA ESTÁ CRIANDO SEU PLANO E GERANDO O PDF...";
+        btn.innerText = "PROCESSANDO...";
         btn.disabled = true;
 
         try {
@@ -376,7 +383,6 @@ Base Obrigatória: No Almoço e Jantar, se houver Arroz e/ou Feijão nos ingredi
 Coerência Cultural: As refeições devem respeitar os hábitos brasileiros (Café, Almoço, Lanche, Jantar).
 
 PLANEJAMENTO ALIMENTAR ESTRUTURADO
-PLANEJAMENTO ALIMENTAR ESTRUTURADO
 
 BLOCO 1: OPÇÕES A (PADRÃO)
 Nesta seção, gere as ${d.refeicoes} refeições seguindo os nomes definidos nas "DIRETRIZES SUPREMAS". Priorize arroz e feijão no almoço e jantar.
@@ -407,77 +413,42 @@ ITENS COMPLEMENTARES:
 
 ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional."`;
 
+            // Chamada para o Back-end unificado (Gera texto + PDF + Salva no Supabase)
             const response = await fetch('/api/gerar-dieta', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: promptFinal })
+                body: JSON.stringify({ 
+                    prompt: promptFinal,
+                    usuarioId: emailUsuario // Backend usará isso para salvar na linha correta
+                })
             });
 
+            if (!response.ok) throw new Error('Erro ao processar requisição');
+
             const result = await response.json();
-            const texto = result.choices[0].message.content;
+            
+            // Exibe o texto na tela
+            const divResultado = document.getElementById('resultado');
+            divResultado.innerText = result.dietaTexto;
+            divResultado.style.display = 'block';
 
-            document.getElementById('resultado').innerText = texto;
-            document.getElementById('resultado').style.display = 'block';
-
-            const salvarNo = prompt("Digite 'local' para baixar PDF no navegador ou 'supabase' para salvar online:");
-            const usuarioId = document.getElementById('nome_usuario').value || "user-temp-id";
-
-            if (salvarNo === 'local') {
-                baixarPDF(texto);
-            } else if (salvarNo === 'supabase') {
-                const pdfUrl = await salvarPDFSupabase(texto, usuarioId);
-                if (pdfUrl) {
-                    document.getElementById('resultado').innerHTML = `Dieta gerada! <a href="${pdfUrl}" target="_blank">Baixar PDF</a>`;
-                }
+            // Mostra o link do PDF no topo
+            if (result.pdfUrl) {
+                statusTopo.innerHTML = `✅ CONCLUÍDO! <a href="${result.pdfUrl}" target="_blank" style="color: #000; font-weight: bold; text-decoration: underline;">CLIQUE AQUI PARA BAIXAR SEU PDF</a>`;
+                window.open(result.pdfUrl, '_blank');
             }
+
+            limparDadosInterface();
+
         } catch (e) { 
             console.error(e);
-            alert("Erro ao gerar a dieta.");
+            alert("Houve um erro técnico. Tente novamente em instantes.");
+            statusTopo.style.display = 'none';
         } finally {
             btn.innerText = "GERAR E BAIXAR PLANO";
             btn.disabled = false;
-            statusTopo.style.display = 'none';
         }
-    }
-
-    async function salvarPDFSupabase(conteudo, usuarioId) {
-        try {
-            const response = await fetch('/api/gerar-pdf', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ texto: conteudo, usuarioId })
-            });
-            const data = await response.json();
-            return data.pdfUrl || null;
-        } catch (e) {
-            console.error(e);
-            return null;
-        }
-    }
-
-    function baixarPDF(conteudo) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const textoLimpo = conteudo.replace(/[#*]/g, '');
-        doc.setFontSize(10);
-        const lines = doc.splitTextToSize(textoLimpo, 180);
-        let y = 20;
-        lines.forEach(line => {
-            if (y > 280) { doc.addPage(); y = 20; }
-            doc.text(line, 15, y);
-            y += 6;
-        });
-        doc.save("Sugestão_Alimentar.pdf");
-        limparDadosInterface();
     }
 </script>
-
-
-
-
-
-
-
-
-
-
+</body>
+</html>
