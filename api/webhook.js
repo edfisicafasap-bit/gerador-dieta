@@ -9,7 +9,6 @@ const supabase = createClient(
 );
 
 export default async function handler(req, res) {
-  // O Stripe envia uma solicitação POST quando o pagamento é concluído
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método não permitido' });
   }
@@ -18,7 +17,6 @@ export default async function handler(req, res) {
   let event;
 
   try {
-    // Coleta os dados brutos da solicitação para validar a assinatura do Stripe
     const buffer = await new Promise((resolve, reject) => {
       let data = '';
       req.on('data', chunk => { data += chunk; });
@@ -26,24 +24,36 @@ export default async function handler(req, res) {
       req.on('error', err => reject(err));
     });
 
-    event = stripe.webhooks.constructEvent(buffer, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    event = stripe.webhooks.constructEvent(
+      buffer,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+
   } catch (err) {
     console.error('Erro na assinatura do Webhook:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // Verifica se o evento é de checkout concluído
+  // Quando pagamento é concluído na Stripe
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
+
     const emailUsuario = session.customer_details.email;
+    const tipoPlano = session.metadata?.tipo_plano;
 
     console.log('Pagamento aprovado para:', emailUsuario);
+    console.log('Tipo de plano:', tipoPlano);
 
-    // Salva ou atualiza o usuário no Supabase com status 'pago'
     const { error } = await supabase
       .from('Usuarios_Dieta')
       .upsert(
-        { email: emailUsuario.toLowerCase().trim(), pago: true },
+        { 
+          email: emailUsuario.toLowerCase().trim(),
+          pago: true,
+          tipo_plano: tipoPlano,
+          creditos: tipoPlano === 'unica' ? 1 : 0
+        },
         { onConflict: 'email' }
       );
 
@@ -53,6 +63,5 @@ export default async function handler(req, res) {
     }
   }
 
-  // Responde ao Stripe que o evento foi recebido com sucesso
-  res.status(200).json({ received: true });
+  return res.status(200).json({ received: true });
 }
