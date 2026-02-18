@@ -422,8 +422,8 @@ ITENS COMPLEMENTARES:
 ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional."`;
 
 
-      try {
-    const response = await fetch('/api/gerar-dieta', {
+        try {
+            const response = await fetch('/api/gerar-dieta', {
         method: 'POST',
         headers: { 
             'Content-Type': 'application/json'
@@ -451,8 +451,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
     btn.innerText = "GERAR E BAIXAR PLANO";
     btn.disabled = false;
     statusTopo.style.display = 'none';
-}
-
+        }
     }
 
     function baixarPDF(conteudo) {
