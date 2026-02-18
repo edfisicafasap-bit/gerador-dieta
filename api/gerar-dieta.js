@@ -1,24 +1,56 @@
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
+import { supabase } from './supabase'; // importa o client Supabase
 
 // Função para gerar o PDF
 async function gerarPDF(conteudo, usuarioId) {
-  // Caminho temporário do PDF no backend
   const caminhoArquivo = path.join('/tmp', `dieta-${usuarioId}.pdf`);
   const doc = new PDFDocument();
   const stream = fs.createWriteStream(caminhoArquivo);
   doc.pipe(stream);
 
-  // Adiciona o conteúdo da dieta
   doc.fontSize(16).text(conteudo, { align: 'left' });
   doc.end();
 
-  // Retorna uma promise que resolve quando o PDF terminar de salvar
   return new Promise((resolve, reject) => {
     stream.on('finish', () => resolve(caminhoArquivo));
     stream.on('error', reject);
   });
+}
+
+// Função para fazer upload do PDF para Supabase e gerar link assinado
+async function uploadPDFSupabase(caminhoLocal, nomeArquivo) {
+  const file = fs.readFileSync(caminhoLocal);
+
+  const { error } = await supabase
+    .storage
+    .from('dietas-pdf')
+    .upload(nomeArquivo, file, {
+      contentType: 'application/pdf',
+      upsert: true
+    });
+
+  if (error) throw error;
+
+  const { data, error: signedError } = await supabase
+    .storage
+    .from('dietas-pdf')
+    .createSignedUrl(nomeArquivo, 60 * 60 * 24); // link válido 24h
+
+  if (signedError) throw signedError;
+
+  return data.signedUrl;
+}
+
+// Função para salvar a URL do PDF no banco
+async function salvarPDFUrlNoBanco(usuarioId, url) {
+  const { error } = await supabase
+    .from('Usuarios_Dieta')
+    .update({ pdf_url: url })
+    .eq('id', usuarioId);
+
+  if (error) throw error;
 }
 
 export default async function handler(req, res) {
@@ -54,18 +86,25 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'OpenAI não retornou uma resposta válida' });
     }
 
-    // 2️⃣ Gerar PDF com a dieta
+    // 2️⃣ Gerar PDF
     const caminhoPDF = await gerarPDF(dietaTexto, usuarioId);
+    const nomeArquivo = `dieta-${usuarioId}.pdf`;
 
-    // 3️⃣ Retornar resultado (por enquanto só caminho temporário)
+    // 3️⃣ Upload para Supabase e gerar link assinado
+    const pdfUrl = await uploadPDFSupabase(caminhoPDF, nomeArquivo);
+
+    // 4️⃣ Salvar link no banco
+    await salvarPDFUrlNoBanco(usuarioId, pdfUrl);
+
+    // 5️⃣ Retornar link para o frontend
     return res.status(200).json({
-      message: 'PDF gerado com sucesso',
-      caminhoPDF,
+      message: 'PDF gerado e salvo com sucesso',
+      pdfUrl,
       dietaTexto
     });
 
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Erro ao gerar dieta' });
+    return res.status(500).json({ error: 'Erro ao gerar dieta ou PDF' });
   }
 }
