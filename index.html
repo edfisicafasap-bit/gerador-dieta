@@ -49,6 +49,11 @@
         .secao-especial h4 { margin-top: 0; color: #FFD700; font-size: 14px; }
         #resultado { margin-top: 30px; white-space: pre-wrap; background: #111; padding: 20px; border-radius: 8px; display: none; border: 1px solid #FFD700; font-size: 14px; line-height: 1.6; }
         hr { border: 0.5px solid #222; margin: 30px 0; }
+
+        /* Estilo do Botão de Acesso Rápido */
+        .acesso-rapido-box { background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333; margin-bottom: 25px; text-align: center; }
+        .btn-acesso-rapido { background: transparent; border: 1px solid #FFD700; color: #FFD700; padding: 8px 20px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
+        .btn-acesso-rapido:hover { background: #FFD700; color: #000; }
     </style>
 </head>
 <body onload="inicializarTudo()">
@@ -90,6 +95,11 @@
         <h2>🍎 Reeducação Alimentar</h2>
         <p class="subtitle">Selecione os alimentos e o modo de preparo que deseja em seu plano alimentar</p>
         
+        <div class="acesso-rapido-box">
+            <p style="font-size: 13px; color: #888; margin-bottom: 10px;">Já possui uma dieta ou plano ativo?</p>
+            <button onclick="acessoRapido()" class="btn-acesso-rapido">Acessar Minha Dieta ➔</button>
+        </div>
+
         <div id="status-topo">ORGANIZANDO SUAS REFEIÇÕES...</div>
 
         <input type="hidden" id="nome_usuario" value="">
@@ -190,6 +200,28 @@
         }
     }
 
+    // FUNÇÃO DE ACESSO RÁPIDO PARA QUEM JÁ É CLIENTE
+    async function acessoRapido() {
+        let email = prompt("Digite seu e-mail cadastrado:");
+        if (!email || !email.includes('@')) return alert("E-mail inválido.");
+        
+        const emailLow = email.toLowerCase().trim();
+        const { data: user, error } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', emailLow).single();
+
+        if (error || !user) return alert("E-mail não encontrado. Faça sua primeira dieta abaixo.");
+
+        if (user.pdf_url) {
+            const baixar = confirm("Dieta encontrada! Deseja baixar seu PDF agora?");
+            if (baixar) window.open(user.pdf_url, '_blank');
+        } else if (user.pago) {
+            alert("Plano ativo detectado! Selecione os alimentos abaixo e clique em GERAR para criar seu plano.");
+            localStorage.setItem('email_verificacao', emailLow);
+        } else {
+            alert("Você ainda não concluiu seu pagamento.");
+            document.getElementById('payment-overlay').style.display = 'flex';
+        }
+    }
+
     async function ativarAcessoNoBanco(email, tipo) {
         const proximoReset = new Date();
         proximoReset.setDate(proximoReset.getDate() + 7);
@@ -278,6 +310,7 @@
         }
         
         if (!emailAcesso || !emailAcesso.includes('@')) {
+            localStorage.removeItem('email_verificacao');
             return alert("E-mail inválido. É necessário um e-mail para prosseguir.");
         }
 
@@ -287,7 +320,7 @@
 
         let { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', emailLow).single();
 
-        // 1. SE NÃO PAGOU OU NÃO EXISTE
+        // 1. SE NÃO PAGOU OU NÃO EXISTE NO BANCO
         if (!user || !user.pago) {
             document.getElementById('payment-overlay').style.display = 'flex';
             return;
@@ -299,9 +332,10 @@
             
             if (querBaixar) {
                 window.open(user.pdf_url, '_blank');
+                // IMPORTANTE: Se ele só baixou, limpamos o localstorage para que a próxima pessoa não herde o email dele
+                localStorage.removeItem('email_verificacao');
                 return;
             } else {
-                // Se ele quer uma nova e o plano não for anual, resetamos o pagamento para abrir o modal
                 if (user.tipo_plano !== 'anual') {
                     await _supabase.from('Usuarios_Dieta').update({ pago: false }).eq('email', emailLow);
                     document.getElementById('payment-overlay').style.display = 'flex';
@@ -310,7 +344,7 @@
             }
         }
 
-        // 3. LÓGICA DE PLANOS PARA GERAÇÃO NOVA
+        // 3. LÓGICA PARA GERAÇÃO NOVA
         if (user.tipo_plano === 'unica') {
             executarGeracaoComConsumo('unica', emailLow);
         } else if (user.tipo_plano === 'anual') {
@@ -333,7 +367,6 @@
         const dadosLocais = localStorage.getItem('rascunho_dieta');
         if (!dadosLocais) return alert("Erro ao recuperar dados.");
 
-        // Atualizamos o consumo ANTES de chamar a IA para evitar abusos
         if (tipo === 'unica') {
             await _supabase.from('Usuarios_Dieta').update({ creditos: 0, pago: false, ultima_geracao: new Date().toISOString() }).eq('email', email);
         } else {
@@ -345,6 +378,7 @@
 
     function limparDadosInterface() {
         localStorage.removeItem('rascunho_dieta');
+        localStorage.removeItem('email_verificacao'); // LIMPA O E-MAIL DO NAVEGADOR APÓS GERAR
         document.getElementById('peso').value = '';
         document.getElementById('calorias').value = '';
         document.getElementById('aceite-clausula').checked = false;
@@ -379,6 +413,7 @@
         btn.disabled = true;
 
         try {
+            // PROMPT MANTIDO EXATAMENTE COMO SOLICITADO
             const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
 DIRETRIZES SUPREMAS
@@ -459,7 +494,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
                 window.open(result.pdfUrl, '_blank');
             }
 
-            limparDadosInterface();
+            limparDadosInterface(); // Isso agora limpa o e-mail também
 
         } catch (e) { 
             console.error(e);
