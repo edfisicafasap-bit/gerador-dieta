@@ -374,7 +374,7 @@
         btn.disabled = true;
         window.scrollTo({ top: 0, behavior: 'smooth' }); // AJUSTE AQUI: ROLAR PARA O TOPO AO GERAR
         try {
-            const promptFinal = `Atue como um Nutricionista Prático. Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você mencionou. É importante lembrar que este plano é uma sugestão e pode ser ajustado de acordo com as suas necessidades individuais, preferências alimentares e orientações de um profissional de saúde.". Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
+            const promptFinal = `Atue como um Nutricionista Prático. Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou. É importante lembrar que este plano é uma sugestão e pode ser ajustado de acordo com as suas necessidades individuais, preferências alimentares e orientações de um profissional de saúde.". Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
 DIRETRIZES SUPREMAS
 
@@ -393,6 +393,7 @@ LANCHES, DESJEJUM E CAFÉ DA TARDE: Foco em portabilidade e simplicidade.
 ALMOÇO/JANTAR: Estrutura [Base de Carboidrato] + [Proteína] + [Legumes/Salada].
 Jantar pode ser mais leve, mas deve manter a estrutura de refeição completa.
 CEIA: REFEIÇÕES SUPER LEVES, COMO UMA FRUTA, OU FRUTA + WHEY, OU IOGURTE...
+REGRA IMPORTANTE: INCLUIR AO MENOS UMA FONTE DE PROTEINA EM TODAS AS REFEIÇÕES.
 
 CÁLCULO DA DIETA:   A PROTEINA DEVE TER O ENTRE 1.8 A 2.2g POR kg CORPORAL DA PESSOA, a Gordura 1g por kg corporal e o Carboidrato deve complementar o Restante das calorias, seja o mais rigoroso possivel nesse critério para chegar o mais proximo da meta possivel!  Use bases científicas (TACO/TBCA), NÃO CRIE TABELAS DE MACRO NUTRIENTES FICTICIOS, UTILIZE SOMENTE MACROS REAIS DOS ALIMENTOS!.
 
@@ -402,14 +403,11 @@ Base Obrigatória: No Almoço e Jantar, se houver Arroz e/ou Feijão nos ingredi
 Coerência Cultural: As refeições devem respeitar os hábitos brasileiros (Café, Almoço, Lanche, Jantar).
 
 PLANEJAMENTO ALIMENTAR ESTRUTURADO
-PLANEJAMENTO ALIMENTAR ESTRUTURADO
 
 BLOCO 1: OPÇÕES A (PADRÃO)
 Nesta seção, gere as ${d.refeicoes} refeições seguindo os nomes definidos nas "DIRETRIZES SUPREMAS". Priorize arroz e feijão no almoço e jantar.
 Para cada uma das ${d.refeicoes} refeições, liste:
-- Nome da Refeicao
 - Ingredientes (com quantidades)
-IMPORTANTE: não repita "nome da refeicao" apenas escreva ela. Ex: oq não fazer: - Nome da Refeição: Omelete de Brócolis e Queijo | o que fazer: Omelete de Brócolis e Queijo
 
 RESUMO DE MACROS (OPÇÕES A)
 Proteinas Totais: [Soma Real]g | Carboidratos Totais: [Soma Real]g | Gorduras Totais: [Soma Real]g
@@ -417,9 +415,7 @@ Proteinas Totais: [Soma Real]g | Carboidratos Totais: [Soma Real]g | Gorduras To
 BLOCO 2: OPÇÕES B (VARIAÇÃO)
 Nesta seção, gere as mesmas ${d.refeicoes} refeições com macros equivalentes ao Bloco 1. No almoço e jantar, é proibido o uso de arroz e feijão.
 Para cada uma das ${d.refeicoes} refeições, liste:
-- Nome da Refeicao
 - Ingredientes (com quantidades)
-IMPORTANTE: não repita "nome da refeicao" apenas escreva ela. Ex: oq não fazer: - Nome da Refeição: Omelete de Brócolis e Queijo | o que fazer: Omelete de Brócolis e Queijo
 RESUMO DE MACROS (OPÇÕES B)
 Proteinas Totais: [Soma Real]g | Carboidratos Totais: [Soma Real]g | Gorduras Totais: [Soma Real]g
 
@@ -455,6 +451,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 </script>
 </body>
 </html>
+
 
 
 
