@@ -200,7 +200,7 @@
         }
     }
 
-    // FUNÇÃO DE ACESSO RÁPIDO PARA QUEM JÁ É CLIENTE
+    // FUNÇÃO DE ACESSO RÁPIDO ALTERADA PARA LIMPAR O EMAIL APÓS O USO
     async function acessoRapido() {
         let email = prompt("Digite seu e-mail cadastrado:");
         if (!email || !email.includes('@')) return alert("E-mail inválido.");
@@ -213,11 +213,14 @@
         if (user.pdf_url) {
             const baixar = confirm("Dieta encontrada! Deseja baixar seu PDF agora?");
             if (baixar) window.open(user.pdf_url, '_blank');
+            // Limpa após abrir o PDF para não deixar logado
+            localStorage.removeItem('email_verificacao');
         } else if (user.pago) {
             alert("Plano ativo detectado! Selecione os alimentos abaixo e clique em GERAR para criar seu plano.");
             localStorage.setItem('email_verificacao', emailLow);
         } else {
             alert("Você ainda não concluiu seu pagamento.");
+            localStorage.setItem('email_verificacao', emailLow);
             document.getElementById('payment-overlay').style.display = 'flex';
         }
     }
@@ -320,20 +323,17 @@
 
         let { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', emailLow).single();
 
-        // 1. SE NÃO PAGOU OU NÃO EXISTE NO BANCO
         if (!user || !user.pago) {
             document.getElementById('payment-overlay').style.display = 'flex';
             return;
         }
 
-        // 2. SE JÁ PAGOU E JÁ TEM UM PDF GERADO
         if (user.pago && user.pdf_url) {
             const querBaixar = confirm("Você já possui uma dieta pronta!\n\nClique em OK para BAIXAR A ATUAL (Grátis).\nClique em CANCELAR para GERAR UMA NOVA (Exige novo pagamento).");
             
             if (querBaixar) {
                 window.open(user.pdf_url, '_blank');
-                // IMPORTANTE: Se ele só baixou, limpamos o localstorage para que a próxima pessoa não herde o email dele
-                localStorage.removeItem('email_verificacao');
+                localStorage.removeItem('email_verificacao'); // LIMPA APÓS O DOWNLOAD
                 return;
             } else {
                 if (user.tipo_plano !== 'anual') {
@@ -344,7 +344,6 @@
             }
         }
 
-        // 3. LÓGICA PARA GERAÇÃO NOVA
         if (user.tipo_plano === 'unica') {
             executarGeracaoComConsumo('unica', emailLow);
         } else if (user.tipo_plano === 'anual') {
@@ -378,7 +377,7 @@
 
     function limparDadosInterface() {
         localStorage.removeItem('rascunho_dieta');
-        localStorage.removeItem('email_verificacao'); // LIMPA O E-MAIL DO NAVEGADOR APÓS GERAR
+        localStorage.removeItem('email_verificacao'); 
         document.getElementById('peso').value = '';
         document.getElementById('calorias').value = '';
         document.getElementById('aceite-clausula').checked = false;
@@ -413,7 +412,7 @@
         btn.disabled = true;
 
         try {
-            // PROMPT MANTIDO EXATAMENTE COMO SOLICITADO
+            // PROMPT MANTIDO INTEGRALMENTE
             const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
 DIRETRIZES SUPREMAS
@@ -494,7 +493,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
                 window.open(result.pdfUrl, '_blank');
             }
 
-            limparDadosInterface(); // Isso agora limpa o e-mail também
+            limparDadosInterface(); 
 
         } catch (e) { 
             console.error(e);
