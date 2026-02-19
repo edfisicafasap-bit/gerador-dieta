@@ -221,6 +221,7 @@
             statusTopo.innerHTML = `<div style="padding:5px"><p style="margin:0 0 10px 0">📄 DIETA ENCONTRADA!</p><a href="${user.pdf_url}" target="_blank" download="Minha_Dieta.pdf" style="background:#000;color:#FFD700;padding:10px 20px;border-radius:5px;text-decoration:none;display:inline-block;font-size:14px;font-weight:bold;border:1px solid #000">📥 BAIXAR PDF</a></div>`;
             forcarDownloadPDF(user.pdf_url, "Minha_Dieta.pdf");
             localStorage.removeItem('email_verificacao');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         } else if (user.pago) {
             alert("Plano ativo detectado! Selecione os alimentos abaixo e clique em GERAR para criar seu plano.");
             localStorage.setItem('email_verificacao', emailLow);
@@ -298,6 +299,7 @@
         let { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', emailLow).single();
         if (!user || !user.pago) { document.getElementById('payment-overlay').style.display = 'flex'; return; }
         if (user.pago && user.pdf_url) {
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // AJUSTE AQUI: ROLAR PARA O TOPO
             const statusTopo = document.getElementById('status-topo');
             statusTopo.style.display = 'block';
             statusTopo.innerHTML = `<div style="padding:5px"><p style="margin:0 0 10px 0">📄 VOCÊ JÁ POSSUI UMA DIETA!</p><a href="${user.pdf_url}" target="_blank" download="Minha_Dieta.pdf" style="background:#000;color:#FFD700;padding:10px 20px;border-radius:5px;text-decoration:none;display:inline-block;font-size:14px;font-weight:bold;border:1px solid #000">📥 BAIXAR ATUAL</a><br><br><small style="cursor:pointer;text-decoration:underline" onclick="executarGeracaoComConsumo('${user.tipo_plano}', '${emailLow}', ${user.contagem_semanal || 0})">Ou gerar uma nova (consome crédito/limite)</small></div>`;
@@ -355,8 +357,9 @@
         statusTopo.innerText = "⏳ A IA ESTÁ CRIANDO SEU PLANO E GERANDO O PDF...";
         btn.innerText = "PROCESSANDO...";
         btn.disabled = true;
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // AJUSTE AQUI: ROLAR PARA O TOPO AO GERAR
         try {
-            const promptFinal = `Atue como um Nutricionista Prático. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos: ${d.preparos.join(', ')}.`; // Prompt resumido aqui por brevidade técnica
+            const promptFinal = `Atue como um Nutricionista Prático. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos: ${d.preparos.join(', ')}.`; 
             const response = await fetch('/api/gerar-dieta', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: promptFinal, usuarioId: emailUsuario }) });
             if (!response.ok) throw new Error('Erro ao processar');
             const result = await response.json();
