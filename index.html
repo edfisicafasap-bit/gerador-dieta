@@ -93,11 +93,11 @@
 <div class="container">
     <div id="dieta-section">
         <h2>🍎 Reeducação Alimentar</h2>
-        <p class="subtitle">Selecione os alimentos e o modo de preparo que deseja em seu plano alimentar</p>
+        <p class="subtitle">Selecionamos os melhores alimentos para você montar um cardápio saudável, equilibrado e fácil de seguir no dia a dia. Nossa recomendação é que você escolha bastante variações dentro das opções disponíveis, porque quanto mais diversidade, melhor será o equilíbrio nutricional da sua alimentação ao longo da semana. Assim você evita cair na rotina, consome mais nutrientes e tem resultados melhores.</p>
         
         <div class="acesso-rapido-box">
-            <p style="font-size: 13px; color: #888; margin-bottom: 10px;">Já possui uma dieta ou plano ativo?</p>
-            <button onclick="acessoRapido()" class="btn-acesso-rapido">Acessar Minha Dieta ➔</button>
+            <p style="font-size: 13px; color: #888; margin-bottom: 10px;">Deseja recuperar seu último plano gerado?</p>
+            <button onclick="acessoRapido()" class="btn-acesso-rapido">[ACESSAR AGORA ➔]</button>
         </div>
 
         <div id="status-topo">ORGANIZANDO SUAS REFEIÇÕES...</div>
@@ -216,7 +216,7 @@
             if (emailSalvo && tipoPlano) {
                 const statusTopo = document.getElementById('status-topo');
                 statusTopo.style.display = 'block';
-                statusTopo.innerText = "🚀 PAGAMENTO CONFIRMADO! GERANDO SEU PLANO...";
+                statusTopo.innerText = "🚀 PAGAMENTO CONFIRMADO!";
                 await ativarAcessoNoBanco(emailSalvo, tipoPlano);
             }
         } else {
@@ -369,7 +369,7 @@
         const emailUsuario = localStorage.getItem('email_verificacao');
         statusTopo.style.display = 'block';
         statusTopo.style.animation = "pulse 1.5s infinite";
-        statusTopo.innerText = "⏳ A IA ESTÁ CRIANDO SEU PLANO E GERANDO O PDF...";
+        statusTopo.innerText = "⏳ AGUARDE. ESTAMOS GERANDO SEU PLANO...";
         btn.innerText = "PROCESSANDO...";
         btn.disabled = true;
         window.scrollTo({ top: 0, behavior: 'smooth' }); // AJUSTE AQUI: ROLAR PARA O TOPO AO GERAR
@@ -440,7 +440,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
             divResultado.style.display = 'block';
             if (result.pdfUrl) {
                 statusTopo.style.animation = "none";
-                statusTopo.innerHTML = `<div style="padding:5px"><p style="margin:0 0 10px 0">✅ DIETA GERADA COM SUCESSO!</p><a href="${result.pdfUrl}" target="_blank" download="Dieta_Personalizada.pdf" style="background:#000;color:#FFD700;padding:12px 25px;border-radius:5px;text-decoration:none;display:inline-block;font-size:16px;font-weight:bold;border:2px solid #000">📥 BAIXAR MEU PDF AGORA</a></div>`;
+                statusTopo.innerHTML = `<div style="padding:5px"><p style="margin:0 0 10px 0">✅ PLANO GERADO COM SUCESSO!</p><a href="${result.pdfUrl}" target="_blank" download="Dieta_Personalizada.pdf" style="background:#000;color:#FFD700;padding:12px 25px;border-radius:5px;text-decoration:none;display:inline-block;font-size:16px;font-weight:bold;border:2px solid #000">📥 BAIXAR MEU PDF AGORA</a></div>`;
                 forcarDownloadPDF(result.pdfUrl, "Dieta_Personalizada.pdf");
             }
             limparDadosInterface(); 
@@ -455,6 +455,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 </script>
 </body>
 </html>
+
 
 
 
