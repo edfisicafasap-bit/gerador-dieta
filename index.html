@@ -193,6 +193,14 @@
     async function inicializarTudo() {
         renderizarInterface();
         const urlParams = new URLSearchParams(window.location.search);
+    const nomeUrl = urlParams.get('nome');
+    const pesoUrl = urlParams.get('peso');
+    const caloriasUrl = urlParams.get('calorias');
+    const objetivoUrl = urlParams.get('objetivo');
+    if (nomeUrl) document.getElementById('nome_usuario').value = nomeUrl;
+    if (pesoUrl) document.getElementById('peso').value = pesoUrl;
+    if (caloriasUrl) document.getElementById('calorias').value = caloriasUrl;
+    if (objetivoUrl) document.getElementById('objetivo').value = objetivoUrl;
         const pago = urlParams.get('pago');
         const tipoPlano = urlParams.get('tipo');
         const emailSalvo = localStorage.getItem('email_verificacao');
@@ -440,5 +448,6 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 </script>
 </body>
 </html>
+
 
 
