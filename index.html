@@ -179,6 +179,17 @@
 
     const preparosUnificados = ["Cozido", "Assado", "Grelhado", "Refogado", "Na Airfryer", "Na frigideira", "Moído", "Desfiado", "Cozido no vapor", "Ensopado"];
 
+    // FUNÇÃO ADICIONADA: Força o download especialmente em celulares
+    function forcarDownloadPDF(url, nomeArquivo) {
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', nomeArquivo);
+        link.setAttribute('target', '_blank');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
     async function inicializarTudo() {
         renderizarInterface();
         
@@ -211,7 +222,7 @@
 
         if (user.pdf_url) {
             const baixar = confirm("Dieta encontrada! Deseja baixar seu PDF agora?");
-            if (baixar) window.open(user.pdf_url, '_blank');
+            if (baixar) forcarDownloadPDF(user.pdf_url, "Minha_Dieta.pdf"); // ALTERADO
             localStorage.removeItem('email_verificacao');
         } else if (user.pago) {
             alert("Plano ativo detectado! Selecione os alimentos abaixo e clique em GERAR para criar seu plano.");
@@ -223,7 +234,6 @@
         }
     }
 
-    // FUNÇÃO ATUALIZADA PARA UPSERT (CORREÇÃO DO PLANO ANUAL)
     async function ativarAcessoNoBanco(email, tipo) {
         const emailLow = email.toLowerCase().trim();
         const proximoReset = new Date();
@@ -239,7 +249,6 @@
             ultima_geracao: new Date().toISOString()
         };
 
-        // O upsert resolve o problema do plano anual não ser registrado na primeira vez
         const { error } = await _supabase
             .from('Usuarios_Dieta')
             .upsert(dadosUsuario, { onConflict: 'email' });
@@ -341,7 +350,7 @@
             const querBaixar = confirm("Você já possui uma dieta pronta!\n\nClique em OK para BAIXAR A ATUAL (Grátis).\nClique em CANCELAR para GERAR UMA NOVA (Exige novo pagamento).");
             
             if (querBaixar) {
-                window.open(user.pdf_url, '_blank');
+                forcarDownloadPDF(user.pdf_url, "Minha_Dieta.pdf"); // ALTERADO
                 localStorage.removeItem('email_verificacao'); 
                 return;
             } else {
@@ -498,7 +507,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 
             if (result.pdfUrl) {
                 statusTopo.innerHTML = `✅ CONCLUÍDO! <a href="${result.pdfUrl}" target="_blank" style="color: #000; font-weight: bold; text-decoration: underline;">CLIQUE AQUI PARA BAIXAR SEU PDF</a>`;
-                window.open(result.pdfUrl, '_blank');
+                forcarDownloadPDF(result.pdfUrl, "Dieta_Personalizada.pdf"); // ALTERADO
             }
 
             limparDadosInterface(); 
