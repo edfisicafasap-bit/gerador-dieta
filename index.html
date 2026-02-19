@@ -97,7 +97,7 @@
         
         <div class="acesso-rapido-box">
             <p style="font-size: 13px; color: #888; margin-bottom: 10px;">Deseja recuperar seu último plano gerado?</p>
-            <button onclick="acessoRapido()" class="btn-acesso-rapido">[ACESSAR AGORA ➔]</button>
+            <button onclick="acessoRapido()" class="btn-acesso-rapido">[ ACESSAR AGORA ] ➔</button>
         </div>
 
         <div id="status-topo">ORGANIZANDO SUAS REFEIÇÕES...</div>
@@ -167,14 +167,16 @@
             "Frango": ["Filé de peito", "Coxa e sobrecoxa (sem pele)"],
             "Boi": ["Patinho", "Coxão mole", "Coxão duro", "Lagarto", "Músculo", "Alcatra limpa"],
             "Porco": ["Lombo suíno", "Filé mignon suíno"],
-            "Ovos": ["Mexidos", "Cozidos", "Omelete", "Pochê", "Frito na água", "Frito com um fio de azeite", "Mexidos com tomate e cebola"]
+            "Ovos": ["Mexidos", "Cozidos", "Omelete", "Pochê", "Frito na água", "Frito com um fio de azeite", "Mexidos com tomate e cebola"],
+            "Complementares/Suplementos": ["Ricota", "Queijo Minas", "Queijo Muçarela", "Whey Protein"]
+
         },
         "PEIXES": { "Peixes": ["Filé de tilápia", "Filé de merluza", "Filé de linguado", "Filé de atum fresco"] },
         "GORDURAS": { "Gorduras Boas": ["Abacate", "Azeite de oliva extra virgem", "Castanha-do-pará", "Castanha de caju", "Amêndoas", "Nozes", "Amendoim (natural)", "Pasta de amendoim integral"] },
         "LEGUMES": { "Legumes": ["Cenoura", "Brócolis", "Couve-flor", "Abobrinha", "Abóbora", "Berinjela", "Espinafre", "Chuchu", "Quiabo", "Vagem", "Pepino", "Beterraba", "Pimentão", "Couve"] },
         "FRUTAS": { "Frutas": ["Banana", "Maçã", "Mamão", "Laranja", "Abacaxi", "Melancia", "Melão", "Manga", "Morango", "Uva", "Goiaba", "Pêra", "Kiwi", "Caju", "Limão", "Acerola", "Tangerina", "Abacate"] },
         "SEMENTES": { "Sementes": ["Chia", "Linhaça", "Semente de abóbora", "Semente de girassol", "Gergelim", "Quinoa (semente)"] },
-        "OUTROS": { "Outros": ["Peito de peru", "Iogurte Natural", "Leite Integral", "Leite Desnatado",  "Leite s/Lactose", "Leite De Amendoas", "Leite de soja", "Ricota", "Queijo Minas", "Queijo Muçarela", "Whey Protein", "Mel"] }
+        "OUTROS": { "Outros": ["Peito de peru", "Iogurte Natural", "Leite Integral", "Leite Desnatado",  "Leite s/Lactose", "Leite De Amendoas", "Leite de soja", "Mel"] }
     };
 
     const preparosUnificados = ["Cozido", "Assado", "Grelhado", "Refogado", "Na Airfryer", "Na frigideira", "Moído", "Desfiado", "Cozido no vapor", "Ensopado"];
@@ -374,7 +376,7 @@
         btn.disabled = true;
         window.scrollTo({ top: 0, behavior: 'smooth' }); // AJUSTE AQUI: ROLAR PARA O TOPO AO GERAR
         try {
-            const promptFinal = `Atue como um Nutricionista Prático. Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou. É importante lembrar que este plano é uma sugestão e pode ser ajustado de acordo com as suas necessidades individuais, preferências alimentares e orientações de um profissional de saúde.". Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
+            const promptFinal = `Atue como um Nutricionista Prático. Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou.". Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
 DIRETRIZES SUPREMAS
 
@@ -451,6 +453,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 </script>
 </body>
 </html>
+
 
 
 
