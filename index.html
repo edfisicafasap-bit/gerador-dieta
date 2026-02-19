@@ -200,7 +200,6 @@
         }
     }
 
-    // FUNÇÃO DE ACESSO RÁPIDO ALTERADA PARA LIMPAR O EMAIL APÓS O USO
     async function acessoRapido() {
         let email = prompt("Digite seu e-mail cadastrado:");
         if (!email || !email.includes('@')) return alert("E-mail inválido.");
@@ -213,7 +212,6 @@
         if (user.pdf_url) {
             const baixar = confirm("Dieta encontrada! Deseja baixar seu PDF agora?");
             if (baixar) window.open(user.pdf_url, '_blank');
-            // Limpa após abrir o PDF para não deixar logado
             localStorage.removeItem('email_verificacao');
         } else if (user.pago) {
             alert("Plano ativo detectado! Selecione os alimentos abaixo e clique em GERAR para criar seu plano.");
@@ -225,10 +223,14 @@
         }
     }
 
+    // FUNÇÃO ATUALIZADA PARA UPSERT (CORREÇÃO DO PLANO ANUAL)
     async function ativarAcessoNoBanco(email, tipo) {
+        const emailLow = email.toLowerCase().trim();
         const proximoReset = new Date();
         proximoReset.setDate(proximoReset.getDate() + 7);
-        const updates = {
+        
+        const dadosUsuario = {
+            email: emailLow,
             pago: true,
             tipo_plano: tipo,
             creditos: (tipo === 'unica' ? 1 : 0),
@@ -236,12 +238,19 @@
             data_reset: proximoReset.toISOString(),
             ultima_geracao: new Date().toISOString()
         };
-        const { error } = await _supabase.from('Usuarios_Dieta').update(updates).eq('email', email.toLowerCase().trim());
+
+        // O upsert resolve o problema do plano anual não ser registrado na primeira vez
+        const { error } = await _supabase
+            .from('Usuarios_Dieta')
+            .upsert(dadosUsuario, { onConflict: 'email' });
+
         if (!error) {
             setTimeout(() => {
                 window.history.replaceState({}, document.title, window.location.pathname);
-                executarGeracaoComConsumo(tipo, email.toLowerCase().trim(), 0);
+                executarGeracaoComConsumo(tipo, emailLow, 0);
             }, 1000);
+        } else {
+            console.error("Erro no registro:", error);
         }
     }
 
@@ -333,7 +342,7 @@
             
             if (querBaixar) {
                 window.open(user.pdf_url, '_blank');
-                localStorage.removeItem('email_verificacao'); // LIMPA APÓS O DOWNLOAD
+                localStorage.removeItem('email_verificacao'); 
                 return;
             } else {
                 if (user.tipo_plano !== 'anual') {
@@ -412,7 +421,6 @@
         btn.disabled = true;
 
         try {
-            // PROMPT MANTIDO INTEGRALMENTE
             const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
 DIRETRIZES SUPREMAS
