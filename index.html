@@ -226,24 +226,29 @@
     async function inicializarTudo() {
         renderizarInterface();
         const urlParams = new URLSearchParams(window.location.search);
- const nomeUrl = urlParams.get('nome');
-    const pesoUrl = urlParams.get('peso');
-    const caloriasUrl = urlParams.get('calorias');
-    let objetivoUrl = urlParams.get('objetivo'); // Usamos 'let' para poder alterar
+        
+        // 1. Captura os dados da Calculadora
+        const nomeUrl = urlParams.get('nome');
+        const pesoUrl = urlParams.get('peso');
+        const caloriasUrl = urlParams.get('calorias');
+        let objetivoUrl = urlParams.get('objetivo');
+        if (objetivoUrl === "Manutencao") objetivoUrl = "Definição";
 
-    // 2. Tradução: Se vier "Manutencao", transforma em "Definição"
-    if (objetivoUrl === "Manutencao") {
-        objetivoUrl = "Definição";
-    }
+        // 2. Se veio da calculadora, preenche e SALVA no rascunho para a IA ler depois
+        if (nomeUrl || pesoUrl || caloriasUrl) {
+            if (nomeUrl) document.getElementById('nome_usuario').value = nomeUrl;
+            if (pesoUrl) document.getElementById('peso').value = pesoUrl;
+            if (caloriasUrl) document.getElementById('calorias').value = caloriasUrl;
+            if (objetivoUrl) document.getElementById('objetivo').value = objetivoUrl;
+            
+            // Isso garante que a IA receba os dados mesmo sem o "pago=true" estar na URL ainda
+            salvarProgressoLocal(); 
+        }
 
-    // 3. Preenche os campos se os dados existirem
-    if (nomeUrl) document.getElementById('nome_usuario').value = nomeUrl;
-    if (pesoUrl) document.getElementById('peso').value = pesoUrl;
-    if (caloriasUrl) document.getElementById('calorias').value = caloriasUrl;
-    if (objetivoUrl) document.getElementById('objetivo').value = objetivoUrl;
         const pago = urlParams.get('pago');
         const tipoPlano = urlParams.get('tipo');
         const emailSalvo = localStorage.getItem('email_verificacao');
+
         if (pago === 'true') {
             recuperarDadosSalvos();
             if (emailSalvo && tipoPlano) {
@@ -253,7 +258,10 @@
                 await ativarAcessoNoBanco(emailSalvo, tipoPlano);
             }
         } else {
-            localStorage.removeItem('rascunho_dieta');
+            // LIMPEZA INTELIGENTE:
+            // Só apaga se NÃO houver dados novos vindo da calculadora agora
+            if (!nomeUrl && !pesoUrl && !caloriasUrl) {
+                localStorage.removeItem('rascunho_dieta');
         }
     }
 
@@ -492,6 +500,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 </a>
 </body>
 </html>
+
 
 
 
