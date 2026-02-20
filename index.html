@@ -356,27 +356,41 @@
         if (alimentos.length < 5) return alert("Selecione pelo menos 5 alimentos!");
         if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
         
+        // 1. Tenta pegar o e-mail do localStorage
         let emailAcesso = localStorage.getItem('email_verificacao');
-        if (!emailAcesso || emailAcesso === "null") emailAcesso = prompt("Cadastre seu melhor e-mail para receber o plano:");
         
-        if (!emailAcesso || !emailAcesso.includes('@')) return alert("E-mail inválido.");
+        // 2. SE NÃO TIVER E-MAIL (ou for nulo/vazio), PEDE AGORA
+        if (!emailAcesso || emailAcesso === "null" || emailAcesso.trim() === "") {
+            emailAcesso = prompt("Para gerar seu plano, cadastre seu melhor e-mail:");
+        }
+        
+        // 3. VALIDAÇÃO RIGOROSA DO E-MAIL
+        if (!emailAcesso || !emailAcesso.includes('@')) {
+            localStorage.removeItem('email_verificacao'); // Limpa sujeira
+            return alert("E-mail inválido. Digite um e-mail real para continuar.");
+        }
         
         const emailLow = emailAcesso.toLowerCase().trim();
         localStorage.setItem('email_verificacao', emailLow);
         salvarProgressoLocal(emailLow);
 
-        let { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', emailLow).single();
+        // 4. SÓ AGORA BUSCA NO BANCO
+        let { data: user, error } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', emailLow).single();
         
+        // Se o usuário não existe ou não pagou, abre o overlay de pagamento
         if (!user || !user.pago) { 
             document.getElementById('payment-overlay').style.display = 'flex'; 
             return; 
         }
 
+        // 5. SE JÁ PAGOU, CHECA OS LIMITES
         if (user.tipo_plano === 'unica') {
             executarGeracaoComConsumo('unica', emailLow);
         } else {
-            if (user.contagem_semanal >= 2) return alert("Limite semanal atingido.");
-            executarGeracaoComConsumo('anual', emailLow, user.contagem_semanal);
+            // Se for anual, checa se a contagem existe
+            const contagem = user.contagem_semanal || 0;
+            if (contagem >= 2) return alert("Limite semanal atingido para este e-mail.");
+            executarGeracaoComConsumo('anual', emailLow, contagem);
         }
     }
 
@@ -510,6 +524,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 </a>
 </body>
 </html>
+
 
 
 
