@@ -346,27 +346,59 @@
         const alimentos = Array.from(document.querySelectorAll('input[name="alimento"]:checked'));
         if (alimentos.length < 5) return alert("Selecione pelo menos 5 alimentos!");
         if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
+
+        // 1. Tenta pegar o email salvo
         let emailAcesso = localStorage.getItem('email_verificacao');
-        if (!emailAcesso || emailAcesso === "null" || emailAcesso === "") emailAcesso = prompt("Para gerar seu plano, cadastre seu melhor e-mail:");
-        if (!emailAcesso || !emailAcesso.includes('@')) { localStorage.removeItem('email_verificacao'); return alert("E-mail inválido."); }
+
+        // 2. CORREÇÃO: Se o email for inválido, vazio ou a string "null", pede o prompt
+        if (!emailAcesso || emailAcesso === "null" || emailAcesso.trim() === "" || !emailAcesso.includes('@')) {
+            emailAcesso = prompt("Para gerar seu plano, cadastre seu melhor e-mail:");
+            
+            if (!emailAcesso || !emailAcesso.includes('@')) {
+                localStorage.removeItem('email_verificacao');
+                return alert("E-mail válido é obrigatório para salvar seu progresso.");
+            }
+        }
+
         const emailLow = emailAcesso.toLowerCase().trim();
         localStorage.setItem('email_verificacao', emailLow);
         salvarProgressoLocal(emailLow);
+
+        // 3. Verifica no Supabase
         let { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', emailLow).single();
-        if (!user || !user.pago) { document.getElementById('payment-overlay').style.display = 'flex'; return; }
+
+        // 4. Se não existe ou não pagou, abre o checkout
+        if (!user || !user.pago) { 
+            document.getElementById('payment-overlay').style.display = 'flex'; 
+            return; 
+        }
+
+        // 5. SE JÁ PAGOU E JÁ TEM PDF (Sua lógica original que eu havia esquecido)
         if (user.pago && user.pdf_url) {
-            window.scrollTo({ top: 0, behavior: 'smooth' }); // AJUSTE AQUI: ROLAR PARA O TOPO
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
             const statusTopo = document.getElementById('status-topo');
             statusTopo.style.display = 'block';
-            statusTopo.innerHTML = `<div style="padding:5px"><p style="margin:0 0 10px 0">📄 VOCÊ JÁ POSSUI UMA DIETA!</p><a href="${user.pdf_url}" target="_blank" download="Minha_Dieta.pdf" style="background:#000;color:#FFD700;padding:10px 20px;border-radius:5px;text-decoration:none;display:inline-block;font-size:14px;font-weight:bold;border:1px solid #000">📥 BAIXAR ATUAL</a><br><br><small style="cursor:pointer;text-decoration:underline" onclick="executarGeracaoComConsumo('${user.tipo_plano}', '${emailLow}', ${user.contagem_semanal || 0})">Ou gerar uma nova (consome crédito/limite)</small></div>`;
+            statusTopo.innerHTML = `
+                <div style="padding:5px">
+                    <p style="margin:0 0 10px 0">📄 VOCÊ JÁ POSSUI UMA DIETA!</p>
+                    <a href="${user.pdf_url}" target="_blank" download="Minha_Dieta.pdf" style="background:#000;color:#FFD700;padding:10px 20px;border-radius:5px;text-decoration:none;display:inline-block;font-size:14px;font-weight:bold;border:1px solid #000">📥 BAIXAR ATUAL</a>
+                    <br><br>
+                    <small style="cursor:pointer;text-decoration:underline" onclick="executarGeracaoComConsumo('${user.tipo_plano}', '${emailLow}', ${user.contagem_semanal || 0})">
+                        Ou gerar uma nova (consome crédito/limite)
+                    </small>
+                </div>`;
             return;
         }
-        if (user.tipo_plano === 'unica') executarGeracaoComConsumo('unica', emailLow);
-        else if (user.tipo_plano === 'anual') {
+
+        // 6. Se já pagou mas ainda não gerou o PDF (Primeira geração após pagamento)
+        if (user.tipo_plano === 'unica') {
+            executarGeracaoComConsumo('unica', emailLow);
+        } else if (user.tipo_plano === 'anual') {
             const agora = new Date();
             const dataReset = user.data_reset ? new Date(user.data_reset) : agora;
             if (agora >= dataReset) {
-                const novoReset = new Date(); novoReset.setDate(novoReset.getDate() + 7);
+                const novoReset = new Date(); 
+                novoReset.setDate(novoReset.getDate() + 7);
                 await _supabase.from('Usuarios_Dieta').update({ contagem_semanal: 0, data_reset: novoReset.toISOString() }).eq('email', emailLow);
                 user.contagem_semanal = 0;
             }
@@ -500,6 +532,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 </a>
 </body>
 </html>
+
 
 
 
