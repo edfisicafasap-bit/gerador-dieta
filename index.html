@@ -50,11 +50,10 @@
         #resultado { margin-top: 30px; white-space: pre-wrap; background: #111; padding: 20px; border-radius: 8px; display: none; border: 1px solid #FFD700; font-size: 14px; line-height: 1.6; }
         hr { border: 0.5px solid #222; margin: 30px 0; }
 
-        /* Estilo do Botão de Acesso Rápido */
         .acesso-rapido-box { background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333; margin-bottom: 25px; text-align: center; }
         .btn-acesso-rapido { background: transparent; border: 1px solid #FFD700; color: #FFD700; padding: 8px 20px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
         .btn-acesso-rapido:hover { background: #FFD700; color: #000; }
-/* Botão de Suporte WhatsApp */
+
         .btn-suporte-fixo {
             position: fixed;
             bottom: 20px;
@@ -238,24 +237,22 @@
         if (caloriasUrl) document.getElementById('calorias').value = caloriasUrl;
         if (objetivoUrl) document.getElementById('objetivo').value = objetivoUrl;
 
-        // SE VIER DA CALCULADORA, JÁ SALVA O RASCUNHO PARA NÃO PERDER
         if (pesoUrl || caloriasUrl) {
             salvarProgressoLocal();
         }
 
         const pago = urlParams.get('pago');
         const tipoPlano = urlParams.get('tipo');
-        const emailSalvo = localStorage.getItem('email_verificacao');
+        // NOVA LÓGICA: Pega o e-mail da URL ou do LocalStorage
+        const emailAcesso = urlParams.get('email') || localStorage.getItem('email_verificacao');
 
-        if (pago === 'true') {
-            // RECUPERA O QUE VEIO DA URL ANTES DE TUDO
+        if (pago === 'true' && emailAcesso) {
+            localStorage.setItem('email_verificacao', emailAcesso);
             recuperarDadosSalvos(); 
-            if (emailSalvo) {
-                const statusTopo = document.getElementById('status-topo');
-                statusTopo.style.display = 'block';
-                statusTopo.innerText = "🚀 PAGAMENTO CONFIRMADO!";
-                await ativarAcessoNoBanco(emailSalvo, tipoPlano || 'unica');
-            }
+            const statusTopo = document.getElementById('status-topo');
+            statusTopo.style.display = 'block';
+            statusTopo.innerText = "🚀 PAGAMENTO CONFIRMADO!";
+            await ativarAcessoNoBanco(emailAcesso, tipoPlano || 'unica');
         }
     }
 
@@ -296,7 +293,6 @@
         if (!error) {
             window.history.replaceState({}, document.title, window.location.pathname);
             const rascunho = JSON.parse(localStorage.getItem('rascunho_dieta'));
-            // Só gera automático se o usuário já tiver escolhido alimentos (vindo do fluxo de compra)
             if (rascunho && rascunho.alimentos && rascunho.alimentos.length >= 5) {
                 executarGeracaoComConsumo(tipo, emailLow, 0);
             }
@@ -356,17 +352,14 @@
         if (alimentos.length < 5) return alert("Selecione pelo menos 5 alimentos!");
         if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
         
-        // 1. Tenta pegar o e-mail do localStorage
         let emailAcesso = localStorage.getItem('email_verificacao');
         
-        // 2. SE NÃO TIVER E-MAIL (ou for nulo/vazio), PEDE AGORA
         if (!emailAcesso || emailAcesso === "null" || emailAcesso.trim() === "") {
             emailAcesso = prompt("Para gerar seu plano, cadastre seu melhor e-mail:");
         }
         
-        // 3. VALIDAÇÃO RIGOROSA DO E-MAIL
         if (!emailAcesso || !emailAcesso.includes('@')) {
-            localStorage.removeItem('email_verificacao'); // Limpa sujeira
+            localStorage.removeItem('email_verificacao');
             return alert("E-mail inválido. Digite um e-mail real para continuar.");
         }
         
@@ -374,20 +367,16 @@
         localStorage.setItem('email_verificacao', emailLow);
         salvarProgressoLocal(emailLow);
 
-        // 4. SÓ AGORA BUSCA NO BANCO
         let { data: user, error } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', emailLow).single();
         
-        // Se o usuário não existe ou não pagou, abre o overlay de pagamento
         if (!user || !user.pago) { 
             document.getElementById('payment-overlay').style.display = 'flex'; 
             return; 
         }
 
-        // 5. SE JÁ PAGOU, CHECA OS LIMITES
         if (user.tipo_plano === 'unica') {
             executarGeracaoComConsumo('unica', emailLow);
         } else {
-            // Se for anual, checa se a contagem existe
             const contagem = user.contagem_semanal || 0;
             if (contagem >= 2) return alert("Limite semanal atingido para este e-mail.");
             executarGeracaoComConsumo('anual', emailLow, contagem);
@@ -411,7 +400,8 @@
         const email = localStorage.getItem('email_verificacao');
         const LINK_UNICA = "https://buy.stripe.com/test_bJe7sLcqhcL0g0B9T9asg00";
         const LINK_ANUAL = "https://buy.stripe.com/test_3cI8wP0Hz9yO4hTc1hasg01"; 
-        window.location.href = (priceId.includes('WyTiPBAu') ? LINK_UNICA : LINK_ANUAL) + "?prefilled_email=" + email;
+        // Adiciona e-mail na URL de checkout do Stripe
+        window.location.href = (priceId.includes('WyTiPBAu') ? LINK_UNICA : LINK_ANUAL) + "?prefilled_email=" + encodeURIComponent(email);
     }
 
     function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
@@ -429,7 +419,6 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         try {
-            // SEU PROMPT ORIGINAL INTEGRAL ABAIXO
             const promptFinal = `Atue como um Nutricionista Prático. Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou.". Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
 DIRETRIZES SUPREMAS
@@ -502,7 +491,6 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
                 statusTopo.style.animation = "none";
                 statusTopo.innerHTML = `<div style="padding:5px"><p style="margin:0 0 10px 0">✅ PLANO GERADO!</p><a href="${result.pdfUrl}" target="_blank" download="Dieta.pdf" style="background:#000;color:#FFD700;padding:12px 25px;border-radius:5px;text-decoration:none;display:inline-block;font-size:16px;font-weight:bold;border:2px solid #000">📥 BAIXAR PDF</a></div>`;
                 forcarDownloadPDF(result.pdfUrl, "Dieta.pdf");
-                // LIMPA TUDO SÓ DEPOIS DO SUCESSO
                 localStorage.removeItem('rascunho_dieta');
             }
         } catch (e) { 
@@ -524,11 +512,3 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 </a>
 </body>
 </html>
-
-
-
-
-
-
-
-
