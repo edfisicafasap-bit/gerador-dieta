@@ -54,7 +54,7 @@
 <body onload="inicializarTudo()">
 
 <div id="payment-overlay">
-    <div class="payment-card" style="background: #1e1e1e; padding: 30px; border-radius: 15px; text-align: center; max-width: 350px; border: 1px solid #333; font-family: sans-serif;">
+    <div class="payment-card">
         <h2 style="font-size: 24px; color: #FFD700; margin-top: 0;">CARDÁPIO GERADO! 🚀</h2>
         <p style="color: #eee; margin-bottom: 25px; font-size: 15px;">Para acessar o seu cardápio, escolha um dos planos abaixo:</p>
         
@@ -164,7 +164,7 @@
         "LEGUMES": { "Legumes": ["Cenoura", "Brócolis", "Couve-flor", "Abobrinha", "Abóbora", "Berinjela", "Espinafre", "Chuchu", "Quiabo", "Vagem", "Pepino", "Beterraba", "Pimentão", "Couve"] },
         "FRUTAS": { "Frutas": ["Banana", "Maçã", "Mamão", "Laranja", "Abacaxi", "Melancia", "Melão", "Manga", "Morango", "Uva", "Goiaba", "Pêra", "Kiwi", "Caju", "Limão", "Acerola", "Tangerina", "Abacate"] },
         "SEMENTES": { "Sementes": ["Chia", "Linhaça", "Semente de abóbora", "Semente de girassol", "Gergelim", "Quinoa (semente)"] },
-    "OUTROS": { "Outros": ["Peito de peru", "Iogurte Natural", "Leite Integral", "Leite Desnatado",  "Leite s/Lactose", "Leite De Amendoas", "Leite de soja", "Ricota", "Queijo Minas", "Queijo Muçarela", "Whey Protein", "Mel"] }
+        "OUTROS": { "Outros": ["Peito de peru", "Iogurte Natural", "Leite Integral", "Leite Desnatado",  "Leite s/Lactose", "Leite De Amendoas", "Leite de soja", "Ricota", "Queijo Minas", "Queijo Muçarela", "Whey Protein", "Mel"] }
     };
 
     const preparosUnificados = ["Cozido", "Assado", "Grelhado", "Refogado", "Na Airfryer", "Na frigideira", "Moído", "Desfiado", "Cozido no vapor", "Ensopado"];
@@ -341,22 +341,21 @@
         
         const btn = document.getElementById('btn-gerar');
         const statusTopo = document.getElementById('status-topo');
+        const emailUsuario = localStorage.getItem('email_verificacao');
 
         statusTopo.style.display = 'block';
         btn.innerText = "AGUARDE...";
         btn.disabled = true;
 
-const pesoNum = parseFloat(d.peso);
-    const calTotal = parseInt(d.calorias);
-    
-    const gProteina = (pesoNum * 2).toFixed(0); // 2g por kg
-    const gGordura = (pesoNum * 1).toFixed(0);  // 1g por kg
-    
-    // Cálculo do Carboidrato: (Total de Calorias - Calorias de Prot e Gord) / 4
-    const calRestantes = calTotal - ((gProteina * 4) + (gGordura * 9));
-    const gCarbo = (calRestantes / 4).toFixed(0);
+        const pesoNum = parseFloat(d.peso);
+        const calTotal = parseInt(d.calorias);
+        const gProteina = (pesoNum * 2).toFixed(0);
+        const gGordura = (pesoNum * 1).toFixed(0);
+        const calRestantes = calTotal - ((gProteina * 4) + (gGordura * 9));
+        const gCarbo = (calRestantes / 4).toFixed(0);
 
-       const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
+        // --- SEU PROMPT GIGANTE (O CÉREBRO DO PROGRAMA) ---
+        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
 DIRETRIZES SUPREMAS
 
@@ -415,36 +414,34 @@ ITENS COMPLEMENTARES:
 
 ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional."`;
 
-
         try {
             const response = await fetch('/api/gerar-dieta', {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-            prompt: promptFinal
-        })
-    });
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    prompt: promptFinal,
+                    email: emailUsuario // Enviando o e-mail para salvar no banco
+                })
+            });
 
-    const result = await response.json();
+            const result = await response.json();
+            
+            // Ajustado para o novo formato do backend
+            const texto = result.dieta;
 
-    const texto = result.choices[0].message.content;
+            document.getElementById('resultado').innerText = texto;
+            document.getElementById('resultado').style.display = 'block';
+            baixarPDF(texto);
+            return true;
 
-    document.getElementById('resultado').innerText = texto;
-    document.getElementById('resultado').style.display = 'block';
-    baixarPDF(texto);
-    return true;
-
-} catch (e) { 
-    console.error(e);
-    alert("Erro ao falar com a IA.");
-    return false;
-
-} finally {
-    btn.innerText = "GERAR E BAIXAR PLANO";
-    btn.disabled = false;
-    statusTopo.style.display = 'none';
+        } catch (e) { 
+            console.error(e);
+            alert("Erro ao falar com a IA.");
+            return false;
+        } finally {
+            btn.innerText = "GERAR E BAIXAR PLANO";
+            btn.disabled = false;
+            statusTopo.style.display = 'none';
         }
     }
 
@@ -453,29 +450,17 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
         const doc = new jsPDF();
         const textoLimpo = conteudo.replace(/[#*]/g, '');
         doc.setFontSize(10);
-        const lines = doc.splitTextToSize(conteudo, 180);
+        const lines = doc.splitTextToSize(textoLimpo, 180);
         let y = 20;
         lines.forEach(line => {
             if (y > 280) { doc.addPage(); y = 20; }
             doc.text(line, 15, y);
             y += 6;
         });
-        doc.save("Sugestão_Alimentar.pdf");
+        doc.save("Minha_Dieta.pdf");
         limparDadosInterface();
     }
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
