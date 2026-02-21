@@ -386,9 +386,35 @@
     async function executarGeracaoComConsumo(tipo, email, contagemAtual = 0) {
         const dadosLocais = localStorage.getItem('rascunho_dieta');
         if (!dadosLocais) return alert("Erro ao recuperar dados.");
-        if (tipo === 'unica') await _supabase.from('Usuarios_Dieta').update({ creditos: 0, pago: false, ultima_geracao: new Date().toISOString() }).eq('email', email);
-        else await _supabase.from('Usuarios_Dieta').update({ contagem_semanal: contagemAtual + 1, ultima_geracao: new Date().toISOString() }).eq('email', email);
-        await gerarDieta(JSON.parse(dadosLocais)); 
+        
+        const emailLow = email.toLowerCase().trim();
+        const agora = new Date().toISOString();
+
+        // Criamos o objeto de atualização/criação
+        let dadosParaEnviar = { 
+            email: emailLow, 
+            ultima_geracao: agora 
+        };
+
+        if (tipo === 'unica') {
+            dadosParaEnviar.creditos = 0;
+            dadosParaEnviar.pago = false;
+        } else {
+            dadosParaEnviar.contagem_semanal = contagemAtual + 1;
+        }
+
+        // USAMOS UPSERT: Se o usuário vindo da calculadora não existir no banco, 
+        // o Supabase cria ele agora mesmo em vez de dar erro.
+        const { error } = await _supabase
+            .from('Usuarios_Dieta')
+            .upsert(dadosParaEnviar, { onConflict: 'email' });
+
+        if (error) {
+            console.error("Erro Supabase:", error);
+            return alert("Erro ao validar acesso no banco de dados.");
+        }
+
+        await gerarDieta(JSON.parse(dadosLocais));
     }
 
     function limparDadosInterface() {
@@ -508,6 +534,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 </a>
 </body>
 </html>
+
 
 
 
