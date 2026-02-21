@@ -1,33 +1,30 @@
-// api/uploadPDF.js
-import fs from 'fs';
 import { supabase } from './supabase';
 
 /**
- * Faz upload de um PDF para o bucket 'dietas-pdf' no Supabase
- * @param {string} caminhoLocal - caminho do arquivo PDF temporário
- * @param {string} nomeArquivo - nome final do arquivo no bucket (ex: dieta-123.pdf)
- * @returns {string} - link assinado do PDF (válido 24h)
+ * Faz upload do conteúdo da dieta para o bucket 'dietas-pdf'
+ * @param {string} conteudo - O texto da dieta gerado pela IA
+ * @param {string} nomeArquivo - Nome do arquivo (ex: dieta-usuario.txt)
+ * @returns {string} - Link assinado válido por 24h
  */
-export async function uploadPDFSupabase(caminhoLocal, nomeArquivo) {
-  // Lê o arquivo PDF temporário
-  const file = fs.readFileSync(caminhoLocal);
+export async function uploadPDFSupabase(conteudo, nomeArquivo) {
+  // Convertemos o texto em um Buffer (mais seguro para upload em nuvem)
+  const fileBuffer = Buffer.from(conteudo, 'utf-8');
 
-  // Upload para o bucket privado 'dietas-pdf'
   const { error } = await supabase
     .storage
     .from('dietas-pdf')
-    .upload(nomeArquivo, file, {
-      contentType: 'application/pdf',
-      upsert: true // substitui se o arquivo já existir
+    .upload(nomeArquivo, fileBuffer, {
+      contentType: 'text/plain;charset=UTF-8',
+      upsert: true 
     });
 
   if (error) throw error;
 
-  // Gera link assinado para download (válido 24h)
+  // Gera o link assinado de 24 horas conforme seu código original
   const { data, error: signedError } = await supabase
     .storage
     .from('dietas-pdf')
-    .createSignedUrl(nomeArquivo, 60 * 60 * 24); // 24 horas
+    .createSignedUrl(nomeArquivo, 60 * 60 * 24); 
 
   if (signedError) throw signedError;
 
