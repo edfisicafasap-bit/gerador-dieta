@@ -12,16 +12,13 @@ async function gerarPDF(conteudo, usuarioId) {
 
   return new Promise((resolve, reject) => {
     doc.pipe(stream);
-
     doc.font('Helvetica-Bold').fontSize(22).text('SEU PLANO ALIMENTAR', { align: 'center' });
     doc.moveDown();
     doc.font('Helvetica').fontSize(12).text(conteudo, {
       align: 'justify',
       lineGap: 5
     });
-    
     doc.end();
-
     stream.on('finish', () => resolve(caminhoArquivo));
     stream.on('error', (err) => reject(err));
   });
@@ -29,7 +26,6 @@ async function gerarPDF(conteudo, usuarioId) {
 
 async function uploadPDFSupabase(caminhoLocal, nomeArquivo) {
   const file = fs.readFileSync(caminhoLocal);
-
   const { error } = await supabase
     .storage
     .from('dietas-pdf') 
@@ -39,11 +35,7 @@ async function uploadPDFSupabase(caminhoLocal, nomeArquivo) {
     });
 
   if (error) throw new Error(`Erro no Upload Supabase: ${error.message}`);
-
-  // ALTERAÇÃO: Usando PublicURL para o link não expirar em 24h
-  // Certifique-se que seu bucket 'dietas-pdf' está como PUBLIC no Supabase
   const { data } = supabase.storage.from('dietas-pdf').getPublicUrl(nomeArquivo);
-  
   return data.publicUrl;
 }
 
@@ -60,19 +52,28 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido' });
 
   try {
-    // 1. Captura os dados desestruturados que vêm do seu Frontend
-    const { usuarioId, peso, calorias, objetivo, refeicoes, alimentos, preparos } = req.body;
+    // --- O TRADUTOR: Normaliza os nomes vindos do Site para o Backend ---
+    const body = req.body;
+    
+    const usuarioId = body.usuarioId || body.email || body.contato;
+    const peso      = body.peso      || body.weight;
+    const calorias  = body.calorias  || body.caloriesResult || body.kcal;
+    const objetivo  = body.objetivo  || body.goalParam || body.goal;
+    const nome      = body.nome      || body.name;
+    const refeicoes = body.refeicoes || body.num_refeicoes || 4;
+    const alimentos = body.alimentos || [];
+    const preparos  = body.preparos  || [];
 
-    if (!usuarioId) return res.status(400).json({ error: 'E-mail obrigatório' });
+    if (!usuarioId) return res.status(400).json({ error: 'E-mail (usuarioId) obrigatório' });
 
-    // 2. Monta o Prompt com os dados da calculadora e dos alimentos
-    const promptCorrigido = `Crie uma dieta detalhada para um usuário com:
+    // 2. Monta o Prompt usando as variáveis traduzidas
+    const promptCorrigido = `Crie uma dieta detalhada para o usuário ${nome || 'Cliente'} com:
     - Objetivo: ${objetivo}
     - Peso: ${peso}kg
     - Calorias: ${calorias}kcal
     - Refeições: ${refeicoes}
-    - Alimentos escolhidos: ${alimentos ? alimentos.join(', ') : 'Variados'}
-    - Preferência de preparo: ${preparos ? preparos.join(', ') : 'Geral'}
+    - Alimentos escolhidos: ${alimentos.length > 0 ? alimentos.join(', ') : 'Variados'}
+    - Preferência de preparo: ${preparos.length > 0 ? preparos.join(', ') : 'Geral'}
     Formate o texto de forma profissional para um PDF.`;
 
     // 3. Chamada OpenAI
@@ -101,7 +102,7 @@ export default async function handler(req, res) {
 
     const pdfUrl = await uploadPDFSupabase(caminhoPDF, nomeArquivoNoStorage);
 
-    // 5. Salva no Banco (Aqui resolve o NULL)
+    // 5. Salva no Banco usando o usuarioId traduzido
     await salvarPDFUrlNoBanco(usuarioId, pdfUrl);
 
     if (fs.existsSync(caminhoPDF)) fs.unlinkSync(caminhoPDF);
