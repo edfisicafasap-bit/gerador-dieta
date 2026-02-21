@@ -13,7 +13,6 @@ async function gerarPDF(conteudo, usuarioId) {
   return new Promise((resolve, reject) => {
     doc.pipe(stream);
 
-    // Ajuste de Fonte para aceitar acentuação brasileira
     doc.font('Helvetica-Bold').fontSize(22).text('SEU PLANO ALIMENTAR', { align: 'center' });
     doc.moveDown();
     doc.font('Helvetica').fontSize(12).text(conteudo, {
@@ -31,7 +30,6 @@ async function gerarPDF(conteudo, usuarioId) {
 async function uploadPDFSupabase(caminhoLocal, nomeArquivo) {
   const file = fs.readFileSync(caminhoLocal);
 
-  // Faz o upload para o bucket 'dietas-pdf'
   const { error } = await supabase
     .storage
     .from('dietas-pdf') 
@@ -42,14 +40,11 @@ async function uploadPDFSupabase(caminhoLocal, nomeArquivo) {
 
   if (error) throw new Error(`Erro no Upload Supabase: ${error.message}`);
 
-  // Link assinado (público por 24h)
-  const { data, error: signedError } = await supabase
-    .storage
-    .from('dietas-pdf')
-    .createSignedUrl(nomeArquivo, 60 * 60 * 24);
-
-  if (signedError) throw signedError;
-  return data.signedUrl;
+  // ALTERAÇÃO: Usando PublicURL para o link não expirar em 24h
+  // Certifique-se que seu bucket 'dietas-pdf' está como PUBLIC no Supabase
+  const { data } = supabase.storage.from('dietas-pdf').getPublicUrl(nomeArquivo);
+  
+  return data.publicUrl;
 }
 
 async function salvarPDFUrlNoBanco(emailUsuario, url) {
@@ -65,11 +60,22 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido' });
 
   try {
-    const { prompt, usuarioId } = req.body;
+    // 1. Captura os dados desestruturados que vêm do seu Frontend
+    const { usuarioId, peso, calorias, objetivo, refeicoes, alimentos, preparos } = req.body;
 
     if (!usuarioId) return res.status(400).json({ error: 'E-mail obrigatório' });
 
-    // Chamada OpenAI
+    // 2. Monta o Prompt com os dados da calculadora e dos alimentos
+    const promptCorrigido = `Crie uma dieta detalhada para um usuário com:
+    - Objetivo: ${objetivo}
+    - Peso: ${peso}kg
+    - Calorias: ${calorias}kcal
+    - Refeições: ${refeicoes}
+    - Alimentos escolhidos: ${alimentos ? alimentos.join(', ') : 'Variados'}
+    - Preferência de preparo: ${preparos ? preparos.join(', ') : 'Geral'}
+    Formate o texto de forma profissional para um PDF.`;
+
+    // 3. Chamada OpenAI
     const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -78,30 +84,26 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }],
+        messages: [{ role: "user", content: promptCorrigido }],
         temperature: 0.7
       })
     });
 
     const aiData = await aiResponse.json();
-    
-    if (aiData.error) {
-        throw new Error(`OpenAI Error: ${aiData.error.message}`);
-    }
+    if (aiData.error) throw new Error(`OpenAI Error: ${aiData.error.message}`);
 
     const dietaTexto = aiData.choices?.[0]?.message?.content;
-
     if (!dietaTexto) throw new Error('IA retornou conteúdo vazio');
 
-    // PDF e Storage
+    // 4. PDF e Storage
     const caminhoPDF = await gerarPDF(dietaTexto, usuarioId);
     const nomeArquivoNoStorage = `dieta-${usuarioId.replace(/[^a-zA-Z0-9]/g, '_')}-${Date.now()}.pdf`;
 
     const pdfUrl = await uploadPDFSupabase(caminhoPDF, nomeArquivoNoStorage);
 
+    // 5. Salva no Banco (Aqui resolve o NULL)
     await salvarPDFUrlNoBanco(usuarioId, pdfUrl);
 
-    // Limpeza do arquivo temporário para não ocupar memória da Vercel
     if (fs.existsSync(caminhoPDF)) fs.unlinkSync(caminhoPDF);
 
     return res.status(200).json({
@@ -111,7 +113,7 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('ERRO DETALHADO NO BACKEND:', error.message);
-    return res.status(500).json({ error: error.message || 'Erro interno no servidor' });
+    console.error('ERRO NO BACKEND:', error.message);
+    return res.status(500).json({ error: error.message });
   }
 }
