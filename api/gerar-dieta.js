@@ -39,22 +39,27 @@ async function uploadPDFSupabase(caminhoLocal, nomeArquivo) {
   return data.publicUrl;
 }
 
+// --- ALTERAÇÃO AQUI: DE UPDATE PARA UPSERT ---
 async function salvarPDFUrlNoBanco(emailUsuario, url) {
+  const emailLimpo = emailUsuario.toLowerCase().trim();
+  
   const { error } = await supabase
     .from('Usuarios_Dieta')
-    .update({ pdf_url: url })
-    .eq('email', emailUsuario.toLowerCase().trim());
+    .upsert({ 
+        email: emailLimpo, 
+        pdf_url: url 
+    }, { onConflict: 'email' }); // Se o e-mail já existir, ele apenas atualiza o link
 
-  if (error) throw new Error(`Erro ao atualizar banco: ${error.message}`);
+  if (error) throw new Error(`Erro ao salvar no banco: ${error.message}`);
 }
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido' });
 
   try {
-    // --- O TRADUTOR: Normaliza os nomes vindos do Site para o Backend ---
     const body = req.body;
     
+    // TRADUTOR: Normaliza os nomes vindos de qualquer fonte (Site ou App)
     const usuarioId = body.usuarioId || body.email || body.contato;
     const peso      = body.peso      || body.weight;
     const calorias  = body.calorias  || body.caloriesResult || body.kcal;
@@ -66,7 +71,6 @@ export default async function handler(req, res) {
 
     if (!usuarioId) return res.status(400).json({ error: 'E-mail (usuarioId) obrigatório' });
 
-    // 2. Monta o Prompt usando as variáveis traduzidas
     const promptCorrigido = `Crie uma dieta detalhada para o usuário ${nome || 'Cliente'} com:
     - Objetivo: ${objetivo}
     - Peso: ${peso}kg
@@ -76,7 +80,7 @@ export default async function handler(req, res) {
     - Preferência de preparo: ${preparos.length > 0 ? preparos.join(', ') : 'Geral'}
     Formate o texto de forma profissional para um PDF.`;
 
-    // 3. Chamada OpenAI
+    // Chamada OpenAI
     const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -96,13 +100,12 @@ export default async function handler(req, res) {
     const dietaTexto = aiData.choices?.[0]?.message?.content;
     if (!dietaTexto) throw new Error('IA retornou conteúdo vazio');
 
-    // 4. PDF e Storage
     const caminhoPDF = await gerarPDF(dietaTexto, usuarioId);
     const nomeArquivoNoStorage = `dieta-${usuarioId.replace(/[^a-zA-Z0-9]/g, '_')}-${Date.now()}.pdf`;
 
     const pdfUrl = await uploadPDFSupabase(caminhoPDF, nomeArquivoNoStorage);
 
-    // 5. Salva no Banco usando o usuarioId traduzido
+    // Salva ou Cria o registro no banco
     await salvarPDFUrlNoBanco(usuarioId, pdfUrl);
 
     if (fs.existsSync(caminhoPDF)) fs.unlinkSync(caminhoPDF);
