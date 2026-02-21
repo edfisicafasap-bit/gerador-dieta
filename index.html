@@ -354,31 +354,47 @@
         const alimentos = Array.from(document.querySelectorAll('input[name="alimento"]:checked'));
         if (alimentos.length < 5) return alert("Selecione pelo menos 5 alimentos!");
         if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
-        let emailAcesso = localStorage.getItem('email_verificacao');
-        if (!emailAcesso || emailAcesso === "null" || emailAcesso === "") emailAcesso = prompt("Para gerar seu plano, cadastre seu melhor e-mail:");
-        if (!emailAcesso || !emailAcesso.includes('@')) { localStorage.removeItem('email_verificacao'); return alert("E-mail inválido."); }
+
+        // 1. Sempre salva os dados da tela (peso, calorias, etc)
+        salvarProgressoLocal();
+
+        // 2. FORÇAR PERGUNTA DE E-MAIL (Mesmo que já exista um salvo)
+        const emailAntigo = localStorage.getItem('email_verificacao') || "";
+        let emailAcesso = prompt("Confirme o e-mail para gerar seu plano (use o mesmo e-mail da compra):", emailAntigo);
+
+        if (!emailAcesso || !emailAcesso.includes('@')) {
+            // Se ele cancelar ou digitar errado, não limpamos o antigo por segurança, 
+            // mas paramos a execução.
+            return alert("É necessário um e-mail válido para prosseguir.");
+        }
+
         const emailLow = emailAcesso.toLowerCase().trim();
-        localStorage.setItem('email_verificacao', emailLow);
-        salvarProgressoLocal(emailLow);
-        let { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', emailLow).single();
-        if (!user || !user.pago) { document.getElementById('payment-overlay').style.display = 'flex'; return; }
-        if (user.pago && user.pdf_url) {
-            window.scrollTo({ top: 0, behavior: 'smooth' }); // AJUSTE AQUI: ROLAR PARA O TOPO
-            const statusTopo = document.getElementById('status-topo');
-            statusTopo.style.display = 'block';
-            statusTopo.innerHTML = `<div style="padding:5px"><p style="margin:0 0 10px 0">📄 VOCÊ JÁ POSSUI UMA DIETA!</p><a href="${user.pdf_url}" target="_blank" download="Minha_Dieta.pdf" style="background:#000;color:#FFD700;padding:10px 20px;border-radius:5px;text-decoration:none;display:inline-block;font-size:14px;font-weight:bold;border:1px solid #000">📥 BAIXAR ATUAL</a><br><br><small style="cursor:pointer;text-decoration:underline" onclick="executarGeracaoComConsumo('${user.tipo_plano}', '${emailLow}', ${user.contagem_semanal || 0})">Ou gerar uma nova (consome crédito/limite)</small></div>`;
+        localStorage.setItem('email_verificacao', emailLow); // Atualiza com o novo digitado
+
+        // 3. Busca o usuário no banco
+        let { data: user, error } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', emailLow).single();
+
+        // 4. Se não existir ou não pagou -> Tela de Pagamento
+        if (!user || !user.pago) {
+            document.getElementById('payment-overlay').style.display = 'flex';
             return;
         }
-        if (user.tipo_plano === 'unica') executarGeracaoComConsumo('unica', emailLow);
-        else if (user.tipo_plano === 'anual') {
+
+        // 5. Se já pagou -> Segue para consumo e geração
+        if (user.tipo_plano === 'unica') {
+            executarGeracaoComConsumo('unica', emailLow);
+        } else if (user.tipo_plano === 'anual') {
             const agora = new Date();
             const dataReset = user.data_reset ? new Date(user.data_reset) : agora;
+            
             if (agora >= dataReset) {
-                const novoReset = new Date(); novoReset.setDate(novoReset.getDate() + 7);
+                const novoReset = new Date();
+                novoReset.setDate(novoReset.getDate() + 7);
                 await _supabase.from('Usuarios_Dieta').update({ contagem_semanal: 0, data_reset: novoReset.toISOString() }).eq('email', emailLow);
                 user.contagem_semanal = 0;
             }
-            if (user.contagem_semanal >= 2) return alert("Limite semanal atingido.");
+
+            if (user.contagem_semanal >= 2) return alert("Limite semanal atingido nesta conta.");
             executarGeracaoComConsumo('anual', emailLow, user.contagem_semanal);
         }
     }
@@ -534,6 +550,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 </a>
 </body>
 </html>
+
 
 
 
