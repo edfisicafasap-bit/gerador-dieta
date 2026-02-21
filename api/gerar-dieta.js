@@ -1,24 +1,14 @@
-import { createClient } from '@supabase/supabase-js';
-
-// Inicialização utilizando a SERVICE_ROLE_KEY que está configurada na sua Vercel
-const supabase = createClient(
-    process.env.SUPABASE_URL, 
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+import { supabase } from './supabase';
+import { uploadPDFSupabase } from './uploadPDF';
 
 export default async function handler(req, res) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Método não permitido' });
-    }
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido' });
 
     try {
         const { prompt, email } = req.body;
+        if (!email) return res.status(400).json({ error: 'Email é obrigatório.' });
 
-        if (!email) {
-            return res.status(400).json({ error: 'Email é obrigatório para salvar a dieta.' });
-        }
-
-        // 1. Chamada para a OpenAI
+        // 1. Chamada para a OpenAI (Seu "Cérebro")
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -33,34 +23,31 @@ export default async function handler(req, res) {
         });
 
         const data = await response.json();
-        
-        if (!data.choices || !data.choices[0]) {
-            console.error('Erro detalhado da OpenAI:', data);
-            throw new Error('Falha na resposta da OpenAI');
-        }
-
         const dietaTexto = data.choices[0].message.content;
 
-        // 2. Salvar a dieta no banco de dados (Persistência)
-        // Usamos a Service Role para garantir a escrita sem bloqueios de RLS
+        // 2. Gerar nome único e fazer upload usando sua função original adaptada
+        const nomeArquivo = `dieta-${email.replace(/[@.]/g, '_')}-${Date.now()}.txt`;
+        const linkAssinado = await uploadPDFSupabase(dietaTexto, nomeArquivo);
+
+        // 3. Atualizar a tabela Usuarios_Dieta com o link assinado
         const { error: dbError } = await supabase
             .from('Usuarios_Dieta')
             .update({ 
-                pdf_url: dietaTexto, 
+                pdf_url: linkAssinado, 
                 ultima_geracao: new Date().toISOString() 
             })
             .eq('email', email.toLowerCase().trim());
 
-        if (dbError) {
-            console.error('Erro ao salvar no Supabase:', dbError);
-            throw dbError;
-        }
+        if (dbError) throw dbError;
 
-        // 3. Retorna o texto para o Front-end
-        return res.status(200).json({ dieta: dietaTexto });
+        // 4. Retorna para o index.html
+        return res.status(200).json({ 
+            dieta: dietaTexto, 
+            pdf_url: linkAssinado 
+        });
 
     } catch (error) {
-        console.error('Erro na API:', error);
-        return res.status(500).json({ error: 'Erro ao gerar ou salvar a dieta.' });
+        console.error('Erro no fluxo principal:', error);
+        return res.status(500).json({ error: 'Erro ao processar sua dieta.' });
     }
 }
