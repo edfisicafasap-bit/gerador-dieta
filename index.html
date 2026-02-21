@@ -226,24 +226,36 @@
     async function inicializarTudo() {
         renderizarInterface();
         const urlParams = new URLSearchParams(window.location.search);
- const nomeUrl = urlParams.get('nome');
-    const pesoUrl = urlParams.get('peso');
-    const caloriasUrl = urlParams.get('calorias');
-    let objetivoUrl = urlParams.get('objetivo'); // Usamos 'let' para poder alterar
+        const nomeUrl = urlParams.get('nome');
+        const pesoUrl = urlParams.get('peso');
+        const caloriasUrl = urlParams.get('calorias');
+        let objetivoUrl = urlParams.get('objetivo');
 
-    // 2. Tradução: Se vier "Manutencao", transforma em "Definição"
-    if (objetivoUrl === "Manutencao") {
-        objetivoUrl = "Definição";
-    }
+        // 1. Tradução: Se vier "Manutencao", transforma em "Definição"
+        if (objetivoUrl === "Manutencao") {
+            objetivoUrl = "Definição";
+        }
 
-    // 3. Preenche os campos se os dados existirem
-    if (nomeUrl) document.getElementById('nome_usuario').value = nomeUrl;
-    if (pesoUrl) document.getElementById('peso').value = pesoUrl;
-    if (caloriasUrl) document.getElementById('calorias').value = caloriasUrl;
-    if (objetivoUrl) document.getElementById('objetivo').value = objetivoUrl;
+        // 2. Preenche os campos visuais se os dados existirem na URL
+        if (nomeUrl) document.getElementById('nome_usuario').value = nomeUrl;
+        if (pesoUrl) document.getElementById('peso').value = pesoUrl;
+        if (caloriasUrl) document.getElementById('calorias').value = caloriasUrl;
+        if (objetivoUrl) document.getElementById('objetivo').value = objetivoUrl;
+
+        // 3. --- NOVA LÓGICA DE CAPTURA E LIMPEZA ---
+        if (nomeUrl || pesoUrl || caloriasUrl) {
+            // Salva imediatamente no LocalStorage para o botão "Gerar" encontrar os dados
+            salvarProgressoLocal(); 
+
+            // Limpa a URL (remove os ?nome=... etc) sem recarregar a página
+            const novaUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+            window.history.replaceState({}, document.title, novaUrl);
+        }
+
         const pago = urlParams.get('pago');
         const tipoPlano = urlParams.get('tipo');
         const emailSalvo = localStorage.getItem('email_verificacao');
+
         if (pago === 'true') {
             recuperarDadosSalvos();
             if (emailSalvo && tipoPlano) {
@@ -253,7 +265,11 @@
                 await ativarAcessoNoBanco(emailSalvo, tipoPlano);
             }
         } else {
-            localStorage.removeItem('rascunho_dieta');
+            // --- AJUSTE DE SEGURANÇA ---
+            // Só remove o rascunho se NÃO estiver vindo dados da calculadora agora
+            if (!nomeUrl && !pesoUrl && !caloriasUrl) {
+                localStorage.removeItem('rascunho_dieta');
+            }
         }
     }
 
@@ -492,6 +508,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 </a>
 </body>
 </html>
+
 
 
 
