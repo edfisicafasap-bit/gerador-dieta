@@ -50,11 +50,10 @@
         #resultado { margin-top: 30px; white-space: pre-wrap; background: #111; padding: 20px; border-radius: 8px; display: none; border: 1px solid #FFD700; font-size: 14px; line-height: 1.6; }
         hr { border: 0.5px solid #222; margin: 30px 0; }
 
-        /* Estilo do Botão de Acesso Rápido */
         .acesso-rapido-box { background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333; margin-bottom: 25px; text-align: center; }
         .btn-acesso-rapido { background: transparent; border: 1px solid #FFD700; color: #FFD700; padding: 8px 20px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
         .btn-acesso-rapido:hover { background: #FFD700; color: #000; }
-/* Botão de Suporte WhatsApp */
+
         .btn-suporte-fixo {
             position: fixed;
             bottom: 20px;
@@ -80,11 +79,7 @@
             color: #fff;
         }
 
-        .icon-zap {
-            width: 20px;
-            height: 20px;
-            fill: white;
-        }
+        .icon-zap { width: 20px; height: 20px; fill: white; }
     </style>
 </head>
 <body onload="inicializarTudo()">
@@ -200,7 +195,6 @@
             "Porco": ["Lombo suíno", "Filé mignon suíno"],
             "Ovos": ["Mexidos", "Cozidos", "Omelete", "Pochê", "Frito na água", "Frito com um fio de azeite", "Mexidos com tomate e cebola"],
             "Complementares/Suplementos": ["Ricota", "Queijo Minas", "Queijo Muçarela", "Whey Protein"]
-
         },
         "PEIXES": { "Peixes": ["Filé de tilápia", "Filé de merluza", "Filé de linguado", "Filé de atum fresco"] },
         "GORDURAS": { "Gorduras Boas": ["Abacate", "Azeite de oliva extra virgem", "Castanha-do-pará", "Castanha de caju", "Amêndoas", "Nozes", "Amendoim (natural)", "Pasta de amendoim integral"] },
@@ -226,21 +220,18 @@
     async function inicializarTudo() {
         renderizarInterface();
         const urlParams = new URLSearchParams(window.location.search);
- const nomeUrl = urlParams.get('nome');
-    const pesoUrl = urlParams.get('peso');
-    const caloriasUrl = urlParams.get('calorias');
-    let objetivoUrl = urlParams.get('objetivo'); // Usamos 'let' para poder alterar
+        const nomeUrl = urlParams.get('nome');
+        const pesoUrl = urlParams.get('peso');
+        const caloriasUrl = urlParams.get('calorias');
+        let objetivoUrl = urlParams.get('objetivo');
 
-    // 2. Tradução: Se vier "Manutencao", transforma em "Definição"
-    if (objetivoUrl === "Manutencao") {
-        objetivoUrl = "Definição";
-    }
+        if (objetivoUrl === "Manutencao") objetivoUrl = "Definição";
 
-    // 3. Preenche os campos se os dados existirem
-    if (nomeUrl) document.getElementById('nome_usuario').value = nomeUrl;
-    if (pesoUrl) document.getElementById('peso').value = pesoUrl;
-    if (caloriasUrl) document.getElementById('calorias').value = caloriasUrl;
-    if (objetivoUrl) document.getElementById('objetivo').value = objetivoUrl;
+        if (nomeUrl) document.getElementById('nome_usuario').value = nomeUrl;
+        if (pesoUrl) document.getElementById('peso').value = pesoUrl;
+        if (caloriasUrl) document.getElementById('calorias').value = caloriasUrl;
+        if (objetivoUrl) document.getElementById('objetivo').value = objetivoUrl;
+
         const pago = urlParams.get('pago');
         const tipoPlano = urlParams.get('tipo');
         const emailSalvo = localStorage.getItem('email_verificacao');
@@ -316,10 +307,34 @@
         });
     }
 
-    function salvarProgressoLocal(emailInput = null) {
-        const dados = { peso: document.getElementById('peso').value, calorias: document.getElementById('calorias').value, refeicoes: document.getElementById('num-refeicoes').value, objetivo: document.getElementById('objetivo').value, nome: document.getElementById('nome_usuario').value, alimentos: Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value), preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value) };
+    // PASSO 1: ATUALIZADO PARA SINCRONIZAR COM SUPABASE
+    async function salvarProgressoLocal(emailInput = null) {
+        const dados = { 
+            peso: document.getElementById('peso').value, 
+            calorias: document.getElementById('calorias').value, 
+            refeicoes: document.getElementById('num-refeicoes').value, 
+            objetivo: document.getElementById('objetivo').value, 
+            nome: document.getElementById('nome_usuario').value, 
+            alimentos: Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value), 
+            preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value) 
+        };
+        
         localStorage.setItem('rascunho_dieta', JSON.stringify(dados));
-        if (emailInput) localStorage.setItem('email_verificacao', emailInput.toLowerCase().trim());
+        
+        if (emailInput) {
+            const emailLow = emailInput.toLowerCase().trim();
+            localStorage.setItem('email_verificacao', emailLow);
+            
+            // Grava os dados técnicos no banco antes do checkout
+            await _supabase.from('Usuarios_Dieta').upsert({
+                email: emailLow,
+                peso: dados.peso,
+                meta_calorias: dados.calorias,
+                objetivo: dados.objetivo,
+                refeicoes: dados.refeicoes,
+                nome: dados.nome
+            }, { onConflict: 'email' });
+        }
     }
 
     function recuperarDadosSalvos() {
@@ -338,16 +353,19 @@
         const alimentos = Array.from(document.querySelectorAll('input[name="alimento"]:checked'));
         if (alimentos.length < 5) return alert("Selecione pelo menos 5 alimentos!");
         if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
+        
         let emailAcesso = localStorage.getItem('email_verificacao');
         if (!emailAcesso || emailAcesso === "null" || emailAcesso === "") emailAcesso = prompt("Para gerar seu plano, cadastre seu melhor e-mail:");
         if (!emailAcesso || !emailAcesso.includes('@')) { localStorage.removeItem('email_verificacao'); return alert("E-mail inválido."); }
+        
         const emailLow = emailAcesso.toLowerCase().trim();
-        localStorage.setItem('email_verificacao', emailLow);
-        salvarProgressoLocal(emailLow);
+        await salvarProgressoLocal(emailLow); // Salva dados no banco aqui
+
         let { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', emailLow).single();
         if (!user || !user.pago) { document.getElementById('payment-overlay').style.display = 'flex'; return; }
+        
         if (user.pago && user.pdf_url) {
-            window.scrollTo({ top: 0, behavior: 'smooth' }); // AJUSTE AQUI: ROLAR PARA O TOPO
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             const statusTopo = document.getElementById('status-topo');
             statusTopo.style.display = 'block';
             statusTopo.innerHTML = `<div style="padding:5px"><p style="margin:0 0 10px 0">📄 VOCÊ JÁ POSSUI UMA DIETA!</p><a href="${user.pdf_url}" target="_blank" download="Minha_Dieta.pdf" style="background:#000;color:#FFD700;padding:10px 20px;border-radius:5px;text-decoration:none;display:inline-block;font-size:14px;font-weight:bold;border:1px solid #000">📥 BAIXAR ATUAL</a><br><br><small style="cursor:pointer;text-decoration:underline" onclick="executarGeracaoComConsumo('${user.tipo_plano}', '${emailLow}', ${user.contagem_semanal || 0})">Ou gerar uma nova (consome crédito/limite)</small></div>`;
@@ -386,7 +404,10 @@
     }
 
     async function iniciarCheckout(priceId) {
-        salvarProgressoLocal();
+        // Antes de ir para o Stripe, garantimos que os dados estão no banco
+        const emailSalvo = localStorage.getItem('email_verificacao');
+        await salvarProgressoLocal(emailSalvo);
+        
         const LINK_UNICA = "https://buy.stripe.com/test_bJe7sLcqhcL0g0B9T9asg00";
         const LINK_ANUAL = "https://buy.stripe.com/test_3cI8wP0Hz9yO4hTc1hasg01"; 
         if (priceId === 'price_1Sz1w7GEaACih56ZWyTiPBAu') window.location.href = LINK_UNICA;
@@ -405,9 +426,9 @@
         statusTopo.innerText = "⏳ AGUARDE. ESTAMOS GERANDO SEU PLANO...";
         btn.innerText = "PROCESSANDO...";
         btn.disabled = true;
-        window.scrollTo({ top: 0, behavior: 'smooth' }); // AJUSTE AQUI: ROLAR PARA O TOPO AO GERAR
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         try {
-            const promptFinal = `Atue como um Nutricionista Prático. Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou.". Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
+            const promptFinal = `Atue como um Nutricionista Prático. Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou.". Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal for ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
 DIRETRIZES SUPREMAS
 
@@ -461,16 +482,29 @@ ITENS COMPLEMENTARES:
 2. DATA: ${new Date().toLocaleString()}.
 
 ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional."`; 
-            const response = await fetch('/api/gerar-dieta', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: promptFinal, usuarioId: emailUsuario }) });
+            
+            const response = await fetch('/api/gerar-dieta', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ 
+                    prompt: promptFinal, 
+                    usuarioId: emailUsuario,
+                    peso: d.peso,
+                    objetivo: d.objetivo,
+                    calorias: d.calorias
+                }) 
+            });
+            
             if (!response.ok) throw new Error('Erro ao processar');
             const result = await response.json();
             const divResultado = document.getElementById('resultado');
-            divResultado.innerText = result.dietaTexto;
+            divResultado.innerText = result.dietaTexto || result.dieta;
             divResultado.style.display = 'block';
-            if (result.pdfUrl) {
+            if (result.url || result.pdfUrl) {
+                const finalUrl = result.url || result.pdfUrl;
                 statusTopo.style.animation = "none";
-                statusTopo.innerHTML = `<div style="padding:5px"><p style="margin:0 0 10px 0">✅ PLANO GERADO COM SUCESSO!</p><a href="${result.pdfUrl}" target="_blank" download="Dieta_Personalizada.pdf" style="background:#000;color:#FFD700;padding:12px 25px;border-radius:5px;text-decoration:none;display:inline-block;font-size:16px;font-weight:bold;border:2px solid #000">📥 BAIXAR MEU PDF AGORA</a></div>`;
-                forcarDownloadPDF(result.pdfUrl, "Dieta_Personalizada.pdf");
+                statusTopo.innerHTML = `<div style="padding:5px"><p style="margin:0 0 10px 0">✅ PLANO GERADO COM SUCESSO!</p><a href="${finalUrl}" target="_blank" download="Dieta_Personalizada.pdf" style="background:#000;color:#FFD700;padding:12px 25px;border-radius:5px;text-decoration:none;display:inline-block;font-size:16px;font-weight:bold;border:2px solid #000">📥 BAIXAR MEU PDF AGORA</a></div>`;
+                forcarDownloadPDF(finalUrl, "Dieta_Personalizada.pdf");
             }
             limparDadosInterface(); 
         } catch (e) { 
@@ -492,10 +526,3 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 </a>
 </body>
 </html>
-
-
-
-
-
-
-
