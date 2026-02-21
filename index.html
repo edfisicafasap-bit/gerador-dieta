@@ -180,6 +180,21 @@
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cXFuZ3Nrcmp6aHhic2Fja3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NTI3NzksImV4cCI6MjA4NTUyODc3OX0.B90q1Jv-vodVIV_dLFUCOekyshrv3HekVpPugpPaHRI';
     const _supabase = supabase.createClient(S_URL, S_KEY);
 
+function registrarLogDieta(etapa, detalhes) {
+        let logs = JSON.parse(localStorage.getItem('debug_dieta_logs')) || [];
+        const novoLog = {
+            hora: new Date().toLocaleTimeString(),
+            etapa: etapa,
+            detalhes: detalhes,
+            prompt_local: localStorage.getItem('rascunho_dieta') ? "EXISTE" : "VAZIO"
+        };
+        logs.push(novoLog);
+        if (logs.length > 10) logs.shift();
+        localStorage.setItem('debug_dieta_logs', JSON.stringify(logs));
+        console.log(`[${etapa}]`, detalhes);
+    }
+    window.verLogs = () => console.table(JSON.parse(localStorage.getItem('debug_dieta_logs')));
+
     const estruturaAlimentos = {
         "CARBOIDRATOS": {
             "Arroz": ["Branco", "Integral", "Parboilizado", "Jasmine", "Basmati", "7 Grãos"],
@@ -243,9 +258,14 @@
         if (objetivoUrl) document.getElementById('objetivo').value = objetivoUrl;
 
         // 3. --- NOVA LÓGICA DE CAPTURA E LIMPEZA ---
-        if (nomeUrl || pesoUrl || caloriasUrl) {
-            // Salva imediatamente no LocalStorage para o botão "Gerar" encontrar os dados
+      if (nomeUrl || pesoUrl || caloriasUrl) {
+            // ADICIONE ESTA LINHA:
+            registrarLogDieta("CARGA_URL", { nome: nomeUrl, peso: pesoUrl, cal: caloriasUrl });
+
             salvarProgressoLocal(); 
+            const novaUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+            window.history.replaceState({}, document.title, novaUrl);
+        }
 
             // Limpa a URL (remove os ?nome=... etc) sem recarregar a página
             const novaUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
@@ -343,6 +363,8 @@
         preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value) 
     };
     
+ registrarLogDieta("SALVAMENTO_RASCUNHO", { qtdAlimentos: dados.alimentos.length, peso: dados.peso });
+
     localStorage.setItem('rascunho_dieta', JSON.stringify(dados));
     
     if (emailInput) {
@@ -469,6 +491,7 @@
 
     async function gerarDieta(d) {
         if (!d) return alert("Dados insuficientes.");
+ registrarLogDieta("ENVIO_PARA_IA", { alimentosEnviados: d.alimentos });
         const btn = document.getElementById('btn-gerar');
         const statusTopo = document.getElementById('status-topo');
         const emailUsuario = localStorage.getItem('email_verificacao');
@@ -564,6 +587,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 </a>
 </body>
 </html>
+
 
 
 
