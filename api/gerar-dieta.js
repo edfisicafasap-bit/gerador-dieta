@@ -1,5 +1,5 @@
-import { supabase } from './supabase';
-import { uploadPDFSupabase } from './uploadPDF';
+import { supabase } from './supabase.js';
+import { uploadPDFSupabase } from './uploadPDF.js';
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido' });
