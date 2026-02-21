@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase } from './supabase.js';
 
 /**
  * Faz upload do conteúdo da dieta para o bucket 'dietas-pdf'
