@@ -1,7 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Inicialização do Supabase com variáveis de ambiente (Vercel)
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+// Inicialização utilizando a SERVICE_ROLE_KEY que está configurada na sua Vercel
+const supabase = createClient(
+    process.env.SUPABASE_URL, 
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -32,13 +35,14 @@ export default async function handler(req, res) {
         const data = await response.json();
         
         if (!data.choices || !data.choices[0]) {
+            console.error('Erro detalhado da OpenAI:', data);
             throw new Error('Falha na resposta da OpenAI');
         }
 
         const dietaTexto = data.choices[0].message.content;
 
         // 2. Salvar a dieta no banco de dados (Persistência)
-        // Atualizamos a coluna pdf_url com o texto completo da dieta
+        // Usamos a Service Role para garantir a escrita sem bloqueios de RLS
         const { error: dbError } = await supabase
             .from('Usuarios_Dieta')
             .update({ 
@@ -47,7 +51,10 @@ export default async function handler(req, res) {
             })
             .eq('email', email.toLowerCase().trim());
 
-        if (dbError) throw dbError;
+        if (dbError) {
+            console.error('Erro ao salvar no Supabase:', dbError);
+            throw dbError;
+        }
 
         // 3. Retorna o texto para o Front-end
         return res.status(200).json({ dieta: dietaTexto });
