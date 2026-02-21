@@ -49,21 +49,47 @@
         .secao-especial h4 { margin-top: 0; color: #FFD700; font-size: 14px; }
         #resultado { margin-top: 30px; white-space: pre-wrap; background: #111; padding: 20px; border-radius: 8px; display: none; border: 1px solid #FFD700; font-size: 14px; line-height: 1.6; }
         hr { border: 0.5px solid #222; margin: 30px 0; }
+
+        /* Estilo Botão Suporte */
+        .btn-suporte {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #25d366;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
     </style>
 </head>
 <body onload="inicializarTudo()">
 
+<a href="https://wa.me/5522992587653" target="_blank" class="btn-suporte">
+    <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+    </svg>
+    SUPORTE
+</a>
+
 <div id="payment-overlay">
     <div class="payment-card">
-        <h2 style="font-size: 24px; color: #FFD700; margin-top: 0;">CARDÁPIO GERADO! 🚀</h2>
-        <p style="color: #eee; margin-bottom: 25px; font-size: 15px;">Para acessar o seu cardápio, escolha um dos planos abaixo:</p>
+        <h2 style="font-size: 24px; color: #FFD700; margin-top: 0;">LIBERAR ACESSO! 🚀</h2>
+        <p style="color: #eee; margin-bottom: 25px; font-size: 15px;">Escolha um plano para gerar sua dieta personalizada:</p>
         
         <div style="margin-bottom: 25px; text-align: center;">
             <button id="btn-unica" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-weight: bold; cursor: pointer; background: #fff; color: #000;" onclick="iniciarCheckout('price_1Sz1w7GEaACih56ZWyTiPBAu')">
                 🥗 DIETA ÚNICA - R$ 9,90
             </button>
             <p style="color: #fff; font-size: 13px; margin-top: 8px; line-height: 1.4;">
-                Você receberá o acesso a <b>um único plano alimentar</b> agora.
+                Acesso a <b>um único plano alimentar</b>.
             </p>
         </div>
 
@@ -75,7 +101,7 @@
                 📅 ACESSO ANUAL - R$ 29,90
             </button>
             <p style="color: #fff; font-size: 13px; margin-top: 8px; line-height: 1.4;">
-                Pagamento único de 29,90. Acesse o aplicativo quando quiser e selecione os alimentos para atualizar suas refeições. <b>(acesso válido por 1 ano - limitado a 2 trocas por semana)</b>
+                Troque seus alimentos quando quiser <b>(Até 2 trocas por semana durante 1 ano)</b>.
             </p>
         </div>
 
@@ -88,7 +114,20 @@
 <div class="container">
     <div id="dieta-section">
         <h2>🍎 Reeducação Alimentar</h2>
-        <p class="subtitle">Selecione os alimentos e o modo de preparo que deseja em seu plano alimentar</p>
+        
+        <div class="secao-especial" style="border-style: solid; border-color: #333;">
+            <h4>JÁ POSSUI UM PLANO ATIVO?</h4>
+            <div style="display: flex; gap: 10px;">
+                <input type="email" id="email-busca" placeholder="E-mail cadastrado" style="margin-top: 0; flex: 1;">
+                <button onclick="buscarAcessoRapido()" style="width: auto; background: #FFD700; color: #000; border: none; padding: 0 15px; border-radius: 6px; font-weight: bold; cursor: pointer;">BUSCAR</button>
+            </div>
+            <div id="resultado-busca" style="display:none; margin-top: 15px; text-align: center; border-top: 1px solid #333; padding-top: 10px;">
+                <p style="font-size: 13px; color: #FFD700; margin-bottom: 10px;">Plano encontrado! Clique no botão abaixo:</p>
+                <button id="btn-download-direto" style="width: 100%; padding: 12px; background: #28a745; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">📥 BAIXAR MEU CARDÁPIO PDF</button>
+            </div>
+        </div>
+
+        <p class="subtitle">Ou preencha abaixo para gerar um novo plano:</p>
         
         <div id="status-topo">ORGANIZANDO SUAS REFEIÇÕES...</div>
 
@@ -185,6 +224,24 @@
         }
     }
 
+    // REGRA 1: BUSCA RÁPIDA
+    async function buscarAcessoRapido() {
+        const email = document.getElementById('email-busca').value.toLowerCase().trim();
+        if (!email) return alert("Por favor, digite seu e-mail.");
+
+        const { data: user, error } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', email).single();
+
+        if (error || !user) return alert("Nenhum plano ativo encontrado para este e-mail.");
+
+        if (user.pdf_url) {
+            document.getElementById('resultado-busca').style.display = 'block';
+            document.getElementById('btn-download-direto').onclick = () => window.open(user.pdf_url, '_blank');
+            localStorage.setItem('email_verificacao', email);
+        } else {
+            alert("Cadastro encontrado, mas sua dieta ainda não foi gerada.");
+        }
+    }
+
     async function ativarAcessoNoBanco(email, tipo) {
         const proximoReset = new Date();
         proximoReset.setDate(proximoReset.getDate() + 7);
@@ -259,26 +316,39 @@
         });
     }
 
+    // REGRAS 2 E 3: VERIFICAÇÃO DE ACESSO E CRÉDITOS
     async function verificarAcessoEPagar() {
         const alimentos = Array.from(document.querySelectorAll('input[name="alimento"]:checked'));
         if (alimentos.length < 5) return alert("Selecione pelo menos 5 alimentos!");
         if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
         
-        const emailAcesso = prompt("Cadastre seu e-mail para liberar o conteúdo.");
+        const emailAcesso = prompt("Informe seu e-mail cadastrado:");
         if (!emailAcesso) return;
         const emailLow = emailAcesso.toLowerCase().trim();
         salvarProgressoLocal(emailLow);
 
         let { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', emailLow).single();
 
+        // Se não houver pagamento ou usuário
         if (!user || !user.pago) {
             document.getElementById('payment-overlay').style.display = 'flex';
             return;
         }
 
+        // REGRA 2: JÁ POSSUI DIETA?
+        if (user.pdf_url) {
+            const acao = confirm("Já encontramos uma dieta para você! \n\nClique em OK para GERAR UMA NOVA (Gastará 1 crédito).\nClique em CANCELAR para apenas BAIXAR A ATUAL (Grátis).");
+            
+            if (!acao) {
+                window.open(user.pdf_url, '_blank');
+                return;
+            }
+        }
+
+        // REGRA 3: PLANO ÚNICO VS ANUAL
         if (user.tipo_plano === 'unica') {
             if (user.creditos <= 0) {
-                alert("Você já utilizou sua dieta única. Adquira o Plano Anual para continuar!");
+                alert("Você já utilizou sua troca do Plano Único. Para gerar uma nova, adquira o Plano Anual!");
                 document.getElementById('payment-overlay').style.display = 'flex';
                 return;
             }
@@ -293,7 +363,7 @@
                 user.contagem_semanal = 0;
             }
             if (user.contagem_semanal >= 2) {
-                return alert("Limite semanal de 2 trocas atingido. Seu limite reseta em: " + dataReset.toLocaleDateString());
+                return alert("Limite de 2 trocas semanais atingido. Reset em: " + dataReset.toLocaleDateString());
             }
             executarGeracaoComConsumo('anual', emailLow, user.contagem_semanal);
         }
@@ -301,10 +371,10 @@
 
     async function executarGeracaoComConsumo(tipo, email, contagemAtual = 0) {
         const dadosLocais = localStorage.getItem('rascunho_dieta');
-        if (!dadosLocais) return alert("Erro ao recuperar dados. Por favor, preencha o formulário.");
+        if (!dadosLocais) return alert("Erro ao recuperar dados.");
 
         if (tipo === 'unica') {
-            await _supabase.from('Usuarios_Dieta').update({ creditos: 0, pago: false, ultima_geracao: new Date().toISOString() }).eq('email', email);
+            await _supabase.from('Usuarios_Dieta').update({ creditos: 0, ultima_geracao: new Date().toISOString() }).eq('email', email);
         } else {
             await _supabase.from('Usuarios_Dieta').update({ contagem_semanal: contagemAtual + 1, ultima_geracao: new Date().toISOString() }).eq('email', email);
         }
@@ -314,11 +384,6 @@
 
     function limparDadosInterface() {
         localStorage.removeItem('rascunho_dieta');
-        document.getElementById('peso').value = '';
-        document.getElementById('calorias').value = '';
-        document.getElementById('num-refeicoes').value = '4';
-        document.getElementById('objetivo').value = 'Emagrecimento';
-        document.getElementById('aceite-clausula').checked = false;
         document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
     }
 
@@ -327,18 +392,13 @@
         const LINK_UNICA = "https://buy.stripe.com/test_bJe7sLcqhcL0g0B9T9asg00";
         const LINK_ANUAL = "https://buy.stripe.com/test_3cI8wP0Hz9yO4hTc1hasg01"; 
 
-        if (priceId === 'price_1Sz1w7GEaACih56ZWyTiPBAu') {
-            window.location.href = LINK_UNICA;
-        } else if (priceId === 'price_1SzPP7GEaACih56ZkwV5mxN2') {
-            window.location.href = LINK_ANUAL;
-        }
+        if (priceId === 'price_1Sz1w7GEaACih56ZWyTiPBAu') window.location.href = LINK_UNICA;
+        else if (priceId === 'price_1SzPP7GEaACih56ZkwV5mxN2') window.location.href = LINK_ANUAL;
     }
 
     function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
 
     async function gerarDieta(d) {
-        if (!d) return alert("Dados insuficientes.");
-        
         const btn = document.getElementById('btn-gerar');
         const statusTopo = document.getElementById('status-topo');
         const emailUsuario = localStorage.getItem('email_verificacao');
@@ -347,14 +407,7 @@
         btn.innerText = "AGUARDE...";
         btn.disabled = true;
 
-        const pesoNum = parseFloat(d.peso);
-        const calTotal = parseInt(d.calorias);
-        const gProteina = (pesoNum * 2).toFixed(0);
-        const gGordura = (pesoNum * 1).toFixed(0);
-        const calRestantes = calTotal - ((gProteina * 4) + (gGordura * 9));
-        const gCarbo = (calRestantes / 4).toFixed(0);
-
-        // --- SEU PROMPT GIGANTE (O CÉREBRO DO PROGRAMA) ---
+        // --- PROMPT PRESERVADO ---
         const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
 DIRETRIZES SUPREMAS
@@ -418,24 +471,21 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
             const response = await fetch('/api/gerar-dieta', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    prompt: promptFinal,
-                    email: emailUsuario // Enviando o e-mail para salvar no banco
-                })
+                body: JSON.stringify({ prompt: promptFinal, email: emailUsuario })
             });
 
             const result = await response.json();
-            
-            // Ajustado para o novo formato do backend
             const texto = result.dieta;
 
             document.getElementById('resultado').innerText = texto;
             document.getElementById('resultado').style.display = 'block';
-            baixarPDF(texto);
-            return true;
+            
+            // Se o backend enviou link pronto, usamos ele. Senão, geramos PDF local.
+            if (result.pdf_url) window.open(result.pdf_url, '_blank');
+            else baixarPDF(texto);
 
+            return true;
         } catch (e) { 
-            console.error(e);
             alert("Erro ao falar com a IA.");
             return false;
         } finally {
@@ -448,9 +498,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
     function baixarPDF(conteudo) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        const textoLimpo = conteudo.replace(/[#*]/g, '');
-        doc.setFontSize(10);
-        const lines = doc.splitTextToSize(textoLimpo, 180);
+        const lines = doc.splitTextToSize(conteudo.replace(/[#*]/g, ''), 180);
         let y = 20;
         lines.forEach(line => {
             if (y > 280) { doc.addPage(); y = 20; }
