@@ -416,103 +416,68 @@
 
     function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
 
-    async function gerarDieta(d) {
-        if (!d) return alert("Dados insuficientes.");
-        const btn = document.getElementById('btn-gerar');
-        const statusTopo = document.getElementById('status-topo');
-        const emailUsuario = localStorage.getItem('email_verificacao');
-        statusTopo.style.display = 'block';
-        statusTopo.style.animation = "pulse 1.5s infinite";
-        statusTopo.innerText = "⏳ AGUARDE. ESTAMOS GERANDO SEU PLANO...";
-        btn.innerText = "PROCESSANDO...";
-        btn.disabled = true;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        try {
-            const promptFinal = `Atue como um Nutricionista Prático. Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou.". Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal for ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
+   async function gerarDieta(d) {
+    if (!d) return alert("Dados insuficientes.");
+    const btn = document.getElementById('btn-gerar');
+    const statusTopo = document.getElementById('status-topo');
+    const emailUsuario = localStorage.getItem('email_verificacao');
 
-DIRETRIZES SUPREMAS
+    statusTopo.style.display = 'block';
+    statusTopo.style.animation = "pulse 1.5s infinite";
+    statusTopo.innerText = "⏳ AGUARDE. ESTAMOS GERANDO SEU PLANO...";
+    btn.innerText = "PROCESSANDO...";
+    btn.disabled = true;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
-DETERMINAÇÃO DE REFEIÇÕES:
-Voce deve gerar EXATAMENTE ${d.refeicoes} refeicoes.
-- Se ${d.refeicoes} for 4: Use (1. Cafe da Manha, 2. Almoco, 3. Cafe da Tarde, 4. Jantar).
-- Se ${d.refeicoes} for 5: Use (1. Cafe da Manha, 2. Almoco, 3. Cafe da Tarde, 4. Jantar, 5. Ceia).
-- Se ${d.refeicoes} for 6: Use (1. Desjejum, 2. Cafe da Manha, 3. Almoco, 4. Cafe da Tarde, 5. Jantar, 6. Ceia).
+    try {
+        // ENVIAMOS APENAS OS DADOS SELECIONADOS. 
+        // O prompt gigante agora vive guardado no gerar-dieta.js (Backend)
+        const response = await fetch('/api/gerar-dieta', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({ 
+                usuarioId: emailUsuario,
+                nome: d.nome,
+                peso: d.peso,
+                objetivo: d.objetivo,
+                calorias: d.calorias,
+                refeicoes: d.refeicoes,
+                alimentos: d.alimentos,
+                preparos: d.preparos
+            }) 
+        });
+        
+        if (!response.ok) throw new Error('Erro ao processar a dieta no servidor.');
+        
+        const result = await response.json();
+        const divResultado = document.getElementById('resultado');
+        
+        divResultado.innerText = result.dietaTexto || "Dieta gerada com sucesso!";
+        divResultado.style.display = 'block';
 
-DICA: Nunca pule o Cafe da Tarde entre o Almoco e o Jantar.
+        if (result.url) {
+            statusTopo.style.animation = "none";
+            statusTopo.innerHTML = `
+                <div style="padding:5px">
+                    <p style="margin:0 0 10px 0">✅ PLANO GERADO COM SUCESSO!</p>
+                    <a href="${result.url}" target="_blank" download="Dieta_Personalizada.pdf" 
+                       style="background:#000;color:#FFD700;padding:12px 25px;border-radius:5px;text-decoration:none;display:inline-block;font-size:16px;font-weight:bold;border:2px solid #000">
+                       📥 BAIXAR MEU PDF AGORA
+                    </a>
+                </div>`;
+            forcarDownloadPDF(result.url, "Dieta_Personalizada.pdf");
+        }
+        
+        // Opcional: limpa apenas após o sucesso
+        // limparDadosInterface(); 
 
-
-REGRAS POR HORÁRIO
-CAFÉ DA MANHÃ: Máximo 3 itens. Transformar em: Bowl, Shake, Vitamina, Sanduíche ou Omelete. 
-LANCHES, DESJEJUM E CAFÉ DA TARDE: Foco em portabilidade e simplicidade.
-ALMOÇO/JANTAR: Estrutura [Base de Carboidrato] + [Proteína] + [Legumes/Salada].
-Jantar pode ser mais leve, mas deve manter a estrutura de refeição completa.
-CEIA: REFEIÇÕES SUPER LEVES, COMO UMA FRUTA, OU FRUTA + WHEY, OU IOGURTE...
-REGRA IMPORTANTE: INCLUIR AO MENOS UMA FONTE DE PROTEINA EM TODAS AS REFEIÇÕES.
-
-CÁLCULO DA DIETA:   A PROTEINA DEVE TER O ENTRE 1.8 A 2.2g POR kg CORPORAL DA PESSOA, a Gordura 1g por kg corporal e o Carboidrato deve complementar o Restante das calorias, seja o mais rigoroso possivel nesse critério para chegar o mais proximo da meta possivel!  Use bases científicas (TACO/TBCA), NÃO CRIE TABELAS DE MACRO NUTRIENTES FICTICIOS, UTILIZE SOMENTE MACROS REAIS DOS ALIMENTOS!.
-
-Alimentos permitidos: Utilize receitas e pratos somente que contenham os alimentos previamente selecionados, não crie receitas que não contenham alimentos mencionados.
-Proibido Alimentos Soltos: Nunca liste ingredientes isolados (ex: "30g de aveia"). Transforme-os em preparações (ex: "Mingau de aveia").
-Base Obrigatória: No Almoço e Jantar, se houver Arroz e/ou Feijão nos ingredientes, eles devem obrigatoriamente compor a base da refeição.
-Coerência Cultural: As refeições devem respeitar os hábitos brasileiros (Café, Almoço, Lanche, Jantar).
-
-PLANEJAMENTO ALIMENTAR ESTRUTURADO
-
-BLOCO 1: OPÇÕES A (PADRÃO)
-Nesta seção, gere as ${d.refeicoes} refeições seguindo os nomes definidos nas "DIRETRIZES SUPREMAS". Priorize arroz e feijão no almoço e jantar.
-Para cada uma das ${d.refeicoes} refeições, liste:
-- Ingredientes (com quantidades)
-
-RESUMO DE MACROS (OPÇÕES A)
-Proteinas Totais: [Soma Real]g | Carboidratos Totais: [Soma Real]g | Gorduras Totais: [Soma Real]g
-
-BLOCO 2: OPÇÕES B (VARIAÇÃO)
-Nesta seção, gere as mesmas ${d.refeicoes} refeições com macros equivalentes ao Bloco 1. No almoço e jantar, é proibido o uso de arroz e feijão.
-Para cada uma das ${d.refeicoes} refeições, liste:
-- Ingredientes (com quantidades)
-RESUMO DE MACROS (OPÇÕES B)
-Proteinas Totais: [Soma Real]g | Carboidratos Totais: [Soma Real]g | Gorduras Totais: [Soma Real]g
-
-PROTOCOLO DE VALIDAÇÃO
-Antes de exibir, valide: "A Opção B de almoço/jantar está sem arroz e feijão? Os macros estão equilibrados? O prato parece algo que se come no Brasil? só prossiga caso seja refeições reais, caso contrário, refaça!"
-IMPORTANTE: Valide internamente, mas não escreva esta validação ou protocolo no resultado final.
-
-ITENS COMPLEMENTARES:
-1. HIDRATAÇÃO: Informe a recomendação de ${(parseFloat(d.peso) * 0.035).toFixed(1)}L de água por dia.
-2. DATA: ${new Date().toLocaleString()}.
-
-ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional."`; 
-            
-            const response = await fetch('/api/gerar-dieta', { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ 
-                    prompt: promptFinal, 
-                    usuarioId: emailUsuario,
-                    peso: d.peso,
-                    objetivo: d.objetivo,
-                    calorias: d.calorias
-                }) 
-            });
-            
-            if (!response.ok) throw new Error('Erro ao processar');
-            const result = await response.json();
-            const divResultado = document.getElementById('resultado');
-            divResultado.innerText = result.dietaTexto || result.dieta;
-            divResultado.style.display = 'block';
-            if (result.url || result.pdfUrl) {
-                const finalUrl = result.url || result.pdfUrl;
-                statusTopo.style.animation = "none";
-                statusTopo.innerHTML = `<div style="padding:5px"><p style="margin:0 0 10px 0">✅ PLANO GERADO COM SUCESSO!</p><a href="${finalUrl}" target="_blank" download="Dieta_Personalizada.pdf" style="background:#000;color:#FFD700;padding:12px 25px;border-radius:5px;text-decoration:none;display:inline-block;font-size:16px;font-weight:bold;border:2px solid #000">📥 BAIXAR MEU PDF AGORA</a></div>`;
-                forcarDownloadPDF(finalUrl, "Dieta_Personalizada.pdf");
-            }
-            limparDadosInterface(); 
-        } catch (e) { 
-            statusTopo.style.display = 'none';
-            alert("Erro técnico. Tente novamente.");
-        } finally {
-            btn.innerText = "GERAR E BAIXAR PLANO";
-            btn.disabled = false;
+    } catch (e) { 
+        console.error(e);
+        statusTopo.style.display = 'none';
+        alert("Houve um erro técnico. Verifique sua conexão ou tente novamente.");
+    } finally {
+        btn.innerText = "GERAR E BAIXAR PLANO";
+        btn.disabled = false;
         }
     }
 </script>
@@ -526,3 +491,4 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 </a>
 </body>
 </html>
+
