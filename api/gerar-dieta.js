@@ -3,52 +3,23 @@ import fs from 'fs';
 import path from 'path';
 import { supabase } from './supabase.js'; 
 
+// Função auxiliar para esperar (delay)
+const delay = ms => new Promise(res => setTimeout(res, ms));
+
 async function gerarPDF(conteudo, usuarioId) {
   const nomeLimpo = usuarioId.replace(/[^a-zA-Z0-9]/g, '_');
   const caminhoArquivo = path.join('/tmp', `dieta-${nomeLimpo}.pdf`);
-  
   const doc = new PDFDocument({ margin: 50 });
   const stream = fs.createWriteStream(caminhoArquivo);
-
   return new Promise((resolve, reject) => {
     doc.pipe(stream);
     doc.font('Helvetica-Bold').fontSize(22).text('SEU PLANO ALIMENTAR', { align: 'center' });
     doc.moveDown();
-    doc.font('Helvetica').fontSize(12).text(conteudo, {
-      align: 'justify',
-      lineGap: 5
-    });
+    doc.font('Helvetica').fontSize(12).text(conteudo, { align: 'justify', lineGap: 5 });
     doc.end();
     stream.on('finish', () => resolve(caminhoArquivo));
     stream.on('error', (err) => reject(err));
   });
-}
-
-async function uploadPDFSupabase(caminhoLocal, nomeArquivo) {
-  const file = fs.readFileSync(caminhoLocal);
-  const { error } = await supabase
-    .storage
-    .from('dietas-pdf') 
-    .upload(nomeArquivo, file, {
-      contentType: 'application/pdf',
-      upsert: true
-    });
-
-  if (error) throw new Error(`Erro no Upload Supabase: ${error.message}`);
-  const { data } = supabase.storage.from('dietas-pdf').getPublicUrl(nomeArquivo);
-  return data.publicUrl;
-}
-
-async function salvarPDFUrlNoBanco(emailUsuario, url) {
-  const emailLimpo = emailUsuario.toLowerCase().trim();
-  const { error } = await supabase
-    .from('Usuarios_Dieta')
-    .upsert({ 
-        email: emailLimpo, 
-        pdf_url: url 
-    }, { onConflict: 'email' });
-
-  if (error) throw new Error(`Erro ao salvar no banco: ${error.message}`);
 }
 
 export default async function handler(req, res) {
@@ -56,44 +27,46 @@ export default async function handler(req, res) {
 
   try {
     const body = req.body;
-    const usuarioId = (body.usuarioId || body.email || body.contato || "").toLowerCase().trim();
+    const email = (body.usuarioId || body.email || "").toLowerCase().trim();
+    if (!email) return res.status(400).json({ error: 'E-mail obrigatório' });
 
-    if (!usuarioId) return res.status(400).json({ error: 'E-mail (usuarioId) obrigatório' });
+    // Aguarda 2 segundos para garantir que o banco atualizou com os dados do App
+    await delay(2000);
 
-    // --- NOVA LÓGICA DE BUSCA ---
-    // Tentamos pegar do body, se não tiver, buscamos no Supabase
-    let peso = body.peso;
-    let objetivo = body.objetivo;
-    let calorias = body.calorias || body.meta_calorias;
-    let nome = body.nome;
-    let refeicoes = body.refeicoes || 4;
+    // BUSCA RIGOROSA NO SUPABASE
+    const { data: userDb, error: dbError } = await supabase
+        .from('Usuarios_Dieta')
+        .select('*')
+        .eq('email', email)
+        .single();
 
-    if (!peso || !objetivo || !calorias) {
-        console.log("Dados incompletos no body, buscando no Supabase para o email:", usuarioId);
-        const { data: userDb, error: dbError } = await supabase
-            .from('Usuarios_Dieta')
-            .select('peso, objetivo, meta_calorias, nome')
-            .eq('email', usuarioId)
-            .single();
-
-        if (userDb) {
-            peso = peso || userDb.peso;
-            objetivo = objetivo || userDb.objetivo;
-            calorias = calorias || userDb.meta_calorias;
-            nome = nome || userDb.nome;
-            console.log("Dados recuperados do banco:", { peso, objetivo, calorias });
-        }
+    if (dbError || !userDb) {
+        throw new Error(`Usuário não encontrado no banco para buscar dados da dieta: ${email}`);
     }
 
-    // Se mesmo após buscar no banco ainda faltar dado, usamos um padrão para não travar a IA
-    const promptCorrigido = `Crie uma dieta detalhada para o usuário ${nome || 'Cliente'} com:
-    - Objetivo: ${objetivo || 'Saudável'}
-    - Peso: ${peso || 'Não informado'}kg
-    - Calorias: ${calorias || '2000'}kcal
-    - Refeições: ${refeicoes}
-    - Alimentos escolhidos: ${body.alimentos && body.alimentos.length > 0 ? body.alimentos.join(', ') : 'Variados'}
-    - Preferência de preparo: ${body.preparos && body.preparos.length > 0 ? body.preparos.join(', ') : 'Geral'}
-    Formate o texto de forma profissional para um PDF.`;
+    // Pega os dados do banco (prioridade) ou do corpo da requisição
+    const peso = userDb.peso || body.peso;
+    const objetivo = userDb.objetivo || body.objetivo;
+    const calorias = userDb.meta_calorias || body.calorias;
+    const nome = userDb.nome || body.nome || "Cliente";
+
+    // LOG DE DEBUG PARA VOCÊ VER NO SUPABASE
+    await supabase.from('Usuarios_Dieta').update({ 
+        debug_log: `Dados recuperados: Peso=${peso}, Obj=${objetivo}, Kcal=${calorias}` 
+    }).eq('email', email);
+
+    // Se os dados essenciais ainda forem nulos, interrompemos para não gerar dieta errada
+    if (!peso || !objetivo || !calorias) {
+        throw new Error(`Dados incompletos no banco para ${email}. Peso: ${peso}, Obj: ${objetivo}, Kcal: ${calorias}`);
+    }
+
+    const promptCorrigido = `Você é um nutricionista esportivo. Crie uma dieta personalizada para ${nome}:
+    - OBJETIVO ATUAL: ${objetivo}
+    - PESO ATUAL: ${peso}
+    - META DIÁRIA DE CALORIAS: ${calorias} kcal
+    - NÚMERO DE REFEIÇÕES: ${userDb.refeicoes || 4}
+    
+    Use linguagem motivadora e profissional. Liste as refeições com horários sugestivos e quantidades.`;
 
     const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -109,23 +82,26 @@ export default async function handler(req, res) {
     });
 
     const aiData = await aiResponse.json();
-    if (aiData.error) throw new Error(`OpenAI Error: ${aiData.error.message}`);
-
     const dietaTexto = aiData.choices?.[0]?.message?.content;
-    if (!dietaTexto) throw new Error('IA retornou conteúdo vazio');
 
-    const caminhoPDF = await gerarPDF(dietaTexto, usuarioId);
-    const nomeArquivoNoStorage = `dieta-${usuarioId.replace(/[^a-zA-Z0-9]/g, '_')}-${Date.now()}.pdf`;
+    const caminhoPDF = await gerarPDF(dietaTexto, email);
+    const nomeArquivoNoStorage = `dieta-${email.replace(/[^a-zA-Z0-9]/g, '_')}-${Date.now()}.pdf`;
 
-    const pdfUrl = await uploadPDFSupabase(caminhoPDF, nomeArquivoNoStorage);
-    await salvarPDFUrlNoBanco(usuarioId, pdfUrl);
+    // Upload e link (usando sua função de storage)
+    const file = fs.readFileSync(caminhoPDF);
+    await supabase.storage.from('dietas-pdf').upload(nomeArquivoNoStorage, file, { contentType: 'application/pdf', upsert: true });
+    const { data: urlData } = supabase.storage.from('dietas-pdf').getPublicUrl(nomeArquivoNoStorage);
 
-    if (fs.existsSync(caminhoPDF)) fs.unlinkSync(caminhoPDF);
+    // Salva o link final e limpa o log de erro
+    await supabase.from('Usuarios_Dieta').update({ 
+        pdf_url: urlData.publicUrl,
+        debug_log: "Dieta gerada com sucesso com os dados do usuário."
+    }).eq('email', email);
 
-    return res.status(200).json({ message: 'Sucesso!', pdfUrl });
+    return res.status(200).json({ success: true, url: urlData.publicUrl });
 
   } catch (error) {
-    console.error('ERRO NO BACKEND:', error.message);
+    console.error('ERRO NO GERADOR:', error.message);
     return res.status(500).json({ error: error.message });
   }
 }
