@@ -29,39 +29,46 @@ export default async function handler(req, res) {
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
+
   } catch (err) {
     console.error('Erro na assinatura do Webhook:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
+  // 🔥 Quando pagamento é concluído
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-    const emailUsuario = session.customer_details?.email?.toLowerCase().trim();
 
+    const emailUsuario = session.customer_details?.email;
+
+    // 🔎 Buscar os itens da sessão para descobrir qual price foi pago
     const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+
     const priceId = lineItems.data[0].price.id;
 
     let tipoPlano;
-    // IDs de preço do seu Stripe
+
+    // ⚠️ CONFIRA SE ESTES SÃO SEUS PRICE IDs REAIS
     if (priceId === 'price_1Sz1w7GEaACih56ZWyTiPBAu') {
       tipoPlano = 'unica';
     } else if (priceId === 'price_1SzPP7GEaACih56ZkwV5mxN2') {
       tipoPlano = 'anual';
     }
 
+    console.log('Pagamento aprovado para:', emailUsuario);
+    console.log('Price ID:', priceId);
+    console.log('Tipo de plano identificado:', tipoPlano);
+
     if (!tipoPlano) {
-      console.error('Tipo de plano não identificado para o priceId:', priceId);
+      console.error('Tipo de plano não identificado!');
       return res.status(400).json({ error: 'Plano não reconhecido' });
     }
 
-    console.log('Pagamento aprovado para:', emailUsuario);
-
-    // 1️⃣ Atualiza o status de pago no banco (usando upsert para garantir que o registro exista)
     const { error } = await supabase
       .from('Usuarios_Dieta')
       .upsert(
         { 
-          email: emailUsuario,
+          email: emailUsuario.toLowerCase().trim(),
           pago: true,
           tipo_plano: tipoPlano,
           creditos: tipoPlano === 'unica' ? 1 : 9999
@@ -70,33 +77,8 @@ export default async function handler(req, res) {
       );
 
     if (error) {
-      console.error('Erro ao atualizar status de pago no Supabase:', error.message);
-    }
-
-    // 2️⃣ DISPARA A GERAÇÃO DA DIETA
-    try {
-      console.log('Iniciando geração automática para:', emailUsuario);
-      
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://gerador-dieta-hl6k.vercel.app';
-      
-      // Chamada para a API que corrigimos no passo anterior
-      const response = await fetch(`${baseUrl}/api/gerar-dieta`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          usuarioId: emailUsuario // O gerar-dieta.js usará isso para buscar peso/objetivo no banco
-        })
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Falha na resposta da API gerar-dieta:', errorText);
-      } else {
-        console.log('Dieta gerada e salva no banco com sucesso via Webhook!');
-      }
-
-    } catch (fetchError) {
-      console.error('Erro de conexão ao chamar api/gerar-dieta:', fetchError.message);
+      console.error('Erro ao salvar no Supabase:', error.message);
+      return res.status(500).json({ error: 'Erro no banco de dados' });
     }
   }
 
