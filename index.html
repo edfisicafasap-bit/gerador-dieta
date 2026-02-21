@@ -333,22 +333,36 @@
     }
 
     function salvarProgressoLocal(emailInput = null) {
-        const dados = { peso: document.getElementById('peso').value, calorias: document.getElementById('calorias').value, refeicoes: document.getElementById('num-refeicoes').value, objetivo: document.getElementById('objetivo').value, nome: document.getElementById('nome_usuario').value, alimentos: Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value), preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value) };
-        localStorage.setItem('rascunho_dieta', JSON.stringify(dados));
-        if (emailInput) localStorage.setItem('email_verificacao', emailInput.toLowerCase().trim());
+    const dados = { 
+        peso: document.getElementById('peso').value, 
+        calorias: document.getElementById('calorias').value, 
+        refeicoes: document.getElementById('num-refeicoes').value, 
+        objetivo: document.getElementById('objetivo').value, 
+        nome: document.getElementById('nome_usuario').value, 
+        alimentos: Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value), 
+        preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value) 
+    };
+    
+    localStorage.setItem('rascunho_dieta', JSON.stringify(dados));
+    
+    if (emailInput) {
+        localStorage.setItem('email_verificacao', emailInput.toLowerCase().trim());
     }
 
-    function recuperarDadosSalvos() {
-        const salvo = localStorage.getItem('rascunho_dieta');
-        if (!salvo) return;
-        const d = JSON.parse(salvo);
-        document.getElementById('peso').value = d.peso || '';
-        document.getElementById('calorias').value = d.calorias || '';
-        document.getElementById('num-refeicoes').value = d.refeicoes || '4';
-        document.getElementById('objetivo').value = d.objetivo || 'Emagrecimento';
-        d.alimentos?.forEach(val => { const el = document.querySelector(`input[name="alimento"][value="${val}"]`); if (el) el.checked = true; });
-        d.preparos?.forEach(val => { const el = document.querySelector(`input[name="preparo-geral"][value="${val}"]`); if (el) el.checked = true; });
+    // Parte nova: Sincroniza com o Supabase se houver um e-mail disponível
+    const emailParaBanco = emailInput ? emailInput.toLowerCase().trim() : localStorage.getItem('email_verificacao');
+    
+    if (emailParaBanco) {
+        _supabase.from('Usuarios_Dieta').upsert({
+            email: emailParaBanco,
+            peso: dados.peso,
+            objetivo: dados.objetivo,
+            meta_calorias: dados.calorias // Usando o nome exato da sua coluna
+        }, { onConflict: 'email' }).then(({ error }) => {
+            if (error) console.error("Erro ao sincronizar:", error.message);
+        });
     }
+}
 
     async function verificarAcessoEPagar() {
         const alimentos = Array.from(document.querySelectorAll('input[name="alimento"]:checked'));
@@ -550,6 +564,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
 </a>
 </body>
 </html>
+
 
 
 
