@@ -5,17 +5,24 @@ import { supabase } from './supabase.js';
 
 async function gerarPDF(conteudo, usuarioId) {
   const nomeLimpo = usuarioId.replace(/[^a-zA-Z0-9]/g, '_');
-  const caminhoArquivo = path.join('/tmp', `dieta-${nomeLimpo}-${Date.now()}.pdf`);
+  const caminhoArquivo = path.join('/tmp', `dieta-${nomeLimpo}.pdf`);
   
   const doc = new PDFDocument({ margin: 50 });
   const stream = fs.createWriteStream(caminhoArquivo);
 
   return new Promise((resolve, reject) => {
     doc.pipe(stream);
+
+    // Ajuste de Fonte para aceitar acentuação brasileira
     doc.font('Helvetica-Bold').fontSize(22).text('SEU PLANO ALIMENTAR', { align: 'center' });
     doc.moveDown();
-    doc.font('Helvetica').fontSize(12).text(conteudo, { align: 'justify', lineGap: 5 });
+    doc.font('Helvetica').fontSize(12).text(conteudo, {
+      align: 'justify',
+      lineGap: 5
+    });
+    
     doc.end();
+
     stream.on('finish', () => resolve(caminhoArquivo));
     stream.on('error', (err) => reject(err));
   });
@@ -23,16 +30,35 @@ async function gerarPDF(conteudo, usuarioId) {
 
 async function uploadPDFSupabase(caminhoLocal, nomeArquivo) {
   const file = fs.readFileSync(caminhoLocal);
-  const { error } = await supabase.storage.from('dietas-pdf').upload(nomeArquivo, file, {
+
+  // Faz o upload para o bucket 'dietas-pdf'
+  const { error } = await supabase
+    .storage
+    .from('dietas-pdf') 
+    .upload(nomeArquivo, file, {
       contentType: 'application/pdf',
       upsert: true
-  });
+    });
 
-  if (error) throw new Error(`Erro Upload: ${error.message}`);
+  if (error) throw new Error(`Erro no Upload Supabase: ${error.message}`);
 
-  const { data, error: signedError } = await supabase.storage.from('dietas-pdf').createSignedUrl(nomeArquivo, 60 * 60 * 24);
+  // Link assinado (público por 24h)
+  const { data, error: signedError } = await supabase
+    .storage
+    .from('dietas-pdf')
+    .createSignedUrl(nomeArquivo, 60 * 60 * 24);
+
   if (signedError) throw signedError;
   return data.signedUrl;
+}
+
+async function salvarPDFUrlNoBanco(emailUsuario, url) {
+  const { error } = await supabase
+    .from('Usuarios_Dieta')
+    .update({ pdf_url: url })
+    .eq('email', emailUsuario.toLowerCase().trim());
+
+  if (error) throw new Error(`Erro ao atualizar banco: ${error.message}`);
 }
 
 export default async function handler(req, res) {
@@ -40,8 +66,10 @@ export default async function handler(req, res) {
 
   try {
     const { prompt, usuarioId } = req.body;
+
     if (!usuarioId) return res.status(400).json({ error: 'E-mail obrigatório' });
 
+    // Chamada OpenAI
     const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -56,23 +84,34 @@ export default async function handler(req, res) {
     });
 
     const aiData = await aiResponse.json();
-    if (aiData.error) throw new Error(aiData.error.message);
+    
+    if (aiData.error) {
+        throw new Error(`OpenAI Error: ${aiData.error.message}`);
+    }
 
     const dietaTexto = aiData.choices?.[0]?.message?.content;
-    if (!dietaTexto) throw new Error('IA vazia');
 
+    if (!dietaTexto) throw new Error('IA retornou conteúdo vazio');
+
+    // PDF e Storage
     const caminhoPDF = await gerarPDF(dietaTexto, usuarioId);
-    const nomeArquivo = `dieta-${usuarioId.replace(/[^a-zA-Z0-9]/g, '_')}-${Date.now()}.pdf`;
-    const pdfUrl = await uploadPDFSupabase(caminhoPDF, nomeArquivo);
+    const nomeArquivoNoStorage = `dieta-${usuarioId.replace(/[^a-zA-Z0-9]/g, '_')}-${Date.now()}.pdf`;
 
-    // ATUALIZA O BANCO DE DADOS
-    await supabase.from('Usuarios_Dieta').update({ pdf_url: pdfUrl }).eq('email', usuarioId.toLowerCase().trim());
+    const pdfUrl = await uploadPDFSupabase(caminhoPDF, nomeArquivoNoStorage);
 
+    await salvarPDFUrlNoBanco(usuarioId, pdfUrl);
+
+    // Limpeza do arquivo temporário para não ocupar memória da Vercel
     if (fs.existsSync(caminhoPDF)) fs.unlinkSync(caminhoPDF);
 
-    return res.status(200).json({ pdfUrl, dietaTexto });
+    return res.status(200).json({
+      message: 'Sucesso!',
+      pdfUrl,
+      dietaTexto
+    });
 
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    console.error('ERRO DETALHADO NO BACKEND:', error.message);
+    return res.status(500).json({ error: error.message || 'Erro interno no servidor' });
   }
 }
