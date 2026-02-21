@@ -39,16 +39,14 @@ async function uploadPDFSupabase(caminhoLocal, nomeArquivo) {
   return data.publicUrl;
 }
 
-// --- ALTERAÇÃO AQUI: DE UPDATE PARA UPSERT ---
 async function salvarPDFUrlNoBanco(emailUsuario, url) {
   const emailLimpo = emailUsuario.toLowerCase().trim();
-  
   const { error } = await supabase
     .from('Usuarios_Dieta')
     .upsert({ 
         email: emailLimpo, 
         pdf_url: url 
-    }, { onConflict: 'email' }); // Se o e-mail já existir, ele apenas atualiza o link
+    }, { onConflict: 'email' });
 
   if (error) throw new Error(`Erro ao salvar no banco: ${error.message}`);
 }
@@ -58,29 +56,45 @@ export default async function handler(req, res) {
 
   try {
     const body = req.body;
-    
-    // TRADUTOR: Normaliza os nomes vindos de qualquer fonte (Site ou App)
-    const usuarioId = body.usuarioId || body.email || body.contato;
-    const peso      = body.peso      || body.weight;
-    const calorias  = body.calorias  || body.caloriesResult || body.kcal;
-    const objetivo  = body.objetivo  || body.goalParam || body.goal;
-    const nome      = body.nome      || body.name;
-    const refeicoes = body.refeicoes || body.num_refeicoes || 4;
-    const alimentos = body.alimentos || [];
-    const preparos  = body.preparos  || [];
+    const usuarioId = (body.usuarioId || body.email || body.contato || "").toLowerCase().trim();
 
     if (!usuarioId) return res.status(400).json({ error: 'E-mail (usuarioId) obrigatório' });
 
+    // --- NOVA LÓGICA DE BUSCA ---
+    // Tentamos pegar do body, se não tiver, buscamos no Supabase
+    let peso = body.peso;
+    let objetivo = body.objetivo;
+    let calorias = body.calorias || body.meta_calorias;
+    let nome = body.nome;
+    let refeicoes = body.refeicoes || 4;
+
+    if (!peso || !objetivo || !calorias) {
+        console.log("Dados incompletos no body, buscando no Supabase para o email:", usuarioId);
+        const { data: userDb, error: dbError } = await supabase
+            .from('Usuarios_Dieta')
+            .select('peso, objetivo, meta_calorias, nome')
+            .eq('email', usuarioId)
+            .single();
+
+        if (userDb) {
+            peso = peso || userDb.peso;
+            objetivo = objetivo || userDb.objetivo;
+            calorias = calorias || userDb.meta_calorias;
+            nome = nome || userDb.nome;
+            console.log("Dados recuperados do banco:", { peso, objetivo, calorias });
+        }
+    }
+
+    // Se mesmo após buscar no banco ainda faltar dado, usamos um padrão para não travar a IA
     const promptCorrigido = `Crie uma dieta detalhada para o usuário ${nome || 'Cliente'} com:
-    - Objetivo: ${objetivo}
-    - Peso: ${peso}kg
-    - Calorias: ${calorias}kcal
+    - Objetivo: ${objetivo || 'Saudável'}
+    - Peso: ${peso || 'Não informado'}kg
+    - Calorias: ${calorias || '2000'}kcal
     - Refeições: ${refeicoes}
-    - Alimentos escolhidos: ${alimentos.length > 0 ? alimentos.join(', ') : 'Variados'}
-    - Preferência de preparo: ${preparos.length > 0 ? preparos.join(', ') : 'Geral'}
+    - Alimentos escolhidos: ${body.alimentos && body.alimentos.length > 0 ? body.alimentos.join(', ') : 'Variados'}
+    - Preferência de preparo: ${body.preparos && body.preparos.length > 0 ? body.preparos.join(', ') : 'Geral'}
     Formate o texto de forma profissional para um PDF.`;
 
-    // Chamada OpenAI
     const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -104,17 +118,11 @@ export default async function handler(req, res) {
     const nomeArquivoNoStorage = `dieta-${usuarioId.replace(/[^a-zA-Z0-9]/g, '_')}-${Date.now()}.pdf`;
 
     const pdfUrl = await uploadPDFSupabase(caminhoPDF, nomeArquivoNoStorage);
-
-    // Salva ou Cria o registro no banco
     await salvarPDFUrlNoBanco(usuarioId, pdfUrl);
 
     if (fs.existsSync(caminhoPDF)) fs.unlinkSync(caminhoPDF);
 
-    return res.status(200).json({
-      message: 'Sucesso!',
-      pdfUrl,
-      dietaTexto
-    });
+    return res.status(200).json({ message: 'Sucesso!', pdfUrl });
 
   } catch (error) {
     console.error('ERRO NO BACKEND:', error.message);
