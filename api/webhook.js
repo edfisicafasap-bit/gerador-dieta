@@ -38,17 +38,13 @@ export default async function handler(req, res) {
   // 🔥 Quando pagamento é concluído
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-
     const emailUsuario = session.customer_details?.email;
 
-    // 🔎 Buscar os itens da sessão para descobrir qual price foi pago
+    // 🔎 Buscar os itens da sessão para descobrir o price
     const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
-
     const priceId = lineItems.data[0].price.id;
 
     let tipoPlano;
-
-    // ⚠️ CONFIRA SE ESTES SÃO SEUS PRICE IDs REAIS
     if (priceId === 'price_1Sz1w7GEaACih56ZWyTiPBAu') {
       tipoPlano = 'unica';
     } else if (priceId === 'price_1SzPP7GEaACih56ZkwV5mxN2') {
@@ -56,14 +52,13 @@ export default async function handler(req, res) {
     }
 
     console.log('Pagamento aprovado para:', emailUsuario);
-    console.log('Price ID:', priceId);
-    console.log('Tipo de plano identificado:', tipoPlano);
 
     if (!tipoPlano) {
       console.error('Tipo de plano não identificado!');
       return res.status(400).json({ error: 'Plano não reconhecido' });
     }
 
+    // 1️⃣ Atualiza o status de pago no banco
     const { error } = await supabase
       .from('Usuarios_Dieta')
       .upsert(
@@ -79,6 +74,27 @@ export default async function handler(req, res) {
     if (error) {
       console.error('Erro ao salvar no Supabase:', error.message);
       return res.status(500).json({ error: 'Erro no banco de dados' });
+    }
+
+    // 2️⃣ 🔥 DISPARA A GERAÇÃO DA DIETA (A Mágica acontece aqui)
+    try {
+      console.log('Solicitando geração de PDF para:', emailUsuario);
+      
+      // IMPORTANTE: Substitua a URL abaixo pela URL do seu projeto
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://gerador-dieta-hl6k.vercel.app/';
+      
+      await fetch(`${baseUrl}/api/gerar-dieta`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          usuarioId: emailUsuario.toLowerCase().trim()
+        })
+      });
+
+      console.log('Comando de geração enviado com sucesso!');
+    } catch (fetchError) {
+      console.error('Erro ao chamar api/gerar-dieta:', fetchError.message);
+      // Não retornamos erro aqui para não dar erro no Stripe, já que o pagamento foi salvo.
     }
   }
 
