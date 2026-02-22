@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body { background:#000; margin:0; font-family:Arial, sans-serif; color: #fff; padding-bottom: 30px; }
-        .container { max-width:600px; margin:auto; padding:20px; background:#000; }
+        .container { max-width:600px; margin:auto; padding:20px; background:#000; position: relative; }
         h2 { color:#FFD700; text-align: center; margin-bottom: 5px; font-size: 19px; text-transform: uppercase; }
         p.subtitle { text-align: center; color: #ccc; font-size: 14px; margin-bottom: 25px; }
         label { display:block; margin-top:18px; font-size:14px; font-weight: bold; color: #eee; }
@@ -17,7 +17,6 @@
         #btn-gerar { width:100%; margin-top:30px; padding:18px; background:#FFD700; border:none; border-radius:8px; font-size:16px; font-weight:bold; color:#000; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
         #btn-gerar:disabled { background: #555; cursor: not-allowed; }
         
-        /* 1. ALTERAÇÃO DE CORES DO BOTÃO DE DOWNLOAD */
         #btn-download-pos-geracao, #btn-download-direto { 
             width:100%; 
             margin-top:20px; 
@@ -87,6 +86,28 @@
             align-items: center;
             gap: 8px;
         }
+
+        /* ESTILO DO ÍCONE DE USUÁRIO */
+        .login-shortcut {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            cursor: pointer;
+            color: #FFD700;
+            background: rgba(255, 215, 0, 0.1);
+            padding: 8px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            border: 1px solid transparent;
+            z-index: 100;
+        }
+        .login-shortcut:hover {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: #FFD700;
+        }
     </style>
 </head>
 <body onload="inicializarTudo()">
@@ -131,11 +152,17 @@
 </div>
 
 <div class="container">
+    <div class="login-shortcut" onclick="alternarBuscaRapida()" title="Acessar meu plano">
+        <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z"/>
+        </svg>
+    </div>
+
     <div id="dieta-section">
         <h2>🍎 Reeducação Alimentar</h2>
         
-        <div class="secao-especial" style="border-style: solid; border-color: #333;">
-            <h4>JÁ POSSUI UM PLANO ATIVO?</h4>
+        <div id="area-busca-rapida" class="secao-especial" style="display: none; border-style: solid; border-color: #FFD700;">
+            <h4 style="margin-bottom: 10px;">JÁ POSSUI UM PLANO ATIVO?</h4>
             <div style="display: flex; gap: 10px;">
                 <input type="email" id="email-busca" placeholder="E-mail cadastrado" style="margin-top: 0; flex: 1;">
                 <button onclick="buscarAcessoRapido()" style="width: auto; background: #FFD700; color: #000; border: none; padding: 0 15px; border-radius: 6px; font-weight: bold; cursor: pointer;">BUSCAR</button>
@@ -146,7 +173,7 @@
             </div>
         </div>
 
-        <p class="subtitle">Ou preencha abaixo para gerar um novo plano:</p>
+        <p class="subtitle">Preencha abaixo para gerar seu novo plano:</p>
         
         <div id="status-topo">ORGANIZANDO SUAS REFEIÇÕES...</div>
 
@@ -248,17 +275,11 @@
         }
     }
 
-    // 4. FUNÇÃO PARA LIMPAR TUDO APÓS O SUCESSO
-    function limparDadosEApp() {
-        localStorage.removeItem('rascunho_dieta');
-        // Mantemos apenas o email_verificacao para histórico, mas se quiser zerar tudo:
-        // localStorage.clear();
-        
-        // Resetar campos visuais
-        document.getElementById('peso').value = '';
-        document.getElementById('calorias').value = '';
-        document.getElementById('aceite-clausula').checked = false;
-        document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+    // NOVA FUNÇÃO PARA ALTERNAR VISIBILIDADE DA BUSCA
+    function alternarBuscaRapida() {
+        const area = document.getElementById('area-busca-rapida');
+        area.style.display = area.style.display === 'none' ? 'block' : 'none';
+        if(area.style.display === 'block') area.scrollIntoView({ behavior: 'smooth' });
     }
 
     async function buscarAcessoRapido() {
@@ -266,9 +287,8 @@
         if (!email) return alert("Por favor, digite seu e-mail.");
         const { data: user, error } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', email).single();
         if (error || !user) return alert("Nenhum plano ativo encontrado para este e-mail.");
-        if (user.pdf_url) {
+        if (user.pdf_url || user.dieta_texto) {
             document.getElementById('resultado-busca').style.display = 'block';
-            // Ajustado para baixar o PDF corretamente se for texto
             document.getElementById('btn-download-direto').onclick = () => baixarPDF(user.dieta_texto || "Plano Alimentar");
             localStorage.setItem('email_verificacao', email);
         } else {
@@ -381,12 +401,9 @@
         await gerarDieta(JSON.parse(dadosLocais)); 
     }
 
-    // 3. E-MAIL AUTOMÁTICO NO STRIPE
     async function iniciarCheckout(priceId) {
         salvarProgressoLocal();
         const email = localStorage.getItem('email_verificacao') || "";
-        
-        // Adicionando o parâmetro prefilled_email ao link do Stripe
         const LINK_UNICA = `https://buy.stripe.com/test_bJe7sLcqhcL0g0B9T9asg00?prefilled_email=${encodeURIComponent(email)}`;
         const LINK_ANUAL = `https://buy.stripe.com/test_3cI8wP0Hz9yO4hTc1hasg01?prefilled_email=${encodeURIComponent(email)}`; 
         
@@ -403,7 +420,6 @@
         const btnDownloadPos = document.getElementById('btn-download-pos-geracao');
         const divResultado = document.getElementById('resultado');
 
-        // --- TRAVA DE SEGURANÇA: VALIDAÇÃO DO PESO ---
         const pesoUser = parseFloat(d.peso);
         if (!pesoUser || pesoUser <= 0 || isNaN(pesoUser)) {
             alert("⚠️ Por favor, insira um peso válido para calcularmos seus macros corretamente.");
@@ -415,7 +431,6 @@
         btn.innerText = "AGUARDE...";
         btn.disabled = true;
 
-        // --- LÓGICA DE MACROS POR OBJETIVO ---
         let metaProt, metaGord, margemProt;
         if (d.objetivo === 'Emagrecimento') {
             metaProt = 2.2; 
@@ -434,7 +449,7 @@
         const gorduraAlvoG = (pesoUser * metaGord).toFixed(1);
         const proteinaAlvoG = (pesoUser * metaProt).toFixed(0);
 
-        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, para um paciente de ${pesoUser}kg, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
+       const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, para um paciente de ${pesoUser}kg, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
 DIRETRIZES DE EQUILÍBRIO CALÓRICO (OBRIGATÓRIO):
 O plano deve seguir rigorosamente esta distribuição baseada no peso de ${pesoUser}kg:
@@ -502,26 +517,21 @@ RODAPÉ: "Este plano alimentar foi gerado para fins educativos. Não substitui a
 
             divResultado.innerText = result.dieta;
             divResultado.style.display = 'block';
-
-            // ROLAR AUTOMATICAMENTE PARA BAIXO
             divResultado.scrollIntoView({ behavior: 'smooth' });
 
             if (btnDownloadPos) {
                 btnDownloadPos.style.display = 'block';
                 btnDownloadPos.onclick = () => {
                     baixarPDF(result.dieta);
-                    // LIMPAR APÓS BAIXAR
                     setTimeout(() => {
-                        if(confirm("Dieta baixada com sucesso! Deseja limpar os campos para uma nova consulta?")) {
+                        if(confirm("Dieta baixada com sucesso! Deseja limpar os campos?")) {
                             limparDadosEApp();
                         }
                     }, 1000);
                 };
             }
 
-            // Baixa automático na primeira vez
             baixarPDF(result.dieta);
-
             return true;
         } catch (e) { 
             alert("Erro: " + e.message);
@@ -533,36 +543,24 @@ RODAPÉ: "Este plano alimentar foi gerado para fins educativos. Não substitui a
         }
     }
 
-    // CORREÇÃO DO PDF VAZIO + FORMATAÇÃO
     function baixarPDF(conteudo) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        
-        // Limpar caracteres especiais do markdown
         const textoLimpo = conteudo.replace(/[#*]/g, '');
-        
         doc.setFont("helvetica", "normal");
         doc.setFontSize(12);
-
         const lines = doc.splitTextToSize(textoLimpo, 180);
         let y = 20;
-        
         lines.forEach(line => {
-            if (y > 275) { 
-                doc.addPage(); 
-                y = 20; 
-            }
+            if (y > 275) { doc.addPage(); y = 20; }
             doc.text(line, 15, y);
             y += 7;
         });
-        
         doc.save("Meu_Plano_Alimentar.pdf");
     }
 
-    // FUNÇÃO PARA LIMPAR DADOS DO APP
     function limparDadosEApp() {
         localStorage.removeItem('rascunho_dieta');
-        // Resetar inputs visuais
         document.getElementById('peso').value = '';
         document.getElementById('calorias').value = '';
         document.getElementById('aceite-clausula').checked = false;
@@ -574,4 +572,3 @@ RODAPÉ: "Este plano alimentar foi gerado para fins educativos. Não substitui a
 </script>
 </body>
 </html>
-
