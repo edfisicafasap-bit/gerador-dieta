@@ -403,18 +403,47 @@
         const btnDownloadPos = document.getElementById('btn-download-pos-geracao');
         const divResultado = document.getElementById('resultado');
 
+        // --- TRAVA DE SEGURANÇA: VALIDAÇÃO DO PESO ---
+        const pesoUser = parseFloat(d.peso);
+        if (!pesoUser || pesoUser <= 0 || isNaN(pesoUser)) {
+            alert("⚠️ Por favor, insira um peso válido para calcularmos seus macros corretamente.");
+            document.getElementById('peso').focus();
+            return;
+        }
+
         statusTopo.style.display = 'block';
         btn.innerText = "AGUARDE...";
         btn.disabled = true;
 
-const pesoUser = parseFloat(d.peso);
-// Cálculos de Macros baseados no peso inserido
-const proteinaMin = (pesoUser * 1.8).toFixed(0);
-const proteinaMax = (pesoUser * 2.2).toFixed(0);
-const gorduraMin = (pesoUser * 0.8).toFixed(1);
-const gorduraMax = (pesoUser * 1.0).toFixed(1);
+        // --- LÓGICA DE MACROS POR OBJETIVO ---
+        let metaProt, metaGord, margemProt;
+        if (d.objetivo === 'Emagrecimento') {
+            metaProt = 2.2; 
+            metaGord = 0.8; 
+            margemProt = "85% de fontes diretas (carnes/ovos), 15% de resíduo vegetal vindo dos carboidratos";
+        } else if (d.objetivo === 'Hipertrofia') {
+            metaProt = 1.8; 
+            metaGord = 1.0; 
+            margemProt = "75% de fontes diretas, 25% de resíduo vegetal vindo dos carboidratos";
+        } else {
+            metaProt = 2.0; 
+            metaGord = 0.9; 
+            margemProt = "80% de fontes diretas, 20% de resíduo vegetal vindo dos carboidratos";
+        }
 
-        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
+        const gorduraAlvoG = (pesoUser * metaGord).toFixed(1);
+        const proteinaAlvoG = (pesoUser * metaProt).toFixed(0);
+
+        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, para um paciente de ${pesoUser}kg, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
+
+DIRETRIZES DE EQUILÍBRIO CALÓRICO (OBRIGATÓRIO):
+O plano deve seguir rigorosamente esta distribuição baseada no peso de ${pesoUser}kg:
+1. GORDURAS: Total de ${gorduraAlvoG}g (Considere 9 kcal por grama).
+2. PROTEÍNAS: Total de ${proteinaAlvoG}g (Considere 4 kcal por grama). Utilize a regra de ${margemProt}.
+3. CARBOIDRATOS (LÓGICA DE EXCLUSÃO): Subtraia as calorias das gorduras e proteínas do total de ${d.calorias}kcal diárias. O restante deve ser preenchido por carboidratos (Considere 4 kcal por grama).
+
+ESTRATÉGIA DE CÁLCULO:
+- Distribua as ${gorduraAlvoG}g de gordura entre as ${d.refeicoes} refeições (aprox. ${(gorduraAlvoG/d.refeicoes).toFixed(1)}g por refeição).
 
 DIRETRIZES SUPREMAS
 
@@ -424,53 +453,35 @@ Voce deve gerar EXATAMENTE ${d.refeicoes} refeicoes.
 - Se ${d.refeicoes} for 5: Use (1. Cafe da Manha, 2. Almoco, 3. Cafe da Tarde, 4. Jantar, 5. Ceia).
 - Se ${d.refeicoes} for 6: Use (1. Desjejum, 2. Cafe da Manha, 3. Almoco, 4. Cafe da Tarde, 5. Jantar, 6. Ceia).
 
-DICA: Nunca pule o Cafe da Tarde entre o Almoco e o Jantar.
-
-
-REGRAS POR HORÁRIO
+REGRAS POR HORÁRIO:
 CAFÉ DA MANHÃ: Máximo 3 itens. Transformar em: Bowl, Shake, Vitamina, Sanduíche ou Omelete. 
-LANCHES, DESJEJUM E CAFÉ DA TARDE: Foco em portabilidade e simplicidade.
-ALMOÇO/JANTAR: Estrutura [Base de Carboidrato] + [Proteína] + [Legumes/Salada].
-Jantar pode ser mais leve, mas deve manter a estrutura de refeição completa.
-CEIA: REFEIÇÕES SUPER LEVES, COMO UMA FRUTA, OU FRUTA + WHEY, OU IOGURTE...
+ALMOÇO/JANTAR: Estrutura [Base de Carboidrato] + [Proteína] + [Legumes/Salada]. Arroz e Feijão são obrigatórios na base se selecionados.
+CEIA: Refeições leves (frutas, iogurte, etc).
 
-CÁLCULO DA DIETA:   A PROTEINA DEVE TER O ENTRE 1.8 A 2.2g POR kg CORPORAL DA PESSOA, a Gordura 1g por kg corporal e o Carboidrato deve complementar o Restante das calorias, seja o mais rigoroso possivel nesse critério para chegar o mais proximo da meta possivel!  Use bases científicas (TACO/TBCA), NÃO CRIE TABELAS DE MACRO NUTRIENTES FICTICIOS, UTILIZE SOMENTE MACROS REAIS DOS ALIMENTOS!.
-
-Alimentos permitidos: Utilize receitas e pratos somente que contenham os alimentos previamente selecionados, não crie receitas que não contenham alimentos mencionados.
-Proibido Alimentos Soltos: Nunca liste ingredientes isolados (ex: "30g de aveia"). Transforme-os em preparações (ex: "Mingau de aveia").
-Base Obrigatória: No Almoço e Jantar, se houver Arroz e/ou Feijão nos ingredientes, eles devem obrigatoriamente compor a base da refeição.
-Coerência Cultural: As refeições devem respeitar os hábitos brasileiros (Café, Almoço, Lanche, Jantar).
+Alimentos permitidos: Utilize apenas os alimentos previamente selecionados.
+Proibido Alimentos Soltos: Nunca liste ingredientes isolados. Transforme-os em preparações.
+Coerência Cultural: Respeite os hábitos brasileiros.
 
 PLANEJAMENTO ALIMENTAR ESTRUTURADO
 
-BLOCO 1: OPÇÕES A (PADRÃO)
-Nesta seção, gere as ${d.refeicoes} refeições seguindo os nomes definidos nas "DIRETRIZES SUPREMAS". Priorize arroz e feijão no almoço e jantar.
-Para cada uma das ${d.refeicoes} refeições, liste:
-- Nome da Refeicao
-- Ingredientes (com quantidades)
-IMPORTANTE: não repita "nome da refeicao" apenas escreva ela. Ex: oq não fazer: - Nome da Refeição: Omelete de Brócolis e Queijo | o que fazer: Omelete de Brócolis e Queijo
-
+BLOCO 1: OPÇÕES A (PADRÃO com Arroz e Feijão)
+Gere as ${d.refeicoes} refeições. Liste apenas o nome do prato e os ingredientes com quantidades.
 RESUMO DE MACROS (OPÇÕES A)
-Proteinas Totais: [Soma Real]g | Carboidratos Totais: [Soma Real]g | Gorduras Totais: [Soma Real]g
+Proteinas Totais: ${proteinaAlvoG}g | Carboidratos Totais: [Soma]g | Gorduras Totais: ${gorduraAlvoG}g
 
-BLOCO 2: OPÇÕES B (VARIAÇÃO)
-Nesta seção, gere as mesmas ${d.refeicoes} refeições com macros equivalentes ao Bloco 1. No almoço e jantar, é proibido o uso de arroz e feijão.
-Para cada uma das ${d.refeicoes} refeições, liste:
-- Nome da Refeicao
-- Ingredientes (com quantidades)
-IMPORTANTE: não repita "nome da refeicao" apenas escreva ela. Ex: oq não fazer: - Nome da Refeição: Omelete de Brócolis e Queijo | o que fazer: Omelete de Brócolis e Queijo
+BLOCO 2: OPÇÕES B (VARIAÇÃO SEM Arroz e Feijão)
+Mesmas refeições e macros. No almoço e jantar, é proibido o uso de arroz e feijão.
 RESUMO DE MACROS (OPÇÕES B)
-Proteinas Totais: [Soma Real]g | Carboidratos Totais: [Soma Real]g | Gorduras Totais: [Soma Real]g
+Proteinas Totais: ${proteinaAlvoG}g | Carboidratos Totais: [Soma]g | Gorduras Totais: ${gorduraAlvoG}g
 
-PROTOCOLO DE VALIDAÇÃO
-Antes de exibir, valide: "A Opção B de almoço/jantar está sem arroz e feijão? Os macros estão equilibrados? O prato parece algo que se come no Brasil? só prossiga caso seja refeições reais, caso contrário, refaça!"
-IMPORTANTE: Valide internamente, mas não escreva esta validação ou protocolo no resultado final.
+PROTOCOLO DE VALIDAÇÃO:
+A gordura total deve ser rigorosamente próxima de ${gorduraAlvoG}g. Não use o padrão de 70g. Use bases reais (TACO/TBCA).
 
 ITENS COMPLEMENTARES:
-1. HIDRATAÇÃO: Informe a recomendação de ${(parseFloat(d.peso) * 0.035).toFixed(1)}L de água por dia.
+1. HIDRATAÇÃO: Informe a recomendação de ${(pesoUser * 0.035).toFixed(1)}L de água por dia.
 2. DATA: ${new Date().toLocaleString()}.
 
-ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional."`;
+RODAPÉ: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional."`;
 
         try {
             const response = await fetch('/api/gerar-dieta', {
@@ -485,14 +496,14 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
             divResultado.innerText = result.dieta;
             divResultado.style.display = 'block';
 
-            // 2. ROLAR AUTOMATICAMENTE PARA BAIXO
+            // ROLAR AUTOMATICAMENTE PARA BAIXO
             divResultado.scrollIntoView({ behavior: 'smooth' });
 
             if (btnDownloadPos) {
                 btnDownloadPos.style.display = 'block';
                 btnDownloadPos.onclick = () => {
                     baixarPDF(result.dieta);
-                    // 4. LIMPAR APÓS BAIXAR
+                    // LIMPAR APÓS BAIXAR
                     setTimeout(() => {
                         if(confirm("Dieta baixada com sucesso! Deseja limpar os campos para uma nova consulta?")) {
                             limparDadosEApp();
@@ -520,7 +531,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         
-        // Limpar caracteres especiais do prompt
+        // Limpar caracteres especiais do markdown
         const textoLimpo = conteudo.replace(/[#*]/g, '');
         
         doc.setFont("helvetica", "normal");
@@ -539,6 +550,19 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
         });
         
         doc.save("Meu_Plano_Alimentar.pdf");
+    }
+
+    // FUNÇÃO PARA LIMPAR DADOS DO APP
+    function limparDadosEApp() {
+        localStorage.removeItem('rascunho_dieta');
+        // Resetar inputs visuais
+        document.getElementById('peso').value = '';
+        document.getElementById('calorias').value = '';
+        document.getElementById('aceite-clausula').checked = false;
+        document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+        document.getElementById('resultado').style.display = 'none';
+        document.getElementById('btn-download-pos-geracao').style.display = 'none';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 </script>
 </body>
