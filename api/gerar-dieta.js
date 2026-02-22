@@ -26,7 +26,7 @@ export default async function handler(req, res) {
         const dietaTexto = data.choices[0].message.content;
 
         // 2. Gerar nome único e fazer upload usando sua função original adaptada
-        const nomeArquivo = `dieta-${email.replace(/[@.]/g, '_')}-${Date.now()}.txt`;
+        const nomeArquivo = `dieta-${email.replace(/[@.]/g, '_')}-${Date.now()}.pdf`;
         const linkAssinado = await uploadPDFSupabase(dietaTexto, nomeArquivo);
 
         // 3. Atualizar a tabela Usuarios_Dieta com o link assinado
