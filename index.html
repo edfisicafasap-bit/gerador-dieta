@@ -17,6 +17,26 @@
         #btn-gerar { width:100%; margin-top:30px; padding:18px; background:#FFD700; border:none; border-radius:8px; font-size:16px; font-weight:bold; color:#000; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
         #btn-gerar:disabled { background: #555; cursor: not-allowed; }
         
+        /* 1. ALTERAÇÃO DE CORES DO BOTÃO DE DOWNLOAD */
+        #btn-download-pos-geracao, #btn-download-direto { 
+            width:100%; 
+            margin-top:20px; 
+            padding:18px; 
+            background:#000; 
+            border: 2px solid #FFD700; 
+            border-radius:8px; 
+            font-size:16px; 
+            font-weight:bold; 
+            color:#FFD700; 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            transition: 0.3s;
+        }
+        #btn-download-pos-geracao:hover, #btn-download-direto:hover {
+            background: #FFD700;
+            color: #000;
+        }
+
         #status-topo { display: none; background: #FFD700; color: #000; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 20px; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
 
@@ -122,7 +142,7 @@
             </div>
             <div id="resultado-busca" style="display:none; margin-top: 15px; text-align: center; border-top: 1px solid #333; padding-top: 10px;">
                 <p style="font-size: 13px; color: #FFD700; margin-bottom: 10px;">Plano encontrado! Clique no botão abaixo:</p>
-                <button id="btn-download-direto" style="width: 100%; padding: 12px; background: #28a745; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">📥 BAIXAR MEU CARDÁPIO PDF</button>
+                <button id="btn-download-direto">📥 BAIXAR MEU CARDÁPIO PDF</button>
             </div>
         </div>
 
@@ -169,7 +189,7 @@
 
         <button id="btn-gerar" onclick="verificarAcessoEPagar()">GERAR E BAIXAR PLANO</button>
 
-        <button id="btn-download-pos-geracao" style="display:none; width:100%; margin-top:20px; padding:18px; background:#28a745; border:none; border-radius:8px; font-size:16px; font-weight:bold; color:#fff; cursor: pointer; text-transform: uppercase;">
+        <button id="btn-download-pos-geracao" style="display:none;">
             📥 BAIXAR MEU PLANO EM PDF
         </button>
 
@@ -228,6 +248,19 @@
         }
     }
 
+    // 4. FUNÇÃO PARA LIMPAR TUDO APÓS O SUCESSO
+    function limparDadosEApp() {
+        localStorage.removeItem('rascunho_dieta');
+        // Mantemos apenas o email_verificacao para histórico, mas se quiser zerar tudo:
+        // localStorage.clear();
+        
+        // Resetar campos visuais
+        document.getElementById('peso').value = '';
+        document.getElementById('calorias').value = '';
+        document.getElementById('aceite-clausula').checked = false;
+        document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+    }
+
     async function buscarAcessoRapido() {
         const email = document.getElementById('email-busca').value.toLowerCase().trim();
         if (!email) return alert("Por favor, digite seu e-mail.");
@@ -235,7 +268,8 @@
         if (error || !user) return alert("Nenhum plano ativo encontrado para este e-mail.");
         if (user.pdf_url) {
             document.getElementById('resultado-busca').style.display = 'block';
-            document.getElementById('btn-download-direto').onclick = () => window.open(user.pdf_url, '_blank');
+            // Ajustado para baixar o PDF corretamente se for texto
+            document.getElementById('btn-download-direto').onclick = () => baixarPDF(user.dieta_texto || "Plano Alimentar");
             localStorage.setItem('email_verificacao', email);
         } else {
             alert("Cadastro encontrado, mas sua dieta ainda não foi gerada.");
@@ -315,7 +349,7 @@
         if (alimentos.length < 5) return alert("Selecione pelo menos 5 alimentos!");
         if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
         
-        const emailAcesso = prompt("Informe seu e-mail cadastrado:");
+        const emailAcesso = prompt("Informe seu e-mail para salvar/acessar seu plano:");
         if (!emailAcesso) return;
         const emailLow = emailAcesso.toLowerCase().trim();
         salvarProgressoLocal(emailLow);
@@ -327,32 +361,15 @@
             return;
         }
 
-        if (user.pdf_url) {
-            const acao = confirm("Já encontramos uma dieta para você! \n\nClique em OK para GERAR UMA NOVA (Gastará 1 crédito).\nClique em CANCELAR para apenas BAIXAR A ATUAL (Grátis).");
-            if (!acao) {
-                window.open(user.pdf_url, '_blank');
-                return;
-            }
-        }
-
         if (user.tipo_plano === 'unica') {
             if (user.creditos <= 0) {
-                alert("Você já utilizou sua troca do Plano Único. Para gerar uma nova, adquira o Plano Anual!");
+                alert("Você já utilizou sua troca do Plano Único. Adquira o Plano Anual para trocas ilimitadas!");
                 document.getElementById('payment-overlay').style.display = 'flex';
                 return;
             }
             executarGeracaoComConsumo('unica', emailLow);
         } else if (user.tipo_plano === 'anual') {
-            const agora = new Date();
-            const dataReset = user.data_reset ? new Date(user.data_reset) : agora;
-            if (agora >= dataReset) {
-                const novoReset = new Date();
-                novoReset.setDate(novoReset.getDate() + 7);
-                await _supabase.from('Usuarios_Dieta').update({ contagem_semanal: 0, data_reset: novoReset.toISOString() }).eq('email', emailLow);
-                user.contagem_semanal = 0;
-            }
-            if (user.contagem_semanal >= 2) return alert("Limite de 2 trocas semanais atingido.");
-            executarGeracaoComConsumo('anual', emailLow, user.contagem_semanal);
+            executarGeracaoComConsumo('anual', emailLow, user.contagem_semanal || 0);
         }
     }
 
@@ -364,10 +381,15 @@
         await gerarDieta(JSON.parse(dadosLocais)); 
     }
 
+    // 3. E-MAIL AUTOMÁTICO NO STRIPE
     async function iniciarCheckout(priceId) {
         salvarProgressoLocal();
-        const LINK_UNICA = "https://buy.stripe.com/test_bJe7sLcqhcL0g0B9T9asg00";
-        const LINK_ANUAL = "https://buy.stripe.com/test_3cI8wP0Hz9yO4hTc1hasg01"; 
+        const email = localStorage.getItem('email_verificacao') || "";
+        
+        // Adicionando o parâmetro prefilled_email ao link do Stripe
+        const LINK_UNICA = `https://buy.stripe.com/test_bJe7sLcqhcL0g0B9T9asg00?prefilled_email=${encodeURIComponent(email)}`;
+        const LINK_ANUAL = `https://buy.stripe.com/test_3cI8wP0Hz9yO4hTc1hasg01?prefilled_email=${encodeURIComponent(email)}`; 
+        
         if (priceId === 'price_1Sz1w7GEaACih56ZWyTiPBAu') window.location.href = LINK_UNICA;
         else if (priceId === 'price_1SzPP7GEaACih56ZkwV5mxN2') window.location.href = LINK_ANUAL;
     }
@@ -385,10 +407,14 @@
         btn.innerText = "AGUARDE...";
         btn.disabled = true;
 
-        // =========================================================================
-        // INSIRA SEU PROMPT ABAIXO ENTRE AS CRASES ( ` )
-        // =========================================================================
-       const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
+const pesoUser = parseFloat(d.peso);
+// Cálculos de Macros baseados no peso inserido
+const proteinaMin = (pesoUser * 1.8).toFixed(0);
+const proteinaMax = (pesoUser * 2.2).toFixed(0);
+const gorduraMin = (pesoUser * 0.8).toFixed(1);
+const gorduraMax = (pesoUser * 1.0).toFixed(1);
+
+        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
 DIRETRIZES SUPREMAS
 
@@ -408,7 +434,7 @@ ALMOÇO/JANTAR: Estrutura [Base de Carboidrato] + [Proteína] + [Legumes/Salada]
 Jantar pode ser mais leve, mas deve manter a estrutura de refeição completa.
 CEIA: REFEIÇÕES SUPER LEVES, COMO UMA FRUTA, OU FRUTA + WHEY, OU IOGURTE...
 
-CÁLCULO DA DIETA:   A PROTEINA DEVE TER O ENTRE 1.8 A 2.2g POR kg CORPORAL DA PESSOA, A GORDURA DEVE ESTAR OBRIGATÓRIAMENTE ENTRE 0.8 A 1GR POR KG CORPORAL e o Carboidrato deve complementar o Restante das calorias, seja o mais rigoroso possivel nesse critério para chegar o mais proximo da meta possivel!  Use bases científicas (TACO/TBCA), NÃO CRIE TABELAS DE MACRO NUTRIENTES FICTICIOS, UTILIZE SOMENTE MACROS REAIS DOS ALIMENTOS!.
+CÁLCULO DA DIETA:   A PROTEINA DEVE TER O ENTRE 1.8 A 2.2g POR kg CORPORAL DA PESSOA, a Gordura 1g por kg corporal e o Carboidrato deve complementar o Restante das calorias, seja o mais rigoroso possivel nesse critério para chegar o mais proximo da meta possivel!  Use bases científicas (TACO/TBCA), NÃO CRIE TABELAS DE MACRO NUTRIENTES FICTICIOS, UTILIZE SOMENTE MACROS REAIS DOS ALIMENTOS!.
 
 Alimentos permitidos: Utilize receitas e pratos somente que contenham os alimentos previamente selecionados, não crie receitas que não contenham alimentos mencionados.
 Proibido Alimentos Soltos: Nunca liste ingredientes isolados (ex: "30g de aveia"). Transforme-os em preparações (ex: "Mingau de aveia").
@@ -456,20 +482,28 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || "Erro na geração.");
 
-            // Exibir texto
             divResultado.innerText = result.dieta;
             divResultado.style.display = 'block';
 
-            // Configurar botão de download
+            // 2. ROLAR AUTOMATICAMENTE PARA BAIXO
+            divResultado.scrollIntoView({ behavior: 'smooth' });
+
             if (btnDownloadPos) {
                 btnDownloadPos.style.display = 'block';
                 btnDownloadPos.onclick = () => {
-                    if (result.pdf_url) window.open(result.pdf_url, '_blank');
-                    else baixarPDF(result.dieta);
+                    baixarPDF(result.dieta);
+                    // 4. LIMPAR APÓS BAIXAR
+                    setTimeout(() => {
+                        if(confirm("Dieta baixada com sucesso! Deseja limpar os campos para uma nova consulta?")) {
+                            limparDadosEApp();
+                        }
+                    }, 1000);
                 };
             }
 
-            if (result.pdf_url) window.open(result.pdf_url, '_blank');
+            // Baixa automático na primeira vez
+            baixarPDF(result.dieta);
+
             return true;
         } catch (e) { 
             alert("Erro: " + e.message);
@@ -481,17 +515,30 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
         }
     }
 
+    // CORREÇÃO DO PDF VAZIO + FORMATAÇÃO
     function baixarPDF(conteudo) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        const lines = doc.splitTextToSize(conteudo.replace(/[#*]/g, ''), 180);
+        
+        // Limpar caracteres especiais do prompt
+        const textoLimpo = conteudo.replace(/[#*]/g, '');
+        
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(12);
+
+        const lines = doc.splitTextToSize(textoLimpo, 180);
         let y = 20;
+        
         lines.forEach(line => {
-            if (y > 280) { doc.addPage(); y = 20; }
+            if (y > 275) { 
+                doc.addPage(); 
+                y = 20; 
+            }
             doc.text(line, 15, y);
-            y += 6;
+            y += 7;
         });
-        doc.save("Minha_Dieta.pdf");
+        
+        doc.save("Meu_Plano_Alimentar.pdf");
     }
 </script>
 </body>
