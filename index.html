@@ -462,15 +462,22 @@ Alimentos permitidos: Utilize apenas os alimentos previamente selecionados.
 Proibido Alimentos Soltos: Nunca liste ingredientes isolados. Transforme-os em preparações.
 Coerência Cultural: Respeite os hábitos brasileiros.
 
-PLANEJAMENTO ALIMENTAR ESTRUTURADO
+PLANEJAMENTO ALIMENTAR ESTRUTURADO:
 
 BLOCO 1: OPÇÕES A (PADRÃO com Arroz e Feijão)
-Gere as ${d.refeicoes} refeições. Liste apenas o nome do prato e os ingredientes com quantidades.
+Gere as ${d.refeicoes} refeições. 
+REGRAS DE FORMATO:
+- O título deve ser APENAS o nome da refeição (ex: "1. Café da Manhã", "2. Almoço"). 
+- NÃO crie nomes para os pratos (ex: NÃO escreva "Sanduíche de Lombo").
+- Liste os alimentos em tópicos com suas respectivas quantidades.
+- Se houver alimentos que não combinam no mesmo prato (ex: fruta e carne), liste-os apenas como itens separados da mesma refeição.
+
 RESUMO DE MACROS (OPÇÕES A)
 Proteinas Totais: ${proteinaAlvoG}g | Carboidratos Totais: [Soma]g | Gorduras Totais: ${gorduraAlvoG}g
 
 BLOCO 2: OPÇÕES B (VARIAÇÃO SEM Arroz e Feijão)
-Mesmas refeições e macros. No almoço e jantar, é proibido o uso de arroz e feijão.
+Mesma estrutura do Bloco 1. No almoço e jantar, é proibido o uso de arroz e feijão.
+
 RESUMO DE MACROS (OPÇÕES B)
 Proteinas Totais: ${proteinaAlvoG}g | Carboidratos Totais: [Soma]g | Gorduras Totais: ${gorduraAlvoG}g
 
@@ -567,3 +574,4 @@ RODAPÉ: "Este plano alimentar foi gerado para fins educativos. Não substitui a
 </script>
 </body>
 </html>
+
