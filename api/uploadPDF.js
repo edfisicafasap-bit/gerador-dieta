@@ -2,25 +2,26 @@ import { supabase } from './supabase.js';
 
 /**
  * Faz upload do conteúdo da dieta para o bucket 'dietas-pdf'
- * @param {string} conteudo - O texto da dieta gerado pela IA
- * @param {string} nomeArquivo - Nome do arquivo (ex: dieta-usuario.txt)
- * @returns {string} - Link assinado válido por 24h
  */
 export async function uploadPDFSupabase(conteudo, nomeArquivo) {
-  // Convertemos o texto em um Buffer (mais seguro para upload em nuvem)
+  // Convertemos o texto em um Buffer
   const fileBuffer = Buffer.from(conteudo, 'utf-8');
 
+  // AJUSTE AQUI: Mudamos de 'text/plain;charset=UTF-8' para apenas 'text/plain'
   const { error } = await supabase
     .storage
     .from('dietas-pdf')
     .upload(nomeArquivo, fileBuffer, {
-      contentType: 'text/plain;charset=UTF-8',
+      contentType: 'text/plain', // Simplificado para evitar erro 415
       upsert: true 
     });
 
-  if (error) throw error;
+  if (error) {
+    console.error('Erro no upload para o Storage:', error);
+    throw error;
+  }
 
-  // Gera o link assinado de 24 horas conforme seu código original
+  // Gera o link assinado de 24 horas
   const { data, error: signedError } = await supabase
     .storage
     .from('dietas-pdf')
