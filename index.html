@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <title>Reeducação Alimentar</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -87,7 +91,7 @@
             gap: 8px;
         }
 
-        /* ESTILO DO ÍCONE DE USUÁRIO */
+        /* AJUSTE DO ÍCONE PARA MOBILE */
         .login-shortcut {
             position: absolute;
             top: 15px;
@@ -103,6 +107,10 @@
             transition: 0.3s;
             border: 1px solid transparent;
             z-index: 100;
+        }
+        @media (max-width: 480px) {
+            .login-shortcut { top: 10px; right: 10px; padding: 6px; }
+            h2 { padding-right: 40px; margin-top: 10px; } /* Evita sobreposição do título */
         }
         .login-shortcut:hover {
             background: rgba(255, 215, 0, 0.2);
@@ -260,7 +268,7 @@
     const preparosUnificados = ["Cozido", "Assado", "Grelhado", "Refogado", "Na Airfryer", "Na frigideira", "Moído", "Desfiado", "Cozido no vapor", "Ensopado"];
 
     async function inicializarTudo() {
-        renderizarInterface();
+        renderInterface();
         recuperarDadosSalvos();
         const urlParams = new URLSearchParams(window.location.search);
         const pago = urlParams.get('pago');
@@ -275,7 +283,6 @@
         }
     }
 
-    // NOVA FUNÇÃO PARA ALTERNAR VISIBILIDADE DA BUSCA
     function alternarBuscaRapida() {
         const area = document.getElementById('area-busca-rapida');
         area.style.display = area.style.display === 'none' ? 'block' : 'none';
@@ -316,7 +323,7 @@
         }
     }
 
-    function renderizarInterface() {
+    function renderInterface() {
         const container = document.getElementById('categorias-container');
         container.innerHTML = '';
         for (let cat in estruturaAlimentos) {
