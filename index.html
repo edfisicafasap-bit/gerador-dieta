@@ -264,7 +264,8 @@
 
     async function inicializarTudo() {
         renderInterface();
-        recuperarDadosSalvos();
+        recuperarDadosSalvos(); // PRIORIDADE AGORA É URL DENTRO DESTA FUNÇÃO
+        
         const urlParams = new URLSearchParams(window.location.search);
         const pago = urlParams.get('pago');
         const tipoPlano = urlParams.get('tipo');
@@ -378,16 +379,40 @@
     }
 
     function recuperarDadosSalvos() {
-        const salvo = localStorage.getItem('rascunho_dieta');
-        if (!salvo) return;
-        const d = JSON.parse(salvo);
-        document.getElementById('peso').value = d.peso || '';
-        document.getElementById('calorias').value = d.calorias || '';
-        document.getElementById('num-refeicoes').value = d.refeicoes || '4';
-        d.alimentos?.forEach(val => {
-            const el = document.querySelector(`input[name="alimento"][value="${val}"]`);
-            if (el) el.checked = true;
-        });
+        const urlParams = new URLSearchParams(window.location.search);
+        const pesoURL = urlParams.get('peso');
+        const calURL = urlParams.get('calorias');
+        const objURL = urlParams.get('objetivo');
+        const nomeURL = urlParams.get('nome');
+
+        // Se houver dados na URL, eles mandam
+        if (pesoURL || calURL || objURL || nomeURL) {
+            if (pesoURL) document.getElementById('peso').value = pesoURL;
+            if (calURL) document.getElementById('calorias').value = calURL;
+            if (objURL) document.getElementById('objetivo').value = objURL;
+            if (nomeURL) document.getElementById('nome_usuario').value = nomeURL;
+            console.log("Dados carregados via URL");
+        } else {
+            // Caso contrário, tenta o LocalStorage
+            const salvo = localStorage.getItem('rascunho_dieta');
+            if (!salvo) return;
+            const d = JSON.parse(salvo);
+            document.getElementById('peso').value = d.peso || '';
+            document.getElementById('calorias').value = d.calorias || '';
+            document.getElementById('num-refeicoes').value = d.refeicoes || '4';
+            document.getElementById('objetivo').value = d.objetivo || 'Emagrecimento';
+            document.getElementById('nome_usuario').value = d.nome || '';
+            
+            d.alimentos?.forEach(val => {
+                const el = document.querySelector(`input[name="alimento"][value="${val}"]`);
+                if (el) el.checked = true;
+            });
+            d.preparos?.forEach(val => {
+                const el = document.querySelector(`input[name="preparo-geral"][value="${val}"]`);
+                if (el) el.checked = true;
+            });
+            console.log("Dados carregados via Rascunho Local");
+        }
     }
 
     async function verificarAcessoEPagar() {
@@ -420,10 +445,14 @@
     }
 
     async function executarGeracaoComConsumo(tipo, email, contagemAtual = 0) {
+        // Importante: Pegamos os dados atuais da tela para garantir que a dieta reflita o que o usuário preencheu/viu agora
+        salvarProgressoLocal(); 
         const dadosLocais = localStorage.getItem('rascunho_dieta');
         if (!dadosLocais) return alert("Erro ao recuperar dados.");
+        
         if (tipo === 'unica') await _supabase.from('Usuarios_Dieta').update({ creditos: 0, ultima_geracao: new Date().toISOString() }).eq('email', email);
         else await _supabase.from('Usuarios_Dieta').update({ contagem_semanal: contagemAtual + 1, ultima_geracao: new Date().toISOString() }).eq('email', email);
+        
         await gerarDieta(JSON.parse(dadosLocais)); 
     }
 
@@ -465,7 +494,6 @@
             }
         }, 2000);
 
-        // O prompt gigante original que você enviou está preservado aqui:
         let metaProt, metaGord, margemProt;
         if (d.objetivo === 'Emagrecimento') { metaProt = 2.2; metaGord = 0.8; margemProt = "85% de fontes diretas..."; }
         else if (d.objetivo === 'Hipertrofia') { metaProt = 1.8; metaGord = 1.0; margemProt = "75% de fontes diretas..."; }
@@ -490,7 +518,6 @@
             divResultado.style.display = 'block';
             divResultado.scrollIntoView({ behavior: 'smooth' });
 
-            // CORREÇÃO: Verifica se é URL real ou texto antes de abrir
             const acaoDownload = () => {
                 if (result.pdf_url && result.pdf_url.startsWith('http')) {
                     window.open(result.pdf_url, '_blank');
