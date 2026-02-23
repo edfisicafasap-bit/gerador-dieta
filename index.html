@@ -344,6 +344,15 @@
         });
     }
 
+const frasesCarregamento = [
+    "✅ PAGAMENTO CONFIRMADO!",
+    "🚀 ORGANIZANDO SUAS REFEIÇÕES...",
+    "⚖️ DISTRIBUINDO OS MACROS DIÁRIOS...",
+    "🍳 SELECIONANDO OS MELHORES PREPAROS...",
+    "📋 FINALIZANDO SEU PLANO PERSONALIZADO...",
+    "✨ QUASE PRONTO! SÓ MAIS ALGUNS SEGUNDOS..."
+];
+
     function salvarProgressoLocal(emailInput = null) {
         const dados = {
             peso: document.getElementById('peso').value,
@@ -437,6 +446,18 @@
         statusTopo.style.display = 'block';
         btn.innerText = "AGUARDE...";
         btn.disabled = true;
+
+        let fraseIndex = 0;
+        statusTopo.innerText = frasesCarregamento[fraseIndex];
+
+        const intervaloFrases = setInterval(() => {
+            if (fraseIndex < frasesCarregamento.length - 1) {
+                fraseIndex++;
+                statusTopo.innerText = frasesCarregamento[fraseIndex];
+            } else {
+                clearInterval(intervaloFrases); // Para no último item e mantém o texto
+            }
+        }, 2000); // 2 segundos entre frases
 
         let metaProt, metaGord, margemProt;
         if (d.objetivo === 'Emagrecimento') {
@@ -580,4 +601,5 @@ RODAPÉ: "Este plano alimentar foi gerado para fins educativos. Não substitui a
 </script>
 </body>
 </html>
+
 
