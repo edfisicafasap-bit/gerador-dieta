@@ -91,7 +91,6 @@
             gap: 8px;
         }
 
-        /* AJUSTE DO ÍCONE PARA MOBILE */
         .login-shortcut {
             position: absolute;
             top: 15px;
@@ -110,7 +109,7 @@
         }
         @media (max-width: 480px) {
             .login-shortcut { top: 10px; right: 10px; padding: 6px; }
-            h2 { padding-right: 40px; margin-top: 10px; } /* Evita sobreposição do título */
+            h2 { padding-right: 40px; margin-top: 10px; }
         }
         .login-shortcut:hover {
             background: rgba(255, 215, 0, 0.2);
@@ -266,50 +265,55 @@
     };
 
     const preparosUnificados = ["Cozido", "Assado", "Grelhado", "Refogado", "Na Airfryer", "Na frigideira", "Moído", "Desfiado", "Cozido no vapor", "Ensopado"];
+    const frasesCarregamento = [
+        "🚀 ORGANIZANDO SUAS REFEIÇÕES...",
+        "🍳 SELECIONANDO OS MELHORES PREPAROS...",
+        "📋 FINALIZANDO SEU PLANO PERSONALIZADO...",
+        "✨ QUASE PRONTO! SÓ MAIS ALGUNS SEGUNDOS..."
+    ];
 
-   async function inicializarTudo() {
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    // 1. Captura os dados que vieram da Calculadora (URL)
-    const pesoURL = urlParams.get('peso');
-    const calURL = urlParams.get('calorias');
-    const objURL = urlParams.get('objetivo');
-    const nomeURL = urlParams.get('nome');
+    async function inicializarTudo() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const pesoURL = urlParams.get('peso');
+        const calURL = urlParams.get('calorias');
+        const objURL = urlParams.get('objetivo');
+        const nomeURL = urlParams.get('nome');
+        const pago = urlParams.get('pago');
 
-    // 2. Alimenta os campos visíveis do App se eles existirem na URL
-    if (pesoURL) document.getElementById('peso').value = pesoURL;
-    if (calURL) document.getElementById('calorias').value = calURL;
-    if (objURL) document.getElementById('objetivo').value = objURL;
-    if (nomeURL) document.getElementById('nome_usuario').value = nomeURL;
+        renderInterface();
 
-    // 3. Renderiza a lista de alimentos primeiro (essencial para que os checkboxes existam)
-    renderInterface();
-    
-    // 4. Tenta recuperar o rascunho salvo anteriormente (LocalStorage)
-    recuperarDadosSalvos();
+        if (pago === 'true' || pesoURL || calURL) {
+            recuperarDadosSalvos();
+            if (pesoURL) document.getElementById('peso').value = pesoURL;
+            if (calURL) document.getElementById('calorias').value = calURL;
+            if (objURL) document.getElementById('objetivo').value = objURL;
+            if (nomeURL) document.getElementById('nome_usuario').value = nomeURL;
+            salvarProgressoLocal(); 
+        } else {
+            limparCamposVisualmente();
+        }
 
-    // 5. Se os dados vieram da calculadora agora, cria/atualiza o rascunho imediatamente
-    if (pesoURL || calURL) {
-        salvarProgressoLocal(); 
+        if (pago === 'true') {
+            const tipoPlano = urlParams.get('tipo');
+            const emailSalvo = localStorage.getItem('email_verificacao');
+            if (emailSalvo && tipoPlano) {
+                const statusTopo = document.getElementById('status-topo');
+                statusTopo.style.display = 'block';
+                statusTopo.innerText = "✅ PAGAMENTO CONFIRMADO! 🚀";
+                setTimeout(async () => {
+                    await ativarAcessoNoBanco(emailSalvo, tipoPlano);
+                }, 3000); 
+            }
+        }
     }
 
-    // 6. Verifica se o usuário acabou de voltar de um Pagamento (usando a mesma urlParams)
-    const pago = urlParams.get('pago');
-    const tipoPlano = urlParams.get('tipo');
-    const emailSalvo = localStorage.getItem('email_verificacao');
-
-    if (pago === 'true' && emailSalvo && tipoPlano) {
-        const statusTopo = document.getElementById('status-topo');
-        statusTopo.style.display = 'block';
-        statusTopo.innerText = "✅ PAGAMENTO CONFIRMADO! 🚀";
-        
-        setTimeout(async () => {
-            await ativarAcessoNoBanco(emailSalvo, tipoPlano);
-        }, 3000); 
+    function limparCamposVisualmente() {
+        document.getElementById('peso').value = '';
+        document.getElementById('calorias').value = '';
+        document.getElementById('num-refeicoes').value = '4';
+        document.getElementById('aceite-clausula').checked = false;
+        document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
     }
-  }
-
-inicializarTudo(); 
 
     function alternarBuscaRapida() {
         const area = document.getElementById('area-busca-rapida');
@@ -372,13 +376,6 @@ inicializarTudo();
         });
     }
 
-const frasesCarregamento = [
-    "🚀 ORGANIZANDO SUAS REFEIÇÕES...",
-    "🍳 SELECIONANDO OS MELHORES PREPAROS...",
-    "📋 FINALIZANDO SEU PLANO PERSONALIZADO...",
-    "✨ QUASE PRONTO! SÓ MAIS ALGUNS SEGUNDOS..."
-];
-
     function salvarProgressoLocal(emailInput = null) {
         const dados = {
             peso: document.getElementById('peso').value,
@@ -400,8 +397,13 @@ const frasesCarregamento = [
         document.getElementById('peso').value = d.peso || '';
         document.getElementById('calorias').value = d.calorias || '';
         document.getElementById('num-refeicoes').value = d.refeicoes || '4';
+        document.getElementById('objetivo').value = d.objetivo || 'Emagrecimento';
         d.alimentos?.forEach(val => {
             const el = document.querySelector(`input[name="alimento"][value="${val}"]`);
+            if (el) el.checked = true;
+        });
+        d.preparos?.forEach(val => {
+            const el = document.querySelector(`input[name="preparo-geral"][value="${val}"]`);
             if (el) el.checked = true;
         });
     }
@@ -481,29 +483,26 @@ const frasesCarregamento = [
                 fraseIndex++;
                 statusTopo.innerText = frasesCarregamento[fraseIndex];
             } else {
-                clearInterval(intervaloFrases); // Para no último item e mantém o texto
+                clearInterval(intervaloFrases);
             }
-        }, 2000); // 2 segundos entre frases
+        }, 2000);
 
         let metaProt, metaGord, margemProt;
         if (d.objetivo === 'Emagrecimento') {
-            metaProt = 2.2; 
-            metaGord = 0.8; 
+            metaProt = 2.2; metaGord = 0.8; 
             margemProt = "85% de fontes diretas (carnes/ovos), 15% de resíduo vegetal vindo dos carboidratos";
         } else if (d.objetivo === 'Hipertrofia') {
-            metaProt = 1.8; 
-            metaGord = 1.0; 
+            metaProt = 1.8; metaGord = 1.0; 
             margemProt = "75% de fontes diretas, 25% de resíduo vegetal vindo dos carboidratos";
         } else {
-            metaProt = 2.0; 
-            metaGord = 0.9; 
+            metaProt = 2.0; metaGord = 0.9; 
             margemProt = "80% de fontes diretas, 20% de resíduo vegetal vindo dos carboidratos";
         }
 
         const gorduraAlvoG = (pesoUser * metaGord).toFixed(1);
         const proteinaAlvoG = (pesoUser * metaProt).toFixed(0);
 
-       const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, para um paciente de ${pesoUser}kg, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
+        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, para um paciente de ${pesoUser}kg, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
 DIRETRIZES DE EQUILÍBRIO CALÓRICO (OBRIGATÓRIO):
 O plano deve seguir rigorosamente esta distribuição baseada no peso de ${pesoUser}kg:
@@ -537,10 +536,9 @@ BLOCO 1: OPÇÕES A (PADRÃO com Arroz e Feijão)
 Gere as ${d.refeicoes} refeições. 
 REGRAS DE FORMATO:
 - O título deve ser APENAS o nome da refeição (ex: "1. Café da Manhã", "2. Almoço"). 
-- NÃO crie nomes para os pratos (ex: NÃO escreva "Sanduíche de Lombo").
+- NÃO crie nomes para os pratos.
 - Liste os alimentos em tópicos com suas respectivas quantidades.
-- Se houver alimentos que não combinam no mesmo prato (ex: fruta e carne), liste-os apenas como itens separados da mesma refeição.
-- Divida a proteína em todas as refeições, mas coloque porções maiores no almoço e no jantar. 
+- Divida a proteína em todas as refeições. 
 
 RESUMO DE MACROS (OPÇÕES A)
 Proteinas Totais: ${proteinaAlvoG}g | Carboidratos Totais: [Soma]g | Gorduras Totais: ${gorduraAlvoG}g
@@ -552,7 +550,7 @@ RESUMO DE MACROS (OPÇÕES B)
 Proteinas Totais: ${proteinaAlvoG}g | Carboidratos Totais: [Soma]g | Gorduras Totais: ${gorduraAlvoG}g
 
 PROTOCOLO DE VALIDAÇÃO:
-A gordura total deve ser rigorosamente próxima de ${gorduraAlvoG}g. Não use o padrão de 70g. Use bases reais (TACO/TBCA).
+A gordura total deve ser rigorosamente próxima de ${gorduraAlvoG}g.
 
 ITENS COMPLEMENTARES:
 1. HIDRATAÇÃO: Informe a recomendação de ${(pesoUser * 0.035).toFixed(1)}L de água por dia.
@@ -585,7 +583,6 @@ RODAPÉ: "Este plano alimentar foi gerado para fins educativos. Não substitui a
                     }, 1000);
                 };
             }
-
             baixarPDF(result.dieta);
             return true;
         } catch (e) { 
@@ -616,10 +613,7 @@ RODAPÉ: "Este plano alimentar foi gerado para fins educativos. Não substitui a
 
     function limparDadosEApp() {
         localStorage.removeItem('rascunho_dieta');
-        document.getElementById('peso').value = '';
-        document.getElementById('calorias').value = '';
-        document.getElementById('aceite-clausula').checked = false;
-        document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+        limparCamposVisualmente();
         document.getElementById('resultado').style.display = 'none';
         document.getElementById('btn-download-pos-geracao').style.display = 'none';
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -627,7 +621,3 @@ RODAPÉ: "Este plano alimentar foi gerado para fins educativos. Não substitui a
 </script>
 </body>
 </html>
-
-
-
-
