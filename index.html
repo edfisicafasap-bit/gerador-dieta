@@ -263,11 +263,16 @@
     const preparosUnificados = ["Cozido", "Assado", "Grelhado", "Refogado", "Na Airfryer", "Na frigideira", "Moído", "Desfiado", "Cozido no vapor", "Ensopado"];
 
     async function inicializarTudo() {
+        // AJUSTE: Limpeza imediata de e-mail ao abrir, conforme solicitado
+        const urlParams = new URLSearchParams(window.location.search);
+        const pago = urlParams.get('pago');
+        if (pago !== 'true') {
+            localStorage.removeItem('email_verificacao');
+        }
+
         renderInterface();
         recuperarDadosSalvos();
         
-        const urlParams = new URLSearchParams(window.location.search);
-        const pago = urlParams.get('pago');
         const tipoPlano = urlParams.get('tipo');
         const emailSalvo = localStorage.getItem('email_verificacao');
 
@@ -390,6 +395,8 @@
             if (calURL) document.getElementById('calorias').value = calURL;
             if (objURL) document.getElementById('objetivo').value = objURL;
             if (nomeURL) document.getElementById('nome_usuario').value = nomeURL;
+            // AJUSTE: Forçar salvamento do link no rascunho imediatamente
+            salvarProgressoLocal();
         } else {
             const salvo = localStorage.getItem('rascunho_dieta');
             if (!salvo) return;
@@ -489,15 +496,15 @@
             }
         }, 2000);
 
-        let metaProt, metaGord, margemProt;
-        if (d.objetivo === 'Emagrecimento') { metaProt = 2.2; metaGord = 0.8; margemProt = "85% de fontes diretas..."; }
-        else if (d.objetivo === 'Hipertrofia') { metaProt = 1.8; metaGord = 1.0; margemProt = "75% de fontes diretas..."; }
-        else { metaProt = 2.0; metaGord = 0.9; margemProt = "80% de fontes diretas..."; }
+        let metaProt, metaGord;
+        if (d.objetivo === 'Emagrecimento') { metaProt = 2.2; metaGord = 0.8; }
+        else if (d.objetivo === 'Hipertrofia') { metaProt = 1.8; metaGord = 1.0; }
+        else { metaProt = 2.0; metaGord = 0.9; }
 
         const gorduraAlvoG = (pesoUser * metaGord).toFixed(1);
         const proteinaAlvoG = (pesoUser * metaProt).toFixed(0);
 
-        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real... [DEMAIS DIRETRIZES DO SEU PROMPT ORIGINAL]... Peso: ${pesoUser}kg, Gordura Alvo: ${gorduraAlvoG}g, Proteína Alvo: ${proteinaAlvoG}g.`;
+        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real... Peso: ${pesoUser}kg, Gordura Alvo: ${gorduraAlvoG}g, Proteína Alvo: ${proteinaAlvoG}g.`;
 
         try {
             const response = await fetch('/api/gerar-dieta', {
@@ -513,20 +520,22 @@
             divResultado.style.display = 'block';
             divResultado.scrollIntoView({ behavior: 'smooth' });
 
-            const acaoDownload = () => {
-                if (result.pdf_url && result.pdf_url.startsWith('http')) {
-                    window.open(result.pdf_url, '_blank');
-                } else {
-                    baixarPDF(result.dieta);
-                }
-            };
-
+            // AJUSTE 1: REMOVIDO DOWNLOAD AUTOMÁTICO
+            // AJUSTE 2: CONFIGURA O BOTÃO PARA O CLIQUE MANUAL
             if (btnDownloadPos) {
                 btnDownloadPos.style.display = 'block';
-                btnDownloadPos.onclick = acaoDownload;
+                btnDownloadPos.onclick = () => {
+                    if (result.pdf_url && result.pdf_url.startsWith('http')) {
+                        window.open(result.pdf_url, '_blank');
+                    } else {
+                        baixarPDF(result.dieta);
+                    }
+                };
             }
 
-            acaoDownload();
+            // AJUSTE 3: LIMPEZA DE DADOS OCORRE AGORA (PÓS-DISPONIBILIZAÇÃO DO BOTÃO)
+            limparDadosEApp();
+            
             return true;
         } catch (e) { 
             alert("Erro: " + e.message);
@@ -536,8 +545,6 @@
             btn.innerText = "GERAR E BAIXAR PLANO";
             btn.disabled = false;
             statusTopo.style.display = 'none';
-            // LIMPEZA AUTOMÁTICA APÓS GERAR (PARA SUMIR OS NÚMEROS DA TELA)
-            limparDadosEApp();
         }
     }
 
@@ -558,17 +565,19 @@
     }
 
     function limparDadosEApp() {
+        // AJUSTE: Limpeza total de rascunhos e e-mails para garantir nova sessão limpa
         localStorage.removeItem('rascunho_dieta');
+        localStorage.removeItem('email_verificacao'); 
+        
         document.getElementById('peso').value = '';
         document.getElementById('calorias').value = '';
         document.getElementById('nome_usuario').value = '';
+        document.getElementById('email-busca').value = ''; 
         document.getElementById('aceite-clausula').checked = false;
-        // Limpar todos os checkboxes (alimentos e preparos)
         document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
-        // Resetar selects
         document.getElementById('num-refeicoes').value = '4';
         document.getElementById('objetivo').value = 'Emagrecimento';
-        // Não resetamos o divResultado aqui para o usuário poder ler o que foi gerado
+        
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 </script>
