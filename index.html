@@ -39,7 +39,7 @@
 
         .categoria-pai { color: #FFD700; font-size: 15px; font-weight: bold; margin: 25px 0 10px 0; padding-left: 10px; text-transform: uppercase; border-left: 3px solid #FFD700; }
         details { background: #0a0a0a; border: 1px solid #222; border-radius: 8px; margin-bottom: 6px; overflow: hidden; }
-        summary { padding: 12px; cursor: pointer; color: #fff; font-size: 13px; text-transform: uppercase; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+        summary { padding: 12px; cursor: pointer; color: #fff; font-weight: normal; font-size: 13px; text-transform: uppercase; list-style: none; display: flex; justify-content: space-between; align-items: center; }
         summary::after { content: '▼'; font-size: 10px; color: #FFD700; transition: 0.3s; }
         details[open] summary::after { transform: rotate(180deg); }
         .grid-alimentos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 12px 12px 12px; }
@@ -54,7 +54,7 @@
         .login-shortcut { position: absolute; top: 15px; right: 20px; cursor: pointer; color: #FFD700; background: rgba(255, 215, 0, 0.1); padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 100; }
     </style>
 </head>
-<body onload="inicializarTudo()">
+<body onload="inicializarTudo()" autocomplete="off">
 
 <a href="https://wa.me/5522992587653" target="_blank" class="btn-suporte">SUPORTE</a>
 
@@ -63,7 +63,7 @@
         <h2 style="font-size: 24px; color: #FFD700;">LIBERAR ACESSO! 🚀</h2>
         <button id="btn-unica" style="width: 100%; padding: 12px; margin-bottom: 10px;" onclick="iniciarCheckout('price_1Sz1w7GEaACih56ZWyTiPBAu')">🥗 DIETA ÚNICA - R$ 9,90</button>
         <button id="btn-anual" style="width: 100%; padding: 12px; border: 2.5px solid #FFD700;" onclick="iniciarCheckout('price_1SzPP7GEaACih56ZkwV5mxN2')">📅 ACESSO ANUAL - R$ 29,90</button>
-        <p style="margin-top: 30px; font-size: 12px; color: #888; text-decoration: underline;" onclick="fecharModal()">← Voltar e editar</p>
+        <p style="margin-top: 30px; font-size: 12px; color: #888; text-decoration: underline; cursor:pointer;" onclick="fecharModal()">← Voltar e editar</p>
     </div>
 </div>
 
@@ -82,10 +82,10 @@
         </div>
 
         <label>Seu Peso Atual (kg)</label>
-        <input type="number" id="peso" placeholder="Ex: 80">
+        <input type="number" id="peso" placeholder="Ex: 80" autocomplete="off">
         
         <label>Meta de Calorias Diárias</label>
-        <input type="number" id="calorias" placeholder="Ex: 2100">
+        <input type="number" id="calorias" placeholder="Ex: 2100" autocomplete="off">
         
         <label>Número de Refeições</label>
         <select id="num-refeicoes">
@@ -111,9 +111,13 @@
             <div id="preparos-unificados-container" class="grid-alimentos"></div>
         </div>
 
-        <label style="display: flex; align-items: center; font-size: 12px;">
-            <input type="checkbox" id="aceite-clausula" style="width: 20px; margin-right: 10px;"> Confirmo que este plano é educativo e não substitui médico.
-        </label>
+        <div style="margin-top: 20px;">
+            <label style="display: flex; align-items: center; font-size: 12px; font-weight: normal;">
+                <input type="checkbox" id="aceite-clausula" style="width: 20px; margin-right: 10px;"> Confirmo estar ciente de que este plano é educativo e não substitui médico.
+            </label>
+        </div>
+
+        <div id="status-topo">PROCESSANDO...</div>
 
         <button id="btn-gerar" onclick="verificarAcessoEPagar()">GERAR E BAIXAR PLANO</button>
         <button id="btn-download-pos-geracao" style="display:none;">📥 BAIXAR MEU PLANO EM PDF</button>
@@ -155,7 +159,7 @@
     };
 
     const preparosUnificados = ["Cozido", "Assado", "Grelhado", "Refogado", "Na Airfryer", "Na frigideira", "Moído", "Desfiado", "Cozido no vapor", "Ensopado"];
-    const frasesCarregamento = ["🚀 ORGANIZANDO SUAS REFEIÇÕES...", "🍳 SELECIONANDO PREPAROS...", "📋 FINALIZANDO PLANO...", "✨ QUASE PRONTO..."];
+    const frasesCarregamento = ["🚀 ORGANIZANDO SUAS REFEIÇÕES...", "🍳 SELECIONANDO PREPAROS...", "📋 FINALIZANDO PLANO...", "✨ QUASE PRONTO!"];
 
     async function inicializarTudo() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -206,8 +210,13 @@
         document.getElementById('calorias').value = '';
         document.getElementById('num-refeicoes').value = '4';
         document.getElementById('aceite-clausula').checked = false;
-        // CORREÇÃO 1: Limpa todos os checkboxes de alimentos e preparos
-        document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+        
+        // Limpeza profunda de checkboxes para evitar persistência visual do browser
+        document.querySelectorAll('input[type="checkbox"]').forEach(c => {
+            c.checked = false;
+            c.removeAttribute('checked');
+        });
+        localStorage.removeItem('rascunho_dieta');
     }
 
     function salvarProgressoLocal(emailInput = null) {
@@ -243,7 +252,7 @@
     }
 
     async function verificarAcessoEPagar() {
-        // CORREÇÃO 2: Força o salvamento dos dados da tela no rascunho ANTES de prosseguir
+        // Salva os dados ATUAIS da tela antes de verificar acesso
         salvarProgressoLocal();
 
         const alimentos = Array.from(document.querySelectorAll('input[name="alimento"]:checked'));
@@ -264,7 +273,7 @@
 
         if (user.tipo_plano === 'unica') {
             if (user.creditos <= 0) {
-                alert("Créditos esgotados!");
+                alert("Você já utilizou sua geração única!");
                 document.getElementById('payment-overlay').style.display = 'flex';
                 return;
             }
@@ -275,9 +284,8 @@
     }
 
     async function executarGeracaoComConsumo(tipo, email, contagemAtual = 0) {
-        // Pega o rascunho MAIS RECENTE que acabamos de salvar na função anterior
         const dadosLocais = localStorage.getItem('rascunho_dieta');
-        if (!dadosLocais) return alert("Erro ao recuperar dados.");
+        if (!dadosLocais) return alert("Erro ao recuperar rascunho.");
         
         if (tipo === 'unica') await _supabase.from('Usuarios_Dieta').update({ creditos: 0, ultima_geracao: new Date().toISOString() }).eq('email', email);
         else await _supabase.from('Usuarios_Dieta').update({ contagem_semanal: contagemAtual + 1, ultima_geracao: new Date().toISOString() }).eq('email', email);
@@ -294,10 +302,19 @@
         btn.innerText = "AGUARDE...";
         btn.disabled = true;
 
-        const gorduraAlvoG = (parseFloat(d.peso) * (d.objetivo === 'Emagrecimento' ? 0.8 : 1.0)).toFixed(1);
-        const proteinaAlvoG = (parseFloat(d.peso) * (d.objetivo === 'Emagrecimento' ? 2.2 : 1.8)).toFixed(0);
+        let fraseIdx = 0;
+        const intv = setInterval(() => {
+            statusTopo.innerText = frasesCarregamento[fraseIdx % frasesCarregamento.length];
+            fraseIdx++;
+        }, 2000);
 
-        const promptFinal = `Nutricionista Prático: Gere plano de ${d.calorias}kcal para ${d.objetivo}, peso ${d.peso}kg, ${d.refeicoes} refeições. Alimentos: ${d.alimentos.join(', ')}. Preparos: ${d.preparos.join(', ')}. Gorduras: ${gorduraAlvoG}g, Proteínas: ${proteinaAlvoG}g.`;
+        const pesoUser = parseFloat(d.peso);
+        const metaProt = d.objetivo === 'Emagrecimento' ? 2.2 : (d.objetivo === 'Hipertrofia' ? 1.8 : 2.0);
+        const metaGord = d.objetivo === 'Emagrecimento' ? 0.8 : (d.objetivo === 'Hipertrofia' ? 1.0 : 0.9);
+        const protAlvo = (pesoUser * metaProt).toFixed(0);
+        const gordAlvo = (pesoUser * metaGord).toFixed(1);
+
+        const promptFinal = `Atue como um Nutricionista Prático. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, paciente de ${d.peso}kg, em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos: ${d.preparos.join(', ')}. Gorduras: ${gordAlvo}g. Proteínas: ${protAlvo}g. Calcule carboidratos por exclusão. Gere Bloco 1 (com arroz/feijão) e Bloco 2 (sem arroz/feijão).`;
 
         try {
             const response = await fetch('/api/gerar-dieta', {
@@ -307,12 +324,21 @@
             });
 
             const result = await response.json();
+            if (!response.ok) throw new Error(result.error);
+
+            clearInterval(intv);
             divResultado.innerText = result.dieta;
             divResultado.style.display = 'block';
+            divResultado.scrollIntoView({ behavior: 'smooth' });
             baixarPDF(result.dieta);
+            
+            document.getElementById('btn-download-pos-geracao').style.display = 'block';
+            document.getElementById('btn-download-pos-geracao').onclick = () => baixarPDF(result.dieta);
+
         } catch (e) { 
             alert("Erro: " + e.message);
         } finally {
+            clearInterval(intv);
             btn.innerText = "GERAR E BAIXAR PLANO";
             btn.disabled = false;
             statusTopo.style.display = 'none';
@@ -322,20 +348,25 @@
     function baixarPDF(conteudo) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        const lines = doc.splitTextToSize(conteudo.replace(/[#*]/g, ''), 180);
+        const textoLimpo = conteudo.replace(/[#*]/g, '');
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(11);
+        const lines = doc.splitTextToSize(textoLimpo, 180);
         let y = 20;
         lines.forEach(line => {
             if (y > 275) { doc.addPage(); y = 20; }
             doc.text(line, 15, y);
-            y += 7;
+            y += 6;
         });
         doc.save("Meu_Plano_Alimentar.pdf");
     }
 
-    function limparDadosEApp() {
-        localStorage.removeItem('rascunho_dieta');
-        limparCamposVisualmente();
-        document.getElementById('resultado').style.display = 'none';
+    async function ativarAcessoNoBanco(email, tipo) {
+        await _supabase.from('Usuarios_Dieta').update({ 
+            pago: true, 
+            tipo_plano: tipo, 
+            creditos: (tipo === 'unica' ? 1 : 0) 
+        }).eq('email', email);
     }
 
     function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
@@ -343,7 +374,7 @@
         const el = document.getElementById('area-busca-rapida');
         el.style.display = el.style.display === 'none' ? 'block' : 'none';
     }
-    async function iniciarCheckout(priceId) {
+    async function iniciarCheckout(pId) {
         salvarProgressoLocal();
         const email = localStorage.getItem('email_verificacao') || "";
         window.location.href = `https://buy.stripe.com/test_bJe7sLcqhcL0g0B9T9asg00?prefilled_email=${encodeURIComponent(email)}`;
