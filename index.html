@@ -264,7 +264,7 @@
 
     async function inicializarTudo() {
         renderInterface();
-        recuperarDadosSalvos(); // PRIORIDADE AGORA É URL DENTRO DESTA FUNÇÃO
+        recuperarDadosSalvos();
         
         const urlParams = new URLSearchParams(window.location.search);
         const pago = urlParams.get('pago');
@@ -385,15 +385,12 @@
         const objURL = urlParams.get('objetivo');
         const nomeURL = urlParams.get('nome');
 
-        // Se houver dados na URL, eles mandam
         if (pesoURL || calURL || objURL || nomeURL) {
             if (pesoURL) document.getElementById('peso').value = pesoURL;
             if (calURL) document.getElementById('calorias').value = calURL;
             if (objURL) document.getElementById('objetivo').value = objURL;
             if (nomeURL) document.getElementById('nome_usuario').value = nomeURL;
-            console.log("Dados carregados via URL");
         } else {
-            // Caso contrário, tenta o LocalStorage
             const salvo = localStorage.getItem('rascunho_dieta');
             if (!salvo) return;
             const d = JSON.parse(salvo);
@@ -411,7 +408,6 @@
                 const el = document.querySelector(`input[name="preparo-geral"][value="${val}"]`);
                 if (el) el.checked = true;
             });
-            console.log("Dados carregados via Rascunho Local");
         }
     }
 
@@ -445,7 +441,6 @@
     }
 
     async function executarGeracaoComConsumo(tipo, email, contagemAtual = 0) {
-        // Importante: Pegamos os dados atuais da tela para garantir que a dieta reflita o que o usuário preencheu/viu agora
         salvarProgressoLocal(); 
         const dadosLocais = localStorage.getItem('rascunho_dieta');
         if (!dadosLocais) return alert("Erro ao recuperar dados.");
@@ -541,6 +536,8 @@
             btn.innerText = "GERAR E BAIXAR PLANO";
             btn.disabled = false;
             statusTopo.style.display = 'none';
+            // LIMPEZA AUTOMÁTICA APÓS GERAR (PARA SUMIR OS NÚMEROS DA TELA)
+            limparDadosEApp();
         }
     }
 
@@ -564,10 +561,14 @@
         localStorage.removeItem('rascunho_dieta');
         document.getElementById('peso').value = '';
         document.getElementById('calorias').value = '';
+        document.getElementById('nome_usuario').value = '';
         document.getElementById('aceite-clausula').checked = false;
+        // Limpar todos os checkboxes (alimentos e preparos)
         document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
-        document.getElementById('resultado').style.display = 'none';
-        document.getElementById('btn-download-pos-geracao').style.display = 'none';
+        // Resetar selects
+        document.getElementById('num-refeicoes').value = '4';
+        document.getElementById('objetivo').value = 'Emagrecimento';
+        // Não resetamos o divResultado aqui para o usuário poder ler o que foi gerado
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 </script>
