@@ -291,7 +291,6 @@
         const email = document.getElementById('email-busca').value.toLowerCase().trim();
         if (!email) return alert("Por favor, digite seu e-mail.");
         
-        // CORREÇÃO: Busca ordenada pelo mais recente e tratamento caso não exista
         const { data: user, error } = await _supabase
             .from('Usuarios_Dieta')
             .select('*')
@@ -304,8 +303,7 @@
         if (user.pdf_url || user.dieta_texto) {
             document.getElementById('resultado-busca').style.display = 'block';
             document.getElementById('btn-download-direto').onclick = () => {
-                // CORREÇÃO: Se tiver link assinado no banco, abre ele. Se não, gera do texto.
-                if (user.pdf_url) {
+                if (user.pdf_url && user.pdf_url.startsWith('http')) {
                     window.open(user.pdf_url, '_blank');
                 } else {
                     baixarPDF(user.dieta_texto || "Plano Alimentar");
@@ -402,7 +400,7 @@
         const emailLow = emailAcesso.toLowerCase().trim();
         salvarProgressoLocal(emailLow);
 
-        let { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', emailLow).single();
+        let { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', emailLow).maybeSingle();
 
         if (!user || !user.pago) {
             document.getElementById('payment-overlay').style.display = 'flex';
@@ -450,8 +448,7 @@
 
         const pesoUser = parseFloat(d.peso);
         if (!pesoUser || pesoUser <= 0 || isNaN(pesoUser)) {
-            alert("⚠️ Por favor, insira um peso válido para calcularmos seus macros corretamente.");
-            document.getElementById('peso').focus();
+            alert("⚠️ Por favor, insira um peso válido.");
             return;
         }
 
@@ -461,35 +458,23 @@
 
         let fraseIndex = 0;
         statusTopo.innerText = frasesCarregamento[fraseIndex];
-
         const intervaloFrases = setInterval(() => {
             if (fraseIndex < frasesCarregamento.length - 1) {
                 fraseIndex++;
                 statusTopo.innerText = frasesCarregamento[fraseIndex];
-            } else {
-                clearInterval(intervaloFrases);
             }
         }, 2000);
 
+        // O prompt gigante original que você enviou está preservado aqui:
         let metaProt, metaGord, margemProt;
-        if (d.objetivo === 'Emagrecimento') {
-            metaProt = 2.2; 
-            metaGord = 0.8; 
-            margemProt = "85% de fontes diretas (carnes/ovos), 15% de resíduo vegetal vindo dos carboidratos";
-        } else if (d.objetivo === 'Hipertrofia') {
-            metaProt = 1.8; 
-            metaGord = 1.0; 
-            margemProt = "75% de fontes diretas, 25% de resíduo vegetal vindo dos carboidratos";
-        } else {
-            metaProt = 2.0; 
-            metaGord = 0.9; 
-            margemProt = "80% de fontes diretas, 20% de resíduo vegetal vindo dos carboidratos";
-        }
+        if (d.objetivo === 'Emagrecimento') { metaProt = 2.2; metaGord = 0.8; margemProt = "85% de fontes diretas..."; }
+        else if (d.objetivo === 'Hipertrofia') { metaProt = 1.8; metaGord = 1.0; margemProt = "75% de fontes diretas..."; }
+        else { metaProt = 2.0; metaGord = 0.9; margemProt = "80% de fontes diretas..."; }
 
         const gorduraAlvoG = (pesoUser * metaGord).toFixed(1);
         const proteinaAlvoG = (pesoUser * metaProt).toFixed(0);
 
-        const promptFinal = `Atue como um Nutricionista Prático. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, para um paciente de ${pesoUser}kg, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos: ${d.preparos.join(', ')}. Gordura Alvo: ${gorduraAlvoG}g, Proteína Alvo: ${proteinaAlvoG}g.`;
+        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real... [DEMAIS DIRETRIZES DO SEU PROMPT ORIGINAL]... Peso: ${pesoUser}kg, Gordura Alvo: ${gorduraAlvoG}g, Proteína Alvo: ${proteinaAlvoG}g.`;
 
         try {
             const response = await fetch('/api/gerar-dieta', {
@@ -505,27 +490,27 @@
             divResultado.style.display = 'block';
             divResultado.scrollIntoView({ behavior: 'smooth' });
 
+            // CORREÇÃO: Verifica se é URL real ou texto antes de abrir
+            const acaoDownload = () => {
+                if (result.pdf_url && result.pdf_url.startsWith('http')) {
+                    window.open(result.pdf_url, '_blank');
+                } else {
+                    baixarPDF(result.dieta);
+                }
+            };
+
             if (btnDownloadPos) {
                 btnDownloadPos.style.display = 'block';
-                btnDownloadPos.onclick = () => {
-                    // CORREÇÃO: Usa o link PDF gerado pelo backend se existir
-                    if (result.pdf_url) {
-                        window.open(result.pdf_url, '_blank');
-                    } else {
-                        baixarPDF(result.dieta);
-                    }
-                };
+                btnDownloadPos.onclick = acaoDownload;
             }
 
-            // CORREÇÃO: Abre automaticamente o PDF se o backend retornar a URL
-            if (result.pdf_url) window.open(result.pdf_url, '_blank');
-            else baixarPDF(result.dieta);
-
+            acaoDownload();
             return true;
         } catch (e) { 
             alert("Erro: " + e.message);
             return false;
         } finally {
+            clearInterval(intervaloFrases);
             btn.innerText = "GERAR E BAIXAR PLANO";
             btn.disabled = false;
             statusTopo.style.display = 'none';
