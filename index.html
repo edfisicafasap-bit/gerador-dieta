@@ -267,44 +267,47 @@
 
     const preparosUnificados = ["Cozido", "Assado", "Grelhado", "Refogado", "Na Airfryer", "Na frigideira", "Moído", "Desfiado", "Cozido no vapor", "Ensopado"];
 
-    async function inicializarTudo() {
-            const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('peso') || urlParams.has('calorias')) {
-            // 1. Captura os dados que vieram no link
-            const pesoURL = urlParams.get('peso');
-            const calURL = urlParams.get('calorias');
-            const objURL = urlParams.get('objetivo');
-            const nomeURL = urlParams.get('nome');
+   async function inicializarTudo() {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // 1. Captura os dados que vieram da Calculadora (URL)
+    const pesoURL = urlParams.get('peso');
+    const calURL = urlParams.get('calorias');
+    const objURL = urlParams.get('objetivo');
+    const nomeURL = urlParams.get('nome');
 
-            // 2. Alimenta os campos visíveis do App
-            if (pesoURL) document.getElementById('peso').value = pesoURL;
-            if (calURL) document.getElementById('calorias').value = calURL;
-            if (objURL) document.getElementById('objetivo').value = objURL;
-            if (nomeURL) document.getElementById('nome_usuario').value = nomeURL;
+    // 2. Alimenta os campos visíveis do App se eles existirem na URL
+    if (pesoURL) document.getElementById('peso').value = pesoURL;
+    if (calURL) document.getElementById('calorias').value = calURL;
+    if (objURL) document.getElementById('objetivo').value = objURL;
+    if (nomeURL) document.getElementById('nome_usuario').value = nomeURL;
 
-            // 3. Salva no LocalStorage imediatamente para criar o rascunho
-            // Isso evita que o App tente ler uma "mala vazia" depois do pagamento
-            salvarProgressoLocal(); 
-        }
+    // 3. Renderiza a lista de alimentos primeiro (essencial para que os checkboxes existam)
+    renderInterface();
+    
+    // 4. Tenta recuperar o rascunho salvo anteriormente (LocalStorage)
+    recuperarDadosSalvos();
 
-renderInterface();
-        recuperarDadosSalvos();
-        const urlParams = new URLSearchParams(window.location.search);
-        const pago = urlParams.get('pago');
-        const tipoPlano = urlParams.get('tipo');
-        const emailSalvo = localStorage.getItem('email_verificacao');
+    // 5. Se os dados vieram da calculadora agora, cria/atualiza o rascunho imediatamente
+    if (pesoURL || calURL) {
+        salvarProgressoLocal(); 
+    }
 
-     if (pago === 'true' && emailSalvo && tipoPlano) {
-            const statusTopo = document.getElementById('status-topo');
-            statusTopo.style.display = 'block';
-            statusTopo.innerText = "✅ PAGAMENTO CONFIRMADO! 🚀";
-            
-            // Espera 4 segundos exibindo a frase de sucesso antes de prosseguir
-            setTimeout(async () => {
-                await ativarAcessoNoBanco(emailSalvo, tipoPlano);
-            }, 4000); 
-        }
-}
+    // 6. Verifica se o usuário acabou de voltar de um Pagamento (usando a mesma urlParams)
+    const pago = urlParams.get('pago');
+    const tipoPlano = urlParams.get('tipo');
+    const emailSalvo = localStorage.getItem('email_verificacao');
+
+    if (pago === 'true' && emailSalvo && tipoPlano) {
+        const statusTopo = document.getElementById('status-topo');
+        statusTopo.style.display = 'block';
+        statusTopo.innerText = "✅ PAGAMENTO CONFIRMADO! 🚀";
+        
+        setTimeout(async () => {
+            await ativarAcessoNoBanco(emailSalvo, tipoPlano);
+        }, 3000); 
+    }
+  }
 
     function alternarBuscaRapida() {
         const area = document.getElementById('area-busca-rapida');
@@ -622,6 +625,7 @@ RODAPÉ: "Este plano alimentar foi gerado para fins educativos. Não substitui a
 </script>
 </body>
 </html>
+
 
 
 
