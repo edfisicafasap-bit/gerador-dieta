@@ -3,87 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Dieta - Debug Mode</title>
+    <title>Sistema de Dieta - Teste de Integração</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        body { background:#000; margin:0; font-family:Arial, sans-serif; color: #fff; padding-bottom: 30px; }
-        .container { max-width:600px; margin:auto; padding:20px; background:#000; }
-        h2 { color:#FFD700; text-align: center; font-size: 19px; text-transform: uppercase; }
-        label { display:block; margin-top:18px; font-size:14px; font-weight: bold; color: #eee; }
-        input, select { width:100%; padding:12px; margin-top:6px; border-radius:6px; border:1px solid #333; background: #111; color: #fff; box-sizing: border-box; }
-        
-        #btn-gerar { width:100%; margin-top:30px; padding:18px; background:#FFD700; border:none; border-radius:8px; font-size:16px; font-weight:bold; cursor: pointer; color:#000; }
-        
-        #status-topo { display: none; background: #FFD700; color: #000; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 20px; }
-        
-        /* Modal Pagamento */
-        #payment-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; }
-        .payment-card { background: #1e1e1e; padding: 30px; border-radius: 15px; text-align: center; max-width: 350px; border: 1px solid #333; }
-
-        .categoria-pai { color: #FFD700; font-size: 15px; font-weight: bold; margin: 25px 0 10px 0; border-left: 3px solid #FFD700; padding-left: 10px; }
-        details { background: #0a0a0a; border: 1px solid #222; border-radius: 8px; margin-bottom: 6px; }
-        summary { padding: 12px; cursor: pointer; font-size: 13px; }
-        .grid-alimentos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
-        .item-alimento { display: flex; align-items: center; font-size: 12px; color: #bbb; }
-        .item-alimento input { width: auto; margin-right: 8px; }
-        
-        #resultado { 
-            margin-top: 30px; 
-            white-space: pre-wrap; 
-            background: #111; 
-            padding: 20px; 
-            border-radius: 8px; 
-            display: none; 
-            border: 2px solid #ff0000; /* Vermelho para destaque de teste */
-            color: #00ff00; /* Verde para o texto do prompt */
-            font-family: monospace;
-        }
+        body { background:#000; color: #fff; font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 600px; margin: auto; }
+        h2 { color: #FFD700; text-align: center; }
+        label { display: block; margin-top: 15px; color: #FFD700; font-weight: bold; }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; border-radius: 6px; border: 1px solid #333; background: #111; color: #fff; box-sizing: border-box; }
+        #btn-gerar { width: 100%; margin-top: 25px; padding: 18px; background: #FFD700; border: none; font-weight: bold; cursor: pointer; border-radius: 8px; }
+        #resultado-debug { display: none; margin-top: 20px; padding: 15px; background: #111; border: 2px solid #ff0000; color: #00ff00; white-space: pre-wrap; font-family: monospace; }
+        .item-alimento { display: block; margin: 5px 0; font-size: 14px; }
+        .item-alimento input { width: auto; margin-right: 10px; }
+        #payment-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; flex-direction: column; justify-content: center; align-items: center; }
     </style>
 </head>
 <body onload="inicializarTudo()">
 
 <div id="payment-overlay">
-    <div class="payment-card">
-        <h2 style="color: #FFD700;">LIBERAR ACESSO!</h2>
-        <button onclick="iniciarCheckout('unica')" style="width:100%; padding:15px; margin-bottom:10px; font-weight:bold;">🥗 DIETA ÚNICA - R$ 9,90</button>
-        <button onclick="iniciarCheckout('anual')" style="width:100%; padding:15px; font-weight:bold; background:#FFD700;">📅 ACESSO ANUAL - R$ 29,90</button>
-        <p onclick="fecharModal()" style="text-decoration:underline; cursor:pointer; margin-top:15px; font-size:12px;">Voltar</p>
+    <div style="background: #222; padding: 20px; border-radius: 10px; text-align: center;">
+        <h3>PAGAMENTO NECESSÁRIO</h3>
+        <button onclick="iniciarCheckout('unica')">Pagar R$ 9,90</button>
+        <p onclick="document.getElementById('payment-overlay').style.display='none'">Cancelar</p>
     </div>
 </div>
 
 <div class="container">
-    <h2>🍎 Gerador de Dieta</h2>
-    <div id="status-topo">PROCESSANDO...</div>
-
-    <label>Seu Nome</label>
-    <input type="text" id="nome_usuario" placeholder="Ex: João">
-
-    <label>Seu Peso Atual (kg)</label>
-    <input type="number" id="peso" placeholder="Ex: 80">
+    <h2>🍎 Validador de Dados</h2>
     
-    <label>Meta de Calorias Diárias</label>
-    <input type="number" id="calorias" placeholder="Ex: 2100">
-    
-    <label>Número de Refeições</label>
-    <select id="num-refeicoes">
-        <option value="4">4 Refeições</option>
-        <option value="5">5 Refeições</option>
-        <option value="6">6 Refeições</option>
-    </select>
+    <label>Nome:</label>
+    <input type="text" id="nome_usuario">
 
-    <label>Objetivo</label>
+    <label>Peso (kg):</label>
+    <input type="number" id="peso">
+    
+    <label>Calorias Alvo:</label>
+    <input type="number" id="calorias">
+    
+    <label>Objetivo:</label>
     <select id="objetivo">
         <option value="Emagrecimento">Emagrecimento</option>
         <option value="Hipertrofia">Hipertrofia</option>
-        <option value="Definição">Definição</option>
     </select>
 
-    <div id="categorias-container"></div>
+    <div id="alimentos-box" style="margin-top: 20px; border: 1px solid #333; padding: 10px;">
+        <p style="color: #FFD700; font-weight: bold;">Selecione alguns alimentos para o teste:</p>
+        <label class="item-alimento"><input type="checkbox" name="alimento" value="Frango"> Frango</label>
+        <label class="item-alimento"><input type="checkbox" name="alimento" value="Arroz"> Arroz</label>
+        <label class="item-alimento"><input type="checkbox" name="alimento" value="Ovos"> Ovos</label>
+        <label class="item-alimento"><input type="checkbox" name="alimento" value="Banana"> Banana</label>
+    </div>
 
-    <button id="btn-gerar" onclick="verificarAcessoEPagar()">GERAR PROMPT DE TESTE</button>
+    <button id="btn-gerar" onclick="verificarAcessoEPagar()">GERAR E VER PROMPT</button>
 
-    <div id="resultado"></div>
+    <div id="resultado-debug"></div>
 </div>
 
 <script>
@@ -91,116 +64,77 @@
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cXFuZ3Nrcmp6aHhic2Fja3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NTI3NzksImV4cCI6MjA4NTUyODc3OX0.B90q1Jv-vodVIV_dLFUCOekyshrv3HekVpPugpPaHRI';
     const _supabase = supabase.createClient(S_URL, S_KEY);
 
-    const alimentosData = {
-        "PROTEÍNAS": { "Carnes": ["Frango", "Boi", "Porco", "Ovos", "Peixe"] },
-        "CARBOIDRATOS": { "Grãos": ["Arroz", "Feijão", "Macarrão", "Cuscuz", "Batata", "Mandioca"] }
-    };
+    // FUNÇÃO QUE PEGA DADOS DA URL (SUA FUNÇÃO ORIGINAL)
+    function capturarDadosDaURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('peso')) document.getElementById('peso').value = urlParams.get('peso');
+        if (urlParams.has('calorias')) document.getElementById('calorias').value = urlParams.get('calorias');
+        if (urlParams.has('nome')) document.getElementById('nome_usuario').value = urlParams.get('nome');
+        if (urlParams.has('objetivo')) document.getElementById('objetivo').value = urlParams.get('objetivo');
+    }
 
-    // 1. FUNÇÃO SNAPSHOT: Captura TUDO da tela agora
+    // FUNÇÃO SNAPSHOT (PEGA O QUE ESTÁ NA TELA AGORA)
     function tirarSnapshot() {
         const dados = {
             nome: document.getElementById('nome_usuario').value,
             peso: document.getElementById('peso').value,
             calorias: document.getElementById('calorias').value,
-            refeicoes: document.getElementById('num-refeicoes').value,
             objetivo: document.getElementById('objetivo').value,
-            alimentos: Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value),
-            timestamp: new Date().getTime()
+            alimentos: Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value)
         };
-        // Salva no LocalStorage para não perder no redirecionamento do Stripe
-        localStorage.setItem('ultimo_snapshot', JSON.stringify(dados));
+        localStorage.setItem('snapshot_teste', JSON.stringify(dados));
         return dados;
     }
 
     async function inicializarTudo() {
-        renderInterface();
+        capturarDadosDaURL(); // 1. Preenche com o que veio do outro site
         
         const urlParams = new URLSearchParams(window.location.search);
-        const pago = urlParams.get('pago');
-        const email = localStorage.getItem('email_verificacao');
-
-        if (pago === 'true' && email) {
-            // Se voltou do pagamento, recupera o snapshot salvo ANTES de ir pro Stripe
-            const snapshotSalvo = JSON.parse(localStorage.getItem('ultimo_snapshot'));
-            if (snapshotSalvo) {
-                // Preenche a tela de volta com o que estava antes (para o usuário ver)
-                document.getElementById('nome_usuario').value = snapshotSalvo.nome;
-                document.getElementById('peso').value = snapshotSalvo.peso;
-                document.getElementById('calorias').value = snapshotSalvo.calorias;
-                
-                // Executa a "Geração" (que agora é o teste do prompt)
-                exibirPromptTeste(snapshotSalvo);
-            }
-        }
-    }
-
-    function renderInterface() {
-        const container = document.getElementById('categorias-container');
-        for (let cat in alimentosData) {
-            let html = `<div class="categoria-pai">${cat}</div>`;
-            for (let sub in alimentosData[cat]) {
-                html += `<details open><summary>${sub}</summary><div class="grid-alimentos">`;
-                alimentosData[cat][sub].forEach(item => {
-                    html += `<label class="item-alimento"><input type="checkbox" name="alimento" value="${item}"> ${item}</label>`;
-                });
-                html += `</div></details>`;
-            }
-            container.innerHTML += html;
+        if (urlParams.get('pago') === 'true') {
+            const salvo = JSON.parse(localStorage.getItem('snapshot_teste'));
+            if (salvo) exibirPromptFinal(salvo);
         }
     }
 
     async function verificarAcessoEPagar() {
-        const dados = tirarSnapshot(); // Captura e salva no LocalStorage
+        const dados = tirarSnapshot(); // Salva o que está na tela (seja da URL ou editado)
         
-        if (!dados.peso || !dados.calorias) return alert("Preencha peso e calorias!");
-
-        const email = prompt("Seu e-mail:");
-        if (!email) return;
+        const email = prompt("Confirme seu e-mail para gerar:");
+        if(!email) return;
         localStorage.setItem('email_verificacao', email);
 
-        let { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', email).maybeSingle();
+        let { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', email.toLowerCase().trim()).maybeSingle();
 
         if (!user || !user.pago) {
             document.getElementById('payment-overlay').style.display = 'flex';
         } else {
-            exibirPromptTeste(dados);
+            exibirPromptFinal(dados);
         }
     }
 
-    // A FUNÇÃO QUE VOCÊ PEDIU: MOSTRAR O PROMPT EM VEZ DE GERAR
-    function exibirPromptTeste(d) {
-        const divResultado = document.getElementById('resultado');
-        
-        const promptMontado = `
---- PROMPT QUE SERIA ENVIADO PARA IA ---
-USUÁRIO: ${d.nome}
-PESO ATUAL: ${d.peso} kg
-META CALÓRICA: ${d.calorias} kcal
-REFEIÇÕES: ${d.refeicoes}
+    function exibirPromptFinal(d) {
+        const debugBox = document.getElementById('resultado-debug');
+        const promptTexto = `
+--- CONTEÚDO ENVIADO PARA A IA ---
+NOME: ${d.nome || 'Vazio'}
+PESO CAPTURADO: ${d.peso} kg
+CALORIAS CAPTURADAS: ${d.calorias} kcal
 OBJETIVO: ${d.objetivo}
-LISTA DE ALIMENTOS: ${d.alimentos.join(', ')}
+ALIMENTOS QUE A IA VAI USAR: ${d.alimentos.join(', ') || 'NENHUM SELECIONADO'}
 
-COMANDO: "Atue como nutricionista e monte uma dieta de ${d.calorias} kcal 
-usando apenas os alimentos acima para o objetivo de ${d.objetivo}."
----------------------------------------
+COMANDO: "Crie uma dieta de ${d.calorias} calorias para ${d.nome} focando em ${d.objetivo}."
+----------------------------------
         `;
-
-        divResultado.innerText = promptMontado;
-        divResultado.style.display = 'block';
-        divResultado.scrollIntoView({ behavior: 'smooth' });
-        
-        console.log("DEBUG SNAPSHOT:", d);
+        debugBox.innerText = promptTexto;
+        debugBox.style.display = 'block';
     }
 
     function iniciarCheckout(tipo) {
-        tirarSnapshot(); // Garante que salvou antes de sair
+        tirarSnapshot(); // Garante o salvamento antes de sair da página
         const email = localStorage.getItem('email_verificacao');
-        // Simulação de link (Substitua pelos seus links do Stripe reais)
-        const link = tipo === 'unica' ? 'https://buy.stripe.com/test_unica' : 'https://buy.stripe.com/test_anual';
-        window.location.href = `${link}?prefilled_email=${encodeURIComponent(email)}`;
+        window.location.href = `https://buy.stripe.com/test_exemplo?prefilled_email=${email}`;
     }
-
-    function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
 </script>
+
 </body>
 </html>
