@@ -275,13 +275,16 @@
         const tipoPlano = urlParams.get('tipo');
         const emailSalvo = localStorage.getItem('email_verificacao');
 
-        if (pago === 'true' && emailSalvo && tipoPlano) {
+     if (pago === 'true' && emailSalvo && tipoPlano) {
             const statusTopo = document.getElementById('status-topo');
             statusTopo.style.display = 'block';
-            statusTopo.innerText = "🚀 PAGAMENTO CONFIRMADO! GERANDO SEU PLANO...";
-            await ativarAcessoNoBanco(emailSalvo, tipoPlano);
+            statusTopo.innerText = "✅ PAGAMENTO CONFIRMADO! 🚀";
+            
+            // Espera 4 segundos exibindo a frase de sucesso antes de prosseguir
+            setTimeout(async () => {
+                await ativarAcessoNoBanco(emailSalvo, tipoPlano);
+            }, 4000); 
         }
-    }
 
     function alternarBuscaRapida() {
         const area = document.getElementById('area-busca-rapida');
@@ -345,9 +348,7 @@
     }
 
 const frasesCarregamento = [
-    "✅ PAGAMENTO CONFIRMADO!",
     "🚀 ORGANIZANDO SUAS REFEIÇÕES...",
-    "⚖️ DISTRIBUINDO OS MACROS DIÁRIOS...",
     "🍳 SELECIONANDO OS MELHORES PREPAROS...",
     "📋 FINALIZANDO SEU PLANO PERSONALIZADO...",
     "✨ QUASE PRONTO! SÓ MAIS ALGUNS SEGUNDOS..."
