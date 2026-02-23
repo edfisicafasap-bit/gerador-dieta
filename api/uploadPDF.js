@@ -1,45 +1,50 @@
 import { supabase } from './supabase.js';
+import { jsPDF } from 'jspdf'; // Faltava importar a biblioteca!
 
 /**
- * Faz upload do conteúdo da dieta para o bucket 'dietas-pdf'
- * @param {string} conteudo - O texto da dieta gerado pela IA
- * @param {string} nomeArquivo - Nome do arquivo (ex: dieta-usuario.pdf)
- * @returns {string} - Link assinado válido por 24h
+ * Transforma texto em PDF REAL e faz upload para o Supabase
  */
 export async function uploadPDFSupabase(conteudo, nomeArquivo) {
   try {
-    // Convertemos o texto em um Buffer (padrão para upload de arquivos)
-    const fileBuffer = Buffer.from(conteudo, 'utf-8');
+    // 1. CRIA O PDF DE VERDADE (O que faltava!)
+    const doc = new jsPDF();
+    
+    // Limpa caracteres estranhos que podem quebrar o PDF
+    const textoLimpo = conteudo.replace(/[#*]/g, '');
+    
+    // Configura margens e quebra de linha automática
+    const larguraMax = 180;
+    const linhas = doc.splitTextToSize(textoLimpo, larguraMax);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.text(linhas, 10, 20);
 
-    // Realiza o upload para o Supabase Storage
+    // 2. CONVERTE PARA O FORMATO QUE O SUPABASE ACEITA
+    const pdfArrayBuffer = doc.output('arraybuffer');
+    const fileBuffer = Buffer.from(pdfArrayBuffer);
+
+    // 3. FAZ O UPLOAD
     const { error } = await supabase
       .storage
       .from('dietas-pdf')
       .upload(nomeArquivo, fileBuffer, {
-        contentType: 'application/pdf', // Alterado de text/plain para application/pdf para evitar erro 415
+        contentType: 'application/pdf',
         upsert: true 
       });
 
-    if (error) {
-      console.error('Erro específico no upload do Supabase:', error);
-      throw error;
-    }
+    if (error) throw error;
 
-    // Gera o link assinado de 24 horas para o usuário acessar
-    const { data, error: signedError } = await supabase
+    // 4. GERA A URL PÚBLICA (Melhor que a assinada para evitar erros de token)
+    const { data } = supabase
       .storage
       .from('dietas-pdf')
-      .createSignedUrl(nomeArquivo, 60 * 60 * 24); 
+      .getPublicUrl(nomeArquivo);
 
-    if (signedError) {
-      console.error('Erro ao gerar link assinado:', signedError);
-      throw signedError;
-    }
-
-    return data.signedUrl;
+    return data.publicUrl;
 
   } catch (err) {
-    console.error('Falha crítica na função uploadPDFSupabase:', err.message);
+    console.error('Erro na geração do PDF real:', err.message);
     throw err;
   }
 }
