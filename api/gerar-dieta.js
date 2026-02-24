@@ -1,6 +1,9 @@
 import { supabase } from './supabase.js';
 import { uploadPDFSupabase } from './uploadPDF.js';
 
+// Estender timeout da Vercel (padrão é 10s, OpenAI pode demorar)
+export const config = { maxDuration: 60 };
+
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Método não permitido' });
