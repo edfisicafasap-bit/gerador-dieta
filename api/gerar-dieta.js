@@ -1,8 +1,4 @@
 import { supabase } from './supabase.js';
-import { uploadPDFSupabase } from './uploadPDF.js';
-
-// Estender timeout da Vercel (padrão é 10s, OpenAI pode demorar)
-export const config = { maxDuration: 60 };
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -19,7 +15,7 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'O prompt da dieta está vazio.' });
         }
 
-        console.log('[ETAPA 1] Chamando OpenAI para:', email);
+        console.log('[1] OpenAI para:', email, '| prompt:', prompt.length, 'chars');
 
         // 1. Chamada para a OpenAI
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -35,57 +31,42 @@ export default async function handler(req, res) {
             })
         });
 
+        if (!response.ok) {
+            const errText = await response.text();
+            console.error('[1 FALHOU] Status:', response.status, errText.substring(0, 300));
+            return res.status(500).json({ error: 'Erro na IA.', detalhes: errText.substring(0, 200) });
+        }
+
         const data = await response.json();
 
-        if (!response.ok || !data.choices || data.choices.length === 0) {
-            console.error('[ETAPA 1 FALHOU]', JSON.stringify(data).substring(0, 500));
-            return res.status(500).json({ 
-                error: 'A IA não conseguiu gerar o texto.', 
-                detalhes: data?.error?.message || 'Sem detalhes' 
-            });
+        if (!data.choices || data.choices.length === 0) {
+            console.error('[1 FALHOU] Sem choices:', JSON.stringify(data).substring(0, 300));
+            return res.status(500).json({ error: 'A IA não retornou resposta.' });
         }
 
         const dietaTexto = data.choices[0].message.content;
-        console.log('[ETAPA 1 OK] Dieta gerada, tamanho:', dietaTexto.length);
+        console.log('[1 OK] Dieta:', dietaTexto.length, 'chars');
 
-        // 2. Gerar PDF e fazer upload para o Supabase Storage
-        console.log('[ETAPA 2] Gerando PDF e fazendo upload...');
-        const nomeArquivo = `dieta-${email.replace(/[@.]/g, '_')}-${Date.now()}.pdf`;
-        
-        let pdfUrl = null;
-        try {
-            pdfUrl = await uploadPDFSupabase(dietaTexto, nomeArquivo);
-            console.log('[ETAPA 2 OK] PDF URL:', pdfUrl);
-        } catch (uploadErr) {
-            console.error('[ETAPA 2 FALHOU] Erro no upload:', uploadErr.message);
-            // Continuar sem PDF - o front gera localmente como fallback
-        }
-
-        // 3. Salvar link do PDF no banco
-        console.log('[ETAPA 3] Salvando no banco...');
+        // 2. Salvar texto da dieta no banco (campo pdf_url recebe o texto)
         const { error: dbError } = await supabase
             .from('Usuarios_Dieta')
             .upsert({ 
                 email: email.toLowerCase().trim(),
-                pdf_url: pdfUrl,
+                pdf_url: dietaTexto,
                 ultima_geracao: new Date().toISOString() 
             }, { onConflict: 'email' });
 
         if (dbError) {
-            console.error('[ETAPA 3 AVISO] Erro no banco:', dbError.message);
+            console.error('[2 AVISO] DB:', dbError.message);
         } else {
-            console.log('[ETAPA 3 OK] Banco atualizado.');
+            console.log('[2 OK] Banco atualizado.');
         }
 
-        // 4. Retorno para o front-end
-        console.log('[CONCLUÍDO] Retornando dieta.');
-        return res.status(200).json({ dieta: dietaTexto, pdf_url: pdfUrl });
+        // 3. Retorno — front gera o PDF localmente via jsPDF
+        return res.status(200).json({ dieta: dietaTexto });
 
     } catch (error) {
         console.error('[ERRO FATAL]', error.message, error.stack);
-        return res.status(500).json({ 
-            error: 'Erro interno ao processar sua dieta.',
-            detalhes: error.message 
-        });
+        return res.status(500).json({ error: 'Erro interno.', detalhes: error.message });
     }
 }
