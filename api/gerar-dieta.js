@@ -1,8 +1,6 @@
 import { supabase } from './supabase.js';
-import { uploadPDFSupabase } from './uploadPDF.js';
 
 export default async function handler(req, res) {
-    // Garante que apenas requisições POST sejam aceitas
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Método não permitido' });
     }
@@ -10,7 +8,6 @@ export default async function handler(req, res) {
     try {
         const { prompt, email } = req.body;
 
-        // Validação básica de entrada
         if (!email) {
             return res.status(400).json({ error: 'Email é obrigatório.' });
         }
@@ -36,52 +33,37 @@ export default async function handler(req, res) {
 
         const data = await response.json();
 
-        // Verifica se a OpenAI retornou erro
         if (!response.ok || !data.choices || data.choices.length === 0) {
-            console.error('[ETAPA 1 FALHOU] Resposta da OpenAI:', JSON.stringify(data).substring(0, 500));
-            return res.status(500).json({ error: 'A IA não conseguiu gerar o texto. Verifique sua chave ou créditos.', detalhes: data?.error?.message || 'Sem detalhes' });
+            console.error('[ETAPA 1 FALHOU]', JSON.stringify(data).substring(0, 500));
+            return res.status(500).json({ 
+                error: 'A IA não conseguiu gerar o texto.', 
+                detalhes: data?.error?.message || 'Sem detalhes' 
+            });
         }
 
         const dietaTexto = data.choices[0].message.content;
         console.log('[ETAPA 1 OK] Dieta gerada, tamanho:', dietaTexto.length);
 
-        // 2. Gerar nome único e fazer upload do PDF
-        console.log('[ETAPA 2] Gerando e enviando PDF...');
-        const nomeArquivo = `dieta-${email.replace(/[@.]/g, '_')}-${Date.now()}.pdf`;
-        
-        let linkAssinado;
-        try {
-            linkAssinado = await uploadPDFSupabase(dietaTexto, nomeArquivo);
-            console.log('[ETAPA 2 OK] PDF URL:', linkAssinado);
-        } catch (uploadErr) {
-            console.error('[ETAPA 2 FALHOU] Erro no upload:', uploadErr.message);
-            // Continuar sem PDF - retornar dieta texto mesmo assim
-            linkAssinado = null;
-        }
-
-        // 3. Salvar pdf_url na tabela Usuarios_Dieta
-        console.log('[ETAPA 3] Salvando no banco...');
+        // 2. Salvar texto da dieta no banco (campo pdf_url armazena o texto)
+        console.log('[ETAPA 2] Salvando no banco...');
         const { error: dbError } = await supabase
             .from('Usuarios_Dieta')
             .upsert({ 
                 email: email.toLowerCase().trim(),
-                pdf_url: linkAssinado, 
+                pdf_url: dietaTexto,
                 ultima_geracao: new Date().toISOString() 
             }, { onConflict: 'email' });
 
         if (dbError) {
-            console.error('[ETAPA 3 FALHOU] Erro no banco:', dbError.message);
+            console.error('[ETAPA 2 AVISO] Erro no banco:', dbError.message);
             // Não travar - a dieta já foi gerada
         } else {
-            console.log('[ETAPA 3 OK] Banco atualizado.');
+            console.log('[ETAPA 2 OK] Banco atualizado.');
         }
 
-        // 4. Retorno final para o index.html
-        console.log('[CONCLUÍDO] Retornando dieta para o front.');
-        return res.status(200).json({ 
-            dieta: dietaTexto, 
-            pdf_url: linkAssinado 
-        });
+        // 3. Retorno para o front-end (o PDF será gerado no navegador via jsPDF)
+        console.log('[CONCLUÍDO] Retornando dieta.');
+        return res.status(200).json({ dieta: dietaTexto });
 
     } catch (error) {
         console.error('[ERRO FATAL]', error.message, error.stack);
