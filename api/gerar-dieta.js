@@ -1,4 +1,5 @@
 import { supabase } from './supabase.js';
+import { uploadPDFSupabase } from './uploadPDF.js';
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -44,26 +45,38 @@ export default async function handler(req, res) {
         const dietaTexto = data.choices[0].message.content;
         console.log('[ETAPA 1 OK] Dieta gerada, tamanho:', dietaTexto.length);
 
-        // 2. Salvar texto da dieta no banco (campo pdf_url armazena o texto)
-        console.log('[ETAPA 2] Salvando no banco...');
+        // 2. Gerar PDF e fazer upload para o Supabase Storage
+        console.log('[ETAPA 2] Gerando PDF e fazendo upload...');
+        const nomeArquivo = `dieta-${email.replace(/[@.]/g, '_')}-${Date.now()}.pdf`;
+        
+        let pdfUrl = null;
+        try {
+            pdfUrl = await uploadPDFSupabase(dietaTexto, nomeArquivo);
+            console.log('[ETAPA 2 OK] PDF URL:', pdfUrl);
+        } catch (uploadErr) {
+            console.error('[ETAPA 2 FALHOU] Erro no upload:', uploadErr.message);
+            // Continuar sem PDF - o front gera localmente como fallback
+        }
+
+        // 3. Salvar link do PDF no banco
+        console.log('[ETAPA 3] Salvando no banco...');
         const { error: dbError } = await supabase
             .from('Usuarios_Dieta')
             .upsert({ 
                 email: email.toLowerCase().trim(),
-                pdf_url: dietaTexto,
+                pdf_url: pdfUrl,
                 ultima_geracao: new Date().toISOString() 
             }, { onConflict: 'email' });
 
         if (dbError) {
-            console.error('[ETAPA 2 AVISO] Erro no banco:', dbError.message);
-            // Não travar - a dieta já foi gerada
+            console.error('[ETAPA 3 AVISO] Erro no banco:', dbError.message);
         } else {
-            console.log('[ETAPA 2 OK] Banco atualizado.');
+            console.log('[ETAPA 3 OK] Banco atualizado.');
         }
 
-        // 3. Retorno para o front-end (o PDF será gerado no navegador via jsPDF)
+        // 4. Retorno para o front-end
         console.log('[CONCLUÍDO] Retornando dieta.');
-        return res.status(200).json({ dieta: dietaTexto });
+        return res.status(200).json({ dieta: dietaTexto, pdf_url: pdfUrl });
 
     } catch (error) {
         console.error('[ERRO FATAL]', error.message, error.stack);
