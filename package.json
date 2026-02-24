@@ -4,7 +4,6 @@
   "type": "module",
   "dependencies": {
     "stripe": "^14.0.0",
-    "@supabase/supabase-js": "^2.39.0",
-    "jspdf": "^2.5.1"
+    "@supabase/supabase-js": "^2.39.0"
   }
 }
