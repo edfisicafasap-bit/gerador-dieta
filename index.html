@@ -321,13 +321,13 @@
 
         if (error || !user) return alert("Nenhum plano ativo encontrado para este e-mail.");
 
-        if (user.pdf_url || user.dieta_texto) {
+        if (user.pdf_url) {
             document.getElementById('resultado-busca').style.display = 'block';
             document.getElementById('btn-download-direto').onclick = () => {
-                if (user.pdf_url && user.pdf_url.startsWith('http')) {
+                if (user.pdf_url.startsWith('http')) {
                     window.open(user.pdf_url, '_blank');
                 } else {
-                    baixarPDF(user.dieta_texto || "Plano Alimentar");
+                    baixarPDF(user.pdf_url);
                 }
             };
             localStorage.setItem('email_verificacao', email);
@@ -541,8 +541,34 @@
 
         const gorduraAlvoG = (pesoUser * metaGord).toFixed(1);
         const proteinaAlvoG = (pesoUser * metaProt).toFixed(0);
+        const caloriasAlvo = d.calorias || 'Não informado';
+        const numRefeicoes = d.refeicoes || '4';
+        const alimentosSelecionados = (d.alimentos && d.alimentos.length > 0) ? d.alimentos.join(', ') : 'Nenhum selecionado';
+        const preparosSelecionados = (d.preparos && d.preparos.length > 0) ? d.preparos.join(', ') : 'Nenhum selecionado';
 
-        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real... Peso: ${pesoUser}kg, Gordura Alvo: ${gorduraAlvoG}g, Proteína Alvo: ${proteinaAlvoG}g.`;
+        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, com gram/ml exatos, distribuído em ${numRefeicoes} refeições diárias.
+
+Dados do paciente:
+- Peso: ${pesoUser}kg
+- Objetivo: ${d.objetivo}
+- Meta calórica diária: ${caloriasAlvo} kcal
+- Proteína alvo: ${proteinaAlvoG}g
+- Gordura alvo: ${gorduraAlvoG}g
+- Número de refeições: ${numRefeicoes}
+
+Alimentos selecionados pelo paciente (USE APENAS ESTES):
+${alimentosSelecionados}
+
+Modos de preparo permitidos:
+${preparosSelecionados}
+
+Regras:
+1. Use SOMENTE os alimentos listados acima.
+2. Use SOMENTE os modos de preparo listados acima.
+3. Distribua as ${numRefeicoes} refeições ao longo do dia (café da manhã, almoço, lanche, jantar, etc).
+4. Informe gramagem exata de cada alimento.
+5. Ao final, mostre o total de calorias, proteínas, carboidratos e gorduras do dia.
+6. Formato limpo e organizado, sem markdown.`;
 
         try {
             console.log('[DEBUG] Enviando para API:', { emailUsuario, promptLength: promptFinal.length });
@@ -571,13 +597,7 @@
             // AJUSTE 2: CONFIGURA O BOTÃO PARA O CLIQUE MANUAL
             if (btnDownloadPos) {
                 btnDownloadPos.style.display = 'block';
-                btnDownloadPos.onclick = () => {
-                    if (result.pdf_url && result.pdf_url.startsWith('http')) {
-                        window.open(result.pdf_url, '_blank');
-                    } else {
-                        baixarPDF(result.dieta);
-                    }
-                };
+                btnDownloadPos.onclick = () => baixarPDF(result.dieta);
             }
 
             // AJUSTE 3: LIMPEZA DE DADOS OCORRE AGORA (PÓS-DISPONIBILIZAÇÃO DO BOTÃO)
