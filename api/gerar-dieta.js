@@ -48,14 +48,14 @@ export default async function handler(req, res) {
         // Esta função agora retorna o Link Assinado (Signed URL)
         const linkAssinado = await uploadPDFSupabase(dietaTexto, nomeArquivo);
 
-        // 3. Atualizar a tabela Usuarios_Dieta no Banco de Dados
+        // 3. Salvar pdf_url na tabela Usuarios_Dieta (upsert para evitar race condition com o webhook)
         const { error: dbError } = await supabase
             .from('Usuarios_Dieta')
-            .update({ 
+            .upsert({ 
+                email: email.toLowerCase().trim(),
                 pdf_url: linkAssinado, 
                 ultima_geracao: new Date().toISOString() 
-            })
-            .eq('email', email.toLowerCase().trim());
+            }, { onConflict: 'email' });
 
         if (dbError) {
             console.error('Erro ao atualizar banco de dados:', dbError);
