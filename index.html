@@ -273,10 +273,25 @@
         renderInterface();
         recuperarDadosSalvos();
         
-        const tipoPlano = urlParams.get('tipo');
-        const emailSalvo = localStorage.getItem('email_verificacao');
+        // CORREÇÃO: Ler tipo da URL OU do localStorage (salvo antes do redirect ao Stripe)
+        const tipoPlano = urlParams.get('tipo') || localStorage.getItem('tipo_plano_pendente');
+        
+        // CORREÇÃO: Ler email do localStorage, com fallback do rascunho salvo
+        let emailSalvo = localStorage.getItem('email_verificacao');
+        if (!emailSalvo) {
+            try {
+                const rascunho = JSON.parse(localStorage.getItem('rascunho_dieta') || '{}');
+                if (rascunho.email) {
+                    emailSalvo = rascunho.email;
+                    localStorage.setItem('email_verificacao', emailSalvo);
+                }
+            } catch(e) {}
+        }
 
         if (pago === 'true' && emailSalvo && tipoPlano) {
+            // Limpar tipo pendente após uso
+            localStorage.removeItem('tipo_plano_pendente');
+            
             const statusTopo = document.getElementById('status-topo');
             statusTopo.style.display = 'block';
             statusTopo.innerText = "✅ PAGAMENTO CONFIRMADO! 🚀";
@@ -324,7 +339,9 @@
     async function ativarAcessoNoBanco(email, tipo) {
         const proximoReset = new Date();
         proximoReset.setDate(proximoReset.getDate() + 7);
+        const emailLimpo = email.toLowerCase().trim();
         const updates = {
+            email: emailLimpo,
             pago: true,
             tipo_plano: tipo,
             creditos: (tipo === 'unica' ? 1 : 0),
@@ -332,13 +349,20 @@
             data_reset: proximoReset.toISOString(),
             ultima_geracao: new Date().toISOString()
         };
-        const { error } = await _supabase.from('Usuarios_Dieta').update(updates).eq('email', email.toLowerCase().trim());
-        if (!error) {
-            setTimeout(() => {
-                window.history.replaceState({}, document.title, window.location.pathname);
-                executarGeracaoComConsumo(tipo, email.toLowerCase().trim(), 0);
-            }, 1000);
+        // CORREÇÃO: upsert ao invés de update — garante que a linha é criada
+        // mesmo que o webhook do Stripe ainda não tenha rodado
+        const { error } = await _supabase.from('Usuarios_Dieta').upsert(updates, { onConflict: 'email' });
+        
+        // Prosseguir com a geração mesmo se houver erro no upsert
+        // (o webhook pode criar/atualizar a linha depois)
+        if (error) {
+            console.warn('Aviso ao ativar acesso:', error.message);
         }
+        
+        setTimeout(() => {
+            window.history.replaceState({}, document.title, window.location.pathname);
+            executarGeracaoComConsumo(tipo, emailLimpo, 0);
+        }, 1000);
     }
 
     function renderInterface() {
@@ -370,6 +394,10 @@
     ];
 
     function salvarProgressoLocal(emailInput = null) {
+        // CORREÇÃO: Também salvar email dentro do rascunho como backup
+        const emailParaSalvar = emailInput 
+            ? emailInput.toLowerCase().trim() 
+            : (localStorage.getItem('email_verificacao') || '');
         const dados = {
             peso: document.getElementById('peso').value,
             calorias: document.getElementById('calorias').value,
@@ -377,7 +405,8 @@
             objetivo: document.getElementById('objetivo').value,
             nome: document.getElementById('nome_usuario').value,
             alimentos: Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value),
-            preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value)
+            preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value),
+            email: emailParaSalvar
         };
         localStorage.setItem('rascunho_dieta', JSON.stringify(dados));
         if (emailInput) localStorage.setItem('email_verificacao', emailInput.toLowerCase().trim());
@@ -461,6 +490,15 @@
     async function iniciarCheckout(priceId) {
         salvarProgressoLocal();
         const email = localStorage.getItem('email_verificacao') || "";
+
+        // CORREÇÃO: Salvar tipo do plano no localStorage ANTES do redirect para o Stripe
+        // Isso garante que ao retornar, saberemos qual plano foi escolhido
+        if (priceId === 'price_1Sz1w7GEaACih56ZWyTiPBAu') {
+            localStorage.setItem('tipo_plano_pendente', 'unica');
+        } else if (priceId === 'price_1SzPP7GEaACih56ZkwV5mxN2') {
+            localStorage.setItem('tipo_plano_pendente', 'anual');
+        }
+
         const LINK_UNICA = `https://buy.stripe.com/test_bJe7sLcqhcL0g0B9T9asg00?prefilled_email=${encodeURIComponent(email)}`;
         const LINK_ANUAL = `https://buy.stripe.com/test_3cI8wP0Hz9yO4hTc1hasg01?prefilled_email=${encodeURIComponent(email)}`; 
         
@@ -507,14 +545,23 @@
         const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real... Peso: ${pesoUser}kg, Gordura Alvo: ${gorduraAlvoG}g, Proteína Alvo: ${proteinaAlvoG}g.`;
 
         try {
+            console.log('[DEBUG] Enviando para API:', { emailUsuario, promptLength: promptFinal.length });
             const response = await fetch('/api/gerar-dieta', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt: promptFinal, email: emailUsuario })
             });
 
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error || "Erro na geração.");
+            // Tratar resposta não-JSON (ex: crash do Vercel)
+            const textoResposta = await response.text();
+            let result;
+            try {
+                result = JSON.parse(textoResposta);
+            } catch (parseErr) {
+                console.error('[DEBUG] Resposta não é JSON:', textoResposta.substring(0, 200));
+                throw new Error('Servidor retornou resposta inválida. Tente novamente.');
+            }
+            if (!response.ok) throw new Error(result.detalhes || result.error || "Erro na geração.");
 
             divResultado.innerText = result.dieta;
             divResultado.style.display = 'block';
@@ -567,7 +614,8 @@
     function limparDadosEApp() {
         // AJUSTE: Limpeza total de rascunhos e e-mails para garantir nova sessão limpa
         localStorage.removeItem('rascunho_dieta');
-        localStorage.removeItem('email_verificacao'); 
+        localStorage.removeItem('email_verificacao');
+        localStorage.removeItem('tipo_plano_pendente'); 
         
         document.getElementById('peso').value = '';
         document.getElementById('calorias').value = '';
