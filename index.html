@@ -271,13 +271,11 @@
         const emailSalvo = localStorage.getItem('email_verificacao');
         const rascunho = localStorage.getItem('rascunho_dieta');
 
-        // Se o usuário voltou do Stripe com sucesso
         if (pago === 'true' && emailSalvo && rascunho) {
             const statusTopo = document.getElementById('status-topo');
             statusTopo.style.display = 'block';
             statusTopo.innerText = "✅ PAGAMENTO CONFIRMADO! GERANDO SEU PLANO...";
             
-            // Aguarda um pouco para o Webhook processar no backend
             setTimeout(async () => {
                 await executarGeracaoAposPagamento(emailSalvo, JSON.parse(rascunho));
             }, 3000);
@@ -285,7 +283,6 @@
     }
 
     async function executarGeracaoAposPagamento(email, dados) {
-        // Remove parâmetro 'pago' da URL para evitar loops
         window.history.replaceState({}, document.title, window.location.pathname);
         await gerarDieta(dados);
     }
@@ -377,14 +374,12 @@
             return;
         }
 
-        // Lógica de créditos e trocas
         if (user.tipo_plano === 'unica' && user.creditos <= 0) {
             alert("Você já utilizou sua troca do Plano Único.");
             document.getElementById('payment-overlay').style.display = 'flex';
             return;
         }
 
-        // Se já tem acesso, gera direto
         await executarGeracaoComConsumo(user.tipo_plano, emailLow, user.contagem_semanal || 0);
     }
 
@@ -403,7 +398,6 @@
         const email = localStorage.getItem('email_verificacao');
         if (!email) return alert("E-mail não encontrado. Por favor, tente novamente.");
 
-        // Chama sua API de checkout em vez de link direto
         try {
             const response = await fetch('/api/checkout', {
                 method: 'POST',
@@ -438,7 +432,6 @@
             fraseIndex++;
         }, 2500);
 
-        // Prompts originais mantidos conforme solicitado
         const metaProt = d.objetivo === 'Emagrecimento' ? 2.2 : (d.objetivo === 'Hipertrofia' ? 1.8 : 2.0);
         const metaGord = d.objetivo === 'Emagrecimento' ? 0.8 : (d.objetivo === 'Hipertrofia' ? 1.0 : 0.9);
         const gorduraAlvoG = (parseFloat(d.peso) * metaGord).toFixed(1);
@@ -464,7 +457,6 @@
                 btnDownloadPos.onclick = () => window.open(result.pdf_url, '_blank');
             }
 
-            // Limpeza só ocorre após o sucesso total
             limparDadosEApp();
             
         } catch (e) { 
