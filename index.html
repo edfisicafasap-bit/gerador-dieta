@@ -264,7 +264,8 @@
 
     async function inicializarTudo() {
         renderInterface();
-        recuperarDadosSalvos();
+        // 3. RESET AO ABRIR: Chama a função que limpa tudo ao carregar
+        limparDadosEApp();
 
         const urlParams = new URLSearchParams(window.location.search);
         const pago = urlParams.get('pago');
@@ -457,6 +458,9 @@
                 btnDownloadPos.onclick = () => window.open(result.pdf_url, '_blank');
             }
 
+            // 2. AUTO-SCROLL NA GERAÇÃO: Rola para baixo após gerar
+            divResultado.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
             limparDadosEApp();
             
         } catch (e) { 
@@ -469,11 +473,52 @@
         }
     }
 
+    // 1. FUNÇÃO DE BUSCA: Lógica para o ícone de e-mail (buscar-dieta.js)
+    async function buscarAcessoRapido() {
+        const emailInput = document.getElementById('email-busca').value;
+        const emailLimpo = emailInput.toLowerCase().trim();
+
+        if (!emailLimpo) return alert("Digite seu e-mail cadastrado.");
+
+        try {
+            const response = await fetch('/api/buscar-dieta', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: emailLimpo })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.pdf_url) {
+                const resBusca = document.getElementById('resultado-busca');
+                const btnDownload = document.getElementById('btn-download-direto');
+                
+                resBusca.style.display = 'block';
+                btnDownload.onclick = () => window.open(data.pdf_url, '_blank');
+
+                // 2. AUTO-SCROLL NA BUSCA: Rola até o botão encontrado
+                resBusca.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                alert(data.error || "Plano não encontrado.");
+            }
+        } catch (err) {
+            alert("Erro ao buscar plano.");
+        }
+    }
+
+    // 3. RESET DO APP: Limpa todos os dados
     function limparDadosEApp() {
         localStorage.removeItem('rascunho_dieta');
         localStorage.removeItem('email_verificacao');
-        document.querySelectorAll('input[type="number"], input[type="text"]').forEach(i => i.value = '');
+        document.querySelectorAll('input, textarea').forEach(i => i.value = '');
         document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+        
+        const res = document.getElementById('resultado');
+        if (res) { res.style.display = 'none'; res.innerText = ''; }
+        
+        const resBusca = document.getElementById('resultado-busca');
+        if (resBusca) resBusca.style.display = 'none';
+
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
