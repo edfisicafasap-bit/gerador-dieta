@@ -1,30 +1,41 @@
 import { supabase } from './supabase.js';
-import { jsPDF } from 'jspdf'; // Faltava importar a biblioteca!
+import { jsPDF } from 'jspdf';
 
 /**
- * Transforma texto em PDF REAL e faz upload para o Supabase
+ * Transforma texto em PDF com múltiplas páginas e faz upload para o Supabase
  */
 export async function uploadPDFSupabase(conteudo, nomeArquivo) {
   try {
-    // 1. CRIA O PDF DE VERDADE (O que faltava!)
     const doc = new jsPDF();
     
-    // Limpa caracteres estranhos que podem quebrar o PDF
+    // Limpa caracteres que podem quebrar a formatação simples
     const textoLimpo = conteudo.replace(/[#*]/g, '');
     
-    // Configura margens e quebra de linha automática
     const larguraMax = 180;
     const linhas = doc.splitTextToSize(textoLimpo, larguraMax);
     
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
-    doc.text(linhas, 10, 20);
 
-    // 2. CONVERTE PARA O FORMATO QUE O SUPABASE ACEITA
+    let y = 20; // Posição vertical inicial
+    const margemSuperior = 20;
+    const limitePagina = 275; // Limite antes de criar nova página
+
+    linhas.forEach(linha => {
+        // Se a próxima linha for ultrapassar o limite, cria nova página
+        if (y > limitePagina) {
+            doc.addPage();
+            y = margemSuperior; // Reseta o cursor para o topo da nova página
+        }
+        doc.text(linha, 15, y);
+        y += 7; // Espaçamento entre linhas
+    });
+
+    // Converte para Buffer para o Supabase
     const pdfArrayBuffer = doc.output('arraybuffer');
     const fileBuffer = Buffer.from(pdfArrayBuffer);
 
-    // 3. FAZ O UPLOAD
+    // Upload para o Bucket 'dietas-pdf'
     const { error } = await supabase
       .storage
       .from('dietas-pdf')
@@ -35,7 +46,7 @@ export async function uploadPDFSupabase(conteudo, nomeArquivo) {
 
     if (error) throw error;
 
-    // 4. GERA A URL PÚBLICA (Melhor que a assinada para evitar erros de token)
+    // Retorna a URL pública para o usuário baixar
     const { data } = supabase
       .storage
       .from('dietas-pdf')
@@ -43,8 +54,8 @@ export async function uploadPDFSupabase(conteudo, nomeArquivo) {
 
     return data.publicUrl;
 
-  } catch (err) {
-    console.error('Erro na geração do PDF real:', err.message);
-    throw err;
+  } catch (error) {
+    console.error('Erro ao gerar/enviar PDF:', error);
+    throw new Error('Falha na criação do arquivo PDF.');
   }
 }
