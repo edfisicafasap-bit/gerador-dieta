@@ -1,13 +1,30 @@
 import { supabase } from './supabase.js';
+import { jsPDF } from 'jspdf'; // Faltava importar a biblioteca!
 
 /**
- * Faz upload do texto da dieta como arquivo no Supabase Storage
- * e retorna a URL pública
+ * Transforma texto em PDF REAL e faz upload para o Supabase
  */
 export async function uploadPDFSupabase(conteudo, nomeArquivo) {
   try {
-    const fileBuffer = Buffer.from(conteudo, 'utf-8');
+    // 1. CRIA O PDF DE VERDADE (O que faltava!)
+    const doc = new jsPDF();
+    
+    // Limpa caracteres estranhos que podem quebrar o PDF
+    const textoLimpo = conteudo.replace(/[#*]/g, '');
+    
+    // Configura margens e quebra de linha automática
+    const larguraMax = 180;
+    const linhas = doc.splitTextToSize(textoLimpo, larguraMax);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.text(linhas, 10, 20);
 
+    // 2. CONVERTE PARA O FORMATO QUE O SUPABASE ACEITA
+    const pdfArrayBuffer = doc.output('arraybuffer');
+    const fileBuffer = Buffer.from(pdfArrayBuffer);
+
+    // 3. FAZ O UPLOAD
     const { error } = await supabase
       .storage
       .from('dietas-pdf')
@@ -18,6 +35,7 @@ export async function uploadPDFSupabase(conteudo, nomeArquivo) {
 
     if (error) throw error;
 
+    // 4. GERA A URL PÚBLICA (Melhor que a assinada para evitar erros de token)
     const { data } = supabase
       .storage
       .from('dietas-pdf')
@@ -26,7 +44,7 @@ export async function uploadPDFSupabase(conteudo, nomeArquivo) {
     return data.publicUrl;
 
   } catch (err) {
-    console.error('Erro no upload:', err.message);
+    console.error('Erro na geração do PDF real:', err.message);
     throw err;
   }
 }
