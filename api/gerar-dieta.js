@@ -2,7 +2,6 @@ import { supabase } from './supabase.js';
 import { uploadPDFSupabase } from './uploadPDF.js';
 
 export default async function handler(req, res) {
-    // Garante que apenas requisições POST sejam aceitas
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Método não permitido' });
     }
@@ -10,7 +9,6 @@ export default async function handler(req, res) {
     try {
         const { prompt, email } = req.body;
 
-        // Validação básica de entrada
         if (!email) {
             return res.status(400).json({ error: 'Email é obrigatório.' });
         }
@@ -18,7 +16,26 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'O prompt da dieta está vazio.' });
         }
 
-        // 1. Chamada para a OpenAI
+        const emailLimpo = email.toLowerCase().trim();
+
+        // --- NOVO: VERIFICAÇÃO DE SEGURANÇA NO SUPABASE ---
+        // Verifica se o usuário tem status de pago ou créditos disponíveis
+        const { data: usuario, error: userError } = await supabase
+            .from('Usuarios_Dieta')
+            .select('pago, creditos, tipo_plano')
+            .eq('email', emailLimpo)
+            .maybeSingle();
+
+        if (userError) throw userError;
+
+        // Se o usuário não for encontrado ou não tiver pago, bloqueia a geração
+        if (!usuario || (!usuario.pago && usuario.creditos <= 0)) {
+            return res.status(403).json({ 
+                error: 'Acesso negado. Pagamento não verificado ou sem créditos disponíveis.' 
+            });
+        }
+
+        // 1. Chamada para a OpenAI (Mantendo sua lógica original)
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -34,45 +51,47 @@ export default async function handler(req, res) {
 
         const data = await response.json();
 
-        // Verifica se a OpenAI retornou erro
         if (!response.ok || !data.choices || data.choices.length === 0) {
             console.error('Erro na resposta da OpenAI:', data);
-            return res.status(500).json({ error: 'A IA não conseguiu gerar o texto. Verifique sua chave ou créditos.' });
+            return res.status(500).json({ error: 'Erro ao processar inteligência artificial.' });
         }
 
         const dietaTexto = data.choices[0].message.content;
 
-        // 2. Gerar nome único e fazer upload (Disfarçado de .pdf para aceitação do Storage)
-        const nomeArquivo = `dieta-${email.replace(/[@.]/g, '_')}-${Date.now()}.pdf`;
-        
-        // Esta função agora retorna o Link Assinado (Signed URL)
-        const linkAssinado = await uploadPDFSupabase(dietaTexto, nomeArquivo);
+        // 2. Gerar PDF e Upload (Utilizando sua função importada)
+        const nomeArquivo = `dieta-${emailLimpo.replace(/[@.]/g, '_')}-${Date.now()}.pdf`;
+        const linkPublico = await uploadPDFSupabase(dietaTexto, nomeArquivo);
 
-        // 3. Salvar pdf_url na tabela Usuarios_Dieta (upsert para evitar race condition com o webhook)
+        // 3. Atualizar o banco de dados
+        // Se for plano único, consumimos o crédito aqui para evitar reuso indevido
+        const atualizacao = { 
+            pdf_url: linkPublico, 
+            ultima_geracao: new Date().toISOString() 
+        };
+
+        if (usuario.tipo_plano === 'unica') {
+            atualizacao.creditos = 0;
+        }
+
         const { error: dbError } = await supabase
             .from('Usuarios_Dieta')
-            .upsert({ 
-                email: email.toLowerCase().trim(),
-                pdf_url: linkAssinado, 
-                ultima_geracao: new Date().toISOString() 
-            }, { onConflict: 'email' });
+            .update(atualizacao)
+            .eq('email', emailLimpo);
 
         if (dbError) {
             console.error('Erro ao atualizar banco de dados:', dbError);
-            throw dbError;
         }
 
-        // 4. Retorno final para o seu index.html
+        // 4. Retorno final para o index.html
         return res.status(200).json({ 
             dieta: dietaTexto, 
-            pdf_url: linkAssinado 
+            pdf_url: linkPublico 
         });
 
     } catch (error) {
         console.error('Erro no fluxo principal (Back-end):', error.message);
         return res.status(500).json({ 
-            error: 'Erro interno ao processar sua dieta.',
-            detalhes: error.message 
+            error: 'Erro interno no servidor ao gerar sua dieta.' 
         });
     }
 }
