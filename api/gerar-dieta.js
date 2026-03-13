@@ -1,6 +1,8 @@
 import { supabase } from './supabase.js';
+import { uploadPDFSupabase } from './uploadPDF.js';
 
 export default async function handler(req, res) {
+    // Garante que apenas requisições POST sejam aceitas
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Método não permitido' });
     }
@@ -8,14 +10,13 @@ export default async function handler(req, res) {
     try {
         const { prompt, email } = req.body;
 
+        // Validação básica de entrada
         if (!email) {
             return res.status(400).json({ error: 'Email é obrigatório.' });
         }
         if (!prompt) {
             return res.status(400).json({ error: 'O prompt da dieta está vazio.' });
         }
-
-        console.log('[1] OpenAI para:', email, '| prompt:', prompt.length, 'chars');
 
         // 1. Chamada para a OpenAI
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -31,42 +32,47 @@ export default async function handler(req, res) {
             })
         });
 
-        if (!response.ok) {
-            const errText = await response.text();
-            console.error('[1 FALHOU] Status:', response.status, errText.substring(0, 300));
-            return res.status(500).json({ error: 'Erro na IA.', detalhes: errText.substring(0, 200) });
-        }
-
         const data = await response.json();
 
-        if (!data.choices || data.choices.length === 0) {
-            console.error('[1 FALHOU] Sem choices:', JSON.stringify(data).substring(0, 300));
-            return res.status(500).json({ error: 'A IA não retornou resposta.' });
+        // Verifica se a OpenAI retornou erro
+        if (!response.ok || !data.choices || data.choices.length === 0) {
+            console.error('Erro na resposta da OpenAI:', data);
+            return res.status(500).json({ error: 'A IA não conseguiu gerar o texto. Verifique sua chave ou créditos.' });
         }
 
         const dietaTexto = data.choices[0].message.content;
-        console.log('[1 OK] Dieta:', dietaTexto.length, 'chars');
 
-        // 2. Salvar texto da dieta no banco (campo pdf_url recebe o texto)
+        // 2. Gerar nome único e fazer upload (Disfarçado de .pdf para aceitação do Storage)
+        const nomeArquivo = `dieta-${email.replace(/[@.]/g, '_')}-${Date.now()}.pdf`;
+        
+        // Esta função agora retorna o Link Assinado (Signed URL)
+        const linkAssinado = await uploadPDFSupabase(dietaTexto, nomeArquivo);
+
+        // 3. Salvar pdf_url na tabela Usuarios_Dieta (upsert para evitar race condition com o webhook)
         const { error: dbError } = await supabase
             .from('Usuarios_Dieta')
             .upsert({ 
                 email: email.toLowerCase().trim(),
-                pdf_url: dietaTexto,
+                pdf_url: linkAssinado, 
                 ultima_geracao: new Date().toISOString() 
             }, { onConflict: 'email' });
 
         if (dbError) {
-            console.error('[2 AVISO] DB:', dbError.message);
-        } else {
-            console.log('[2 OK] Banco atualizado.');
+            console.error('Erro ao atualizar banco de dados:', dbError);
+            throw dbError;
         }
 
-        // 3. Retorno — front gera o PDF localmente via jsPDF
-        return res.status(200).json({ dieta: dietaTexto });
+        // 4. Retorno final para o seu index.html
+        return res.status(200).json({ 
+            dieta: dietaTexto, 
+            pdf_url: linkAssinado 
+        });
 
     } catch (error) {
-        console.error('[ERRO FATAL]', error.message, error.stack);
-        return res.status(500).json({ error: 'Erro interno.', detalhes: error.message });
+        console.error('Erro no fluxo principal (Back-end):', error.message);
+        return res.status(500).json({ 
+            error: 'Erro interno ao processar sua dieta.',
+            detalhes: error.message 
+        });
     }
 }
