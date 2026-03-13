@@ -13,13 +13,13 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Email é obrigatório.' });
         }
         if (!prompt) {
-            return res.status(400).json({ error: 'O prompt da dieta está vazio.' });
+            return res.status(400).json({ error: 'O prompt da Reeducação Alimentar está vazio.' });
         }
 
         const emailLimpo = email.toLowerCase().trim();
 
-        // --- NOVO: VERIFICAÇÃO DE SEGURANÇA NO SUPABASE ---
-        // Verifica se o usuário tem status de pago ou créditos disponíveis
+        // 1. VERIFICAÇÃO DE SEGURANÇA NO SUPABASE
+        // Verifica se o usuário já passou pelo pagamento (Webhook já deve ter atuado)
         const { data: usuario, error: userError } = await supabase
             .from('Usuarios_Dieta')
             .select('pago, creditos, tipo_plano')
@@ -28,14 +28,14 @@ export default async function handler(req, res) {
 
         if (userError) throw userError;
 
-        // Se o usuário não for encontrado ou não tiver pago, bloqueia a geração
-        if (!usuario || (!usuario.pago && usuario.creditos <= 0)) {
+        // Se não encontrar o registro ou se o status de 'pago' for falso e não houver créditos
+        if (!usuario || (!usuario.pago && (usuario.creditos === null || usuario.creditos <= 0))) {
             return res.status(403).json({ 
-                error: 'Acesso negado. Pagamento não verificado ou sem créditos disponíveis.' 
+                error: 'Acesso negado. Por favor, conclua o pagamento para gerar sua Reeducação Alimentar.' 
             });
         }
 
-        // 1. Chamada para a OpenAI (Mantendo sua lógica original)
+        // 2. Chamada para a OpenAI (Só ocorre se o pagamento for confirmado acima)
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -52,46 +52,42 @@ export default async function handler(req, res) {
         const data = await response.json();
 
         if (!response.ok || !data.choices || data.choices.length === 0) {
-            console.error('Erro na resposta da OpenAI:', data);
             return res.status(500).json({ error: 'Erro ao processar inteligência artificial.' });
         }
 
         const dietaTexto = data.choices[0].message.content;
 
-        // 2. Gerar PDF e Upload (Utilizando sua função importada)
-        const nomeArquivo = `dieta-${emailLimpo.replace(/[@.]/g, '_')}-${Date.now()}.pdf`;
+        // 3. Gerar PDF e Upload para o Bucket 'dietas-pdf'
+        const nomeArquivo = `reeducacao-${emailLimpo.replace(/[@.]/g, '_')}-${Date.now()}.pdf`;
         const linkPublico = await uploadPDFSupabase(dietaTexto, nomeArquivo);
 
-        // 3. Atualizar o banco de dados
-        // Se for plano único, consumimos o crédito aqui para evitar reuso indevido
+        // 4. Atualizar o banco de dados e consumir crédito se for plano único
         const atualizacao = { 
             pdf_url: linkPublico, 
             ultima_geracao: new Date().toISOString() 
         };
 
+        // Se for plano único, zeramos os créditos para evitar gerações infinitas
         if (usuario.tipo_plano === 'unica') {
             atualizacao.creditos = 0;
+            atualizacao.pago = false; // Opcional: marca como usado
         }
 
-        const { error: dbError } = await supabase
+        await supabase
             .from('Usuarios_Dieta')
             .update(atualizacao)
             .eq('email', emailLimpo);
 
-        if (dbError) {
-            console.error('Erro ao atualizar banco de dados:', dbError);
-        }
-
-        // 4. Retorno final para o index.html
+        // 5. Retorno para o front-end
         return res.status(200).json({ 
             dieta: dietaTexto, 
             pdf_url: linkPublico 
         });
 
     } catch (error) {
-        console.error('Erro no fluxo principal (Back-end):', error.message);
+        console.error('Erro no servidor:', error.message);
         return res.status(500).json({ 
-            error: 'Erro interno no servidor ao gerar sua dieta.' 
+            error: 'Erro interno ao gerar o plano de Reeducação Alimentar.' 
         });
     }
 }
