@@ -264,14 +264,13 @@
 
     async function inicializarTudo() {
         renderInterface();
-        // 3. RESET AO ABRIR: Chama a função que limpa tudo ao carregar
-        limparDadosEApp();
-
+        
         const urlParams = new URLSearchParams(window.location.search);
         const pago = urlParams.get('pago');
         const emailSalvo = localStorage.getItem('email_verificacao');
         const rascunho = localStorage.getItem('rascunho_dieta');
 
+        // 🔥 SEÇÃO CRÍTICA: Primeiro verifica se é retorno de pagamento para gerar
         if (pago === 'true' && emailSalvo && rascunho) {
             const statusTopo = document.getElementById('status-topo');
             statusTopo.style.display = 'block';
@@ -279,7 +278,10 @@
             
             setTimeout(async () => {
                 await executarGeracaoAposPagamento(emailSalvo, JSON.parse(rascunho));
-            }, 3000);
+            }, 2000);
+        } else {
+            // Se não for retorno de pagamento, limpa o app normalmente
+            limparDadosEApp();
         }
     }
 
@@ -334,27 +336,6 @@
         
         localStorage.setItem('rascunho_dieta', JSON.stringify(dados));
         if (emailParaSalvar) localStorage.setItem('email_verificacao', emailParaSalvar);
-    }
-
-    function recuperarDadosSalvos() {
-        const salvo = localStorage.getItem('rascunho_dieta');
-        if (!salvo) return;
-        const d = JSON.parse(salvo);
-        
-        document.getElementById('peso').value = d.peso || '';
-        document.getElementById('calorias').value = d.calorias || '';
-        document.getElementById('num-refeicoes').value = d.refeicoes || '4';
-        document.getElementById('objetivo').value = d.objetivo || 'Emagrecimento';
-        document.getElementById('nome_usuario').value = d.nome || '';
-        
-        d.alimentos?.forEach(val => {
-            const el = document.querySelector(`input[name="alimento"][value="${val}"]`);
-            if (el) el.checked = true;
-        });
-        d.preparos?.forEach(val => {
-            const el = document.querySelector(`input[name="preparo-geral"][value="${val}"]`);
-            if (el) el.checked = true;
-        });
     }
 
     async function verificarAcessoEPagar() {
@@ -458,9 +439,10 @@
                 btnDownloadPos.onclick = () => window.open(result.pdf_url, '_blank');
             }
 
-            // 2. AUTO-SCROLL NA GERAÇÃO: Rola para baixo após gerar
+            // Rola suavemente até o resultado gerado
             divResultado.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
+            // SÓ LIMPA O APP DEPOIS DE GERAR TUDO COM SUCESSO
             limparDadosEApp();
             
         } catch (e) { 
@@ -473,7 +455,6 @@
         }
     }
 
-    // 1. FUNÇÃO DE BUSCA: Lógica para o ícone de e-mail (buscar-dieta.js)
     async function buscarAcessoRapido() {
         const emailInput = document.getElementById('email-busca').value;
         const emailLimpo = emailInput.toLowerCase().trim();
@@ -496,7 +477,6 @@
                 resBusca.style.display = 'block';
                 btnDownload.onclick = () => window.open(data.pdf_url, '_blank');
 
-                // 2. AUTO-SCROLL NA BUSCA: Rola até o botão encontrado
                 resBusca.scrollIntoView({ behavior: 'smooth', block: 'start' });
             } else {
                 alert(data.error || "Plano não encontrado.");
@@ -506,11 +486,15 @@
         }
     }
 
-    // 3. RESET DO APP: Limpa todos os dados
     function limparDadosEApp() {
+        // Não apaga o localStorage se estivermos no meio de um fluxo de pagamento
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('pago') === 'true') return;
+
         localStorage.removeItem('rascunho_dieta');
         localStorage.removeItem('email_verificacao');
-        document.querySelectorAll('input, textarea').forEach(i => i.value = '');
+        
+        document.querySelectorAll('input[type="number"], input[type="text"], input[type="email"]').forEach(i => i.value = '');
         document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
         
         const res = document.getElementById('resultado');
