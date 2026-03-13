@@ -263,97 +263,31 @@
     const preparosUnificados = ["Cozido", "Assado", "Grelhado", "Refogado", "Na Airfryer", "Na frigideira", "Moído", "Desfiado", "Cozido no vapor", "Ensopado"];
 
     async function inicializarTudo() {
-        // AJUSTE: Limpeza imediata de e-mail ao abrir, conforme solicitado
-        const urlParams = new URLSearchParams(window.location.search);
-        const pago = urlParams.get('pago');
-        if (pago !== 'true') {
-            localStorage.removeItem('email_verificacao');
-        }
-
         renderInterface();
         recuperarDadosSalvos();
-        
-        // CORREÇÃO: Ler tipo da URL OU do localStorage (salvo antes do redirect ao Stripe)
-        const tipoPlano = urlParams.get('tipo') || localStorage.getItem('tipo_plano_pendente');
-        
-        // CORREÇÃO: Ler email do localStorage, com fallback do rascunho salvo
-        let emailSalvo = localStorage.getItem('email_verificacao');
-        if (!emailSalvo) {
-            try {
-                const rascunho = JSON.parse(localStorage.getItem('rascunho_dieta') || '{}');
-                if (rascunho.email) {
-                    emailSalvo = rascunho.email;
-                    localStorage.setItem('email_verificacao', emailSalvo);
-                }
-            } catch(e) {}
-        }
 
-        if (pago === 'true' && emailSalvo && tipoPlano) {
-            // Limpar tipo pendente após uso
-            localStorage.removeItem('tipo_plano_pendente');
-            
+        const urlParams = new URLSearchParams(window.location.search);
+        const pago = urlParams.get('pago');
+        const emailSalvo = localStorage.getItem('email_verificacao');
+        const rascunho = localStorage.getItem('rascunho_dieta');
+
+        // Se o usuário voltou do Stripe com sucesso
+        if (pago === 'true' && emailSalvo && rascunho) {
             const statusTopo = document.getElementById('status-topo');
             statusTopo.style.display = 'block';
-            statusTopo.innerText = "✅ PAGAMENTO CONFIRMADO! 🚀";
+            statusTopo.innerText = "✅ PAGAMENTO CONFIRMADO! GERANDO SEU PLANO...";
             
+            // Aguarda um pouco para o Webhook processar no backend
             setTimeout(async () => {
-                await ativarAcessoNoBanco(emailSalvo, tipoPlano);
-            }, 4000); 
+                await executarGeracaoAposPagamento(emailSalvo, JSON.parse(rascunho));
+            }, 3000);
         }
     }
 
-    function alternarBuscaRapida() {
-        const area = document.getElementById('area-busca-rapida');
-        area.style.display = area.style.display === 'none' ? 'block' : 'none';
-        if(area.style.display === 'block') area.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    async function buscarAcessoRapido() {
-        const email = document.getElementById('email-busca').value.toLowerCase().trim();
-        if (!email) return alert("Por favor, digite seu e-mail.");
-        
-        const { data: user, error } = await _supabase
-            .from('Usuarios_Dieta')
-            .select('*')
-            .eq('email', email)
-            .order('ultima_geracao', { ascending: false })
-            .maybeSingle();
-
-        if (error || !user) return alert("Nenhum plano ativo encontrado para este e-mail.");
-
-        if (user.pdf_url || user.dieta_texto) {
-            document.getElementById('resultado-busca').style.display = 'block';
-            document.getElementById('btn-download-direto').onclick = () => {
-                if (user.pdf_url && user.pdf_url.startsWith('http')) {
-                    window.open(user.pdf_url, '_blank');
-                } else {
-                    baixarPDF(user.dieta_texto || "Plano Alimentar");
-                }
-            };
-            localStorage.setItem('email_verificacao', email);
-        } else {
-            alert("Cadastro encontrado, mas sua dieta ainda não foi gerada.");
-        }
-    }
-
-    async function ativarAcessoNoBanco(email, tipo) {
-        const proximoReset = new Date();
-        proximoReset.setDate(proximoReset.getDate() + 7);
-        const updates = {
-            pago: true,
-            tipo_plano: tipo,
-            creditos: (tipo === 'unica' ? 1 : 0),
-            contagem_semanal: 0,
-            data_reset: proximoReset.toISOString(),
-            ultima_geracao: new Date().toISOString()
-        };
-        const { error } = await _supabase.from('Usuarios_Dieta').update(updates).eq('email', email.toLowerCase().trim());
-        if (!error) {
-            setTimeout(() => {
-                window.history.replaceState({}, document.title, window.location.pathname);
-                executarGeracaoComConsumo(tipo, email.toLowerCase().trim(), 0);
-            }, 1000);
-        }
+    async function executarGeracaoAposPagamento(email, dados) {
+        // Remove parâmetro 'pago' da URL para evitar loops
+        window.history.replaceState({}, document.title, window.location.pathname);
+        await gerarDieta(dados);
     }
 
     function renderInterface() {
@@ -385,10 +319,10 @@
     ];
 
     function salvarProgressoLocal(emailInput = null) {
-        // CORREÇÃO: Também salvar email dentro do rascunho como backup
         const emailParaSalvar = emailInput 
             ? emailInput.toLowerCase().trim() 
             : (localStorage.getItem('email_verificacao') || '');
+            
         const dados = {
             peso: document.getElementById('peso').value,
             calorias: document.getElementById('calorias').value,
@@ -399,43 +333,30 @@
             preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value),
             email: emailParaSalvar
         };
+        
         localStorage.setItem('rascunho_dieta', JSON.stringify(dados));
-        if (emailInput) localStorage.setItem('email_verificacao', emailInput.toLowerCase().trim());
+        if (emailParaSalvar) localStorage.setItem('email_verificacao', emailParaSalvar);
     }
 
     function recuperarDadosSalvos() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const pesoURL = urlParams.get('peso');
-        const calURL = urlParams.get('calorias');
-        const objURL = urlParams.get('objetivo');
-        const nomeURL = urlParams.get('nome');
-
-        if (pesoURL || calURL || objURL || nomeURL) {
-            if (pesoURL) document.getElementById('peso').value = pesoURL;
-            if (calURL) document.getElementById('calorias').value = calURL;
-            if (objURL) document.getElementById('objetivo').value = objURL;
-            if (nomeURL) document.getElementById('nome_usuario').value = nomeURL;
-            // AJUSTE: Forçar salvamento do link no rascunho imediatamente
-            salvarProgressoLocal();
-        } else {
-            const salvo = localStorage.getItem('rascunho_dieta');
-            if (!salvo) return;
-            const d = JSON.parse(salvo);
-            document.getElementById('peso').value = d.peso || '';
-            document.getElementById('calorias').value = d.calorias || '';
-            document.getElementById('num-refeicoes').value = d.refeicoes || '4';
-            document.getElementById('objetivo').value = d.objetivo || 'Emagrecimento';
-            document.getElementById('nome_usuario').value = d.nome || '';
-            
-            d.alimentos?.forEach(val => {
-                const el = document.querySelector(`input[name="alimento"][value="${val}"]`);
-                if (el) el.checked = true;
-            });
-            d.preparos?.forEach(val => {
-                const el = document.querySelector(`input[name="preparo-geral"][value="${val}"]`);
-                if (el) el.checked = true;
-            });
-        }
+        const salvo = localStorage.getItem('rascunho_dieta');
+        if (!salvo) return;
+        const d = JSON.parse(salvo);
+        
+        document.getElementById('peso').value = d.peso || '';
+        document.getElementById('calorias').value = d.calorias || '';
+        document.getElementById('num-refeicoes').value = d.refeicoes || '4';
+        document.getElementById('objetivo').value = d.objetivo || 'Emagrecimento';
+        document.getElementById('nome_usuario').value = d.nome || '';
+        
+        d.alimentos?.forEach(val => {
+            const el = document.querySelector(`input[name="alimento"][value="${val}"]`);
+            if (el) el.checked = true;
+        });
+        d.preparos?.forEach(val => {
+            const el = document.querySelector(`input[name="preparo-geral"][value="${val}"]`);
+            if (el) el.checked = true;
+        });
     }
 
     async function verificarAcessoEPagar() {
@@ -446,6 +367,7 @@
         const emailAcesso = prompt("Informe seu e-mail para salvar/acessar seu plano:");
         if (!emailAcesso) return;
         const emailLow = emailAcesso.toLowerCase().trim();
+        
         salvarProgressoLocal(emailLow);
 
         let { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', emailLow).maybeSingle();
@@ -455,49 +377,49 @@
             return;
         }
 
-        if (user.tipo_plano === 'unica') {
-            if (user.creditos <= 0) {
-                alert("Você já utilizou sua troca do Plano Único. Adquira o Plano Anual para trocas ilimitadas!");
-                document.getElementById('payment-overlay').style.display = 'flex';
-                return;
-            }
-            executarGeracaoComConsumo('unica', emailLow);
-        } else if (user.tipo_plano === 'anual') {
-            executarGeracaoComConsumo('anual', emailLow, user.contagem_semanal || 0);
+        // Lógica de créditos e trocas
+        if (user.tipo_plano === 'unica' && user.creditos <= 0) {
+            alert("Você já utilizou sua troca do Plano Único.");
+            document.getElementById('payment-overlay').style.display = 'flex';
+            return;
         }
+
+        // Se já tem acesso, gera direto
+        await executarGeracaoComConsumo(user.tipo_plano, emailLow, user.contagem_semanal || 0);
     }
 
-    async function executarGeracaoComConsumo(tipo, email, contagemAtual = 0) {
-        salvarProgressoLocal(); 
-        const dadosLocais = localStorage.getItem('rascunho_dieta');
-        if (!dadosLocais) return alert("Erro ao recuperar dados.");
+    async function executarGeracaoComConsumo(tipo, email, contagemAtual) {
+        if (tipo === 'unica') {
+            await _supabase.from('Usuarios_Dieta').update({ creditos: 0 }).eq('email', email);
+        } else {
+            await _supabase.from('Usuarios_Dieta').update({ contagem_semanal: contagemAtual + 1 }).eq('email', email);
+        }
         
-        if (tipo === 'unica') await _supabase.from('Usuarios_Dieta').update({ creditos: 0, ultima_geracao: new Date().toISOString() }).eq('email', email);
-        else await _supabase.from('Usuarios_Dieta').update({ contagem_semanal: contagemAtual + 1, ultima_geracao: new Date().toISOString() }).eq('email', email);
-        
-        await gerarDieta(JSON.parse(dadosLocais)); 
+        const dadosLocais = JSON.parse(localStorage.getItem('rascunho_dieta'));
+        await gerarDieta(dadosLocais);
     }
 
     async function iniciarCheckout(priceId) {
-        salvarProgressoLocal();
-        const email = localStorage.getItem('email_verificacao') || "";
+        const email = localStorage.getItem('email_verificacao');
+        if (!email) return alert("E-mail não encontrado. Por favor, tente novamente.");
 
-        // CORREÇÃO: Salvar tipo do plano no localStorage ANTES do redirect para o Stripe
-        // Isso garante que ao retornar, saberemos qual plano foi escolhido
-        if (priceId === 'price_1Sz1w7GEaACih56ZWyTiPBAu') {
-            localStorage.setItem('tipo_plano_pendente', 'unica');
-        } else if (priceId === 'price_1SzPP7GEaACih56ZkwV5mxN2') {
-            localStorage.setItem('tipo_plano_pendente', 'anual');
+        // Chama sua API de checkout em vez de link direto
+        try {
+            const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    priceId, 
+                    email, 
+                    tipoPlano: priceId.includes('WyTiPBAu') ? 'unica' : 'anual' 
+                })
+            });
+            const session = await response.json();
+            if (session.url) window.location.href = session.url;
+        } catch (err) {
+            alert("Erro ao iniciar pagamento.");
         }
-
-        const LINK_UNICA = `https://buy.stripe.com/test_bJe7sLcqhcL0g0B9T9asg00?prefilled_email=${encodeURIComponent(email)}`;
-        const LINK_ANUAL = `https://buy.stripe.com/test_3cI8wP0Hz9yO4hTc1hasg01?prefilled_email=${encodeURIComponent(email)}`; 
-        
-        if (priceId === 'price_1Sz1w7GEaACih56ZWyTiPBAu') window.location.href = LINK_UNICA;
-        else if (priceId === 'price_1SzPP7GEaACih56ZkwV5mxN2') window.location.href = LINK_ANUAL;
     }
-
-    function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
 
     async function gerarDieta(d) {
         const btn = document.getElementById('btn-gerar');
@@ -506,34 +428,23 @@
         const btnDownloadPos = document.getElementById('btn-download-pos-geracao');
         const divResultado = document.getElementById('resultado');
 
-        const pesoUser = parseFloat(d.peso);
-        if (!pesoUser || pesoUser <= 0 || isNaN(pesoUser)) {
-            alert("⚠️ Por favor, insira um peso válido.");
-            return;
-        }
-
         statusTopo.style.display = 'block';
-        btn.innerText = "AGUARDE...";
+        btn.innerText = "GERANDO...";
         btn.disabled = true;
 
         let fraseIndex = 0;
-        statusTopo.innerText = frasesCarregamento[fraseIndex];
         const intervaloFrases = setInterval(() => {
-            if (fraseIndex < frasesCarregamento.length - 1) {
-                fraseIndex++;
-                statusTopo.innerText = frasesCarregamento[fraseIndex];
-            }
-        }, 2000);
+            statusTopo.innerText = frasesCarregamento[fraseIndex % frasesCarregamento.length];
+            fraseIndex++;
+        }, 2500);
 
-        let metaProt, metaGord;
-        if (d.objetivo === 'Emagrecimento') { metaProt = 2.2; metaGord = 0.8; }
-        else if (d.objetivo === 'Hipertrofia') { metaProt = 1.8; metaGord = 1.0; }
-        else { metaProt = 2.0; metaGord = 0.9; }
+        // Prompts originais mantidos conforme solicitado
+        const metaProt = d.objetivo === 'Emagrecimento' ? 2.2 : (d.objetivo === 'Hipertrofia' ? 1.8 : 2.0);
+        const metaGord = d.objetivo === 'Emagrecimento' ? 0.8 : (d.objetivo === 'Hipertrofia' ? 1.0 : 0.9);
+        const gorduraAlvoG = (parseFloat(d.peso) * metaGord).toFixed(1);
+        const proteinaAlvoG = (parseFloat(d.peso) * metaProt).toFixed(0);
 
-        const gorduraAlvoG = (pesoUser * metaGord).toFixed(1);
-        const proteinaAlvoG = (pesoUser * metaProt).toFixed(0);
-
-        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real... Peso: ${pesoUser}kg, Gordura Alvo: ${gorduraAlvoG}g, Proteína Alvo: ${proteinaAlvoG}g.`;
+        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real para uma Reeducação Alimentar. Peso: ${d.peso}kg, Gordura Alvo: ${gorduraAlvoG}g, Proteína Alvo: ${proteinaAlvoG}g. Objetivos e alimentos selecionados: ${JSON.stringify(d)}`;
 
         try {
             const response = await fetch('/api/gerar-dieta', {
@@ -543,32 +454,21 @@
             });
 
             const result = await response.json();
-            if (!response.ok) throw new Error(result.error || "Erro na geração.");
+            if (!response.ok) throw new Error(result.error);
 
             divResultado.innerText = result.dieta;
             divResultado.style.display = 'block';
-            divResultado.scrollIntoView({ behavior: 'smooth' });
-
-            // AJUSTE 1: REMOVIDO DOWNLOAD AUTOMÁTICO
-            // AJUSTE 2: CONFIGURA O BOTÃO PARA O CLIQUE MANUAL
+            
             if (btnDownloadPos) {
                 btnDownloadPos.style.display = 'block';
-                btnDownloadPos.onclick = () => {
-                    if (result.pdf_url && result.pdf_url.startsWith('http')) {
-                        window.open(result.pdf_url, '_blank');
-                    } else {
-                        baixarPDF(result.dieta);
-                    }
-                };
+                btnDownloadPos.onclick = () => window.open(result.pdf_url, '_blank');
             }
 
-            // AJUSTE 3: LIMPEZA DE DADOS OCORRE AGORA (PÓS-DISPONIBILIZAÇÃO DO BOTÃO)
+            // Limpeza só ocorre após o sucesso total
             limparDadosEApp();
             
-            return true;
         } catch (e) { 
             alert("Erro: " + e.message);
-            return false;
         } finally {
             clearInterval(intervaloFrases);
             btn.innerText = "GERAR E BAIXAR PLANO";
@@ -577,40 +477,19 @@
         }
     }
 
-    function baixarPDF(conteudo) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const textoLimpo = conteudo.replace(/[#*]/g, '');
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(12);
-        const lines = doc.splitTextToSize(textoLimpo, 180);
-        let y = 20;
-        lines.forEach(line => {
-            if (y > 275) { doc.addPage(); y = 20; }
-            doc.text(line, 15, y);
-            y += 7;
-        });
-        doc.save("Meu_Plano_Alimentar.pdf");
-    }
-
     function limparDadosEApp() {
-        // AJUSTE: Limpeza total de rascunhos e e-mails para garantir nova sessão limpa
         localStorage.removeItem('rascunho_dieta');
         localStorage.removeItem('email_verificacao');
-        localStorage.removeItem('tipo_plano_pendente'); 
-        
-        document.getElementById('peso').value = '';
-        document.getElementById('calorias').value = '';
-        document.getElementById('nome_usuario').value = '';
-        document.getElementById('email-busca').value = ''; 
-        document.getElementById('aceite-clausula').checked = false;
+        document.querySelectorAll('input[type="number"], input[type="text"]').forEach(i => i.value = '');
         document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
-        document.getElementById('num-refeicoes').value = '4';
-        document.getElementById('objetivo').value = 'Emagrecimento';
-        
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
+    function alternarBuscaRapida() { 
+        const area = document.getElementById('area-busca-rapida');
+        area.style.display = area.style.display === 'none' ? 'block' : 'none';
     }
 </script>
 </body>
 </html>
-
