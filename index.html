@@ -22,18 +22,8 @@
         #btn-gerar:disabled { background: #555; cursor: not-allowed; }
         
         #btn-download-pos-geracao, #btn-download-direto { 
-            width:100%; 
-            margin-top:20px; 
-            padding:18px; 
-            background:#000; 
-            border: 2px solid #FFD700; 
-            border-radius:8px; 
-            font-size:16px; 
-            font-weight:bold; 
-            color:#FFD700; 
-            cursor: pointer; 
-            text-transform: uppercase; 
-            transition: 0.3s;
+            width:100%; margin-top:20px; padding:18px; background:#000; border: 2px solid #FFD700; border-radius:8px; 
+            font-size:16px; font-weight:bold; color:#FFD700; cursor: pointer; text-transform: uppercase; transition: 0.3s;
         }
         #btn-download-pos-geracao:hover, #btn-download-direto:hover { background: #FFD700; color: #000; }
 
@@ -41,21 +31,11 @@
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
 
         #payment-overlay { 
-            display: none; 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.95); 
-            z-index: 9999; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
-            padding: 20px; 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); 
+            z-index: 9999; flex-direction: column; justify-content: center; align-items: center; padding: 20px; 
         }
 
-        .payment-card { background: #1e1e1e; padding: 30px; border-radius: 15px; text-align: center; max-width: 350px; border: 1px solid #333; font-family: sans-serif; }
+        .payment-card { background: #1e1e1e; padding: 30px; border-radius: 15px; text-align: center; max-width: 350px; border: 1px solid #333; }
 
         .categoria-pai { color: #FFD700; font-size: 15px; font-weight: bold; margin: 25px 0 10px 0; padding-left: 10px; text-transform: uppercase; border-left: 3px solid #FFD700; }
         details { background: #0a0a0a; border: 1px solid #222; border-radius: 8px; margin-bottom: 6px; overflow: hidden; }
@@ -65,20 +45,19 @@
         .grid-alimentos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 12px 12px 12px; }
         .item-alimento { display: flex; align-items: center; font-size: 12px; color: #bbb; cursor: pointer; padding: 4px 0; }
         .item-alimento input { width: auto; margin: 0 8px 0 0; }
+
         .secao-especial { background: #111; border: 1px dashed #FFD700; padding: 15px; border-radius: 8px; margin: 20px 0; }
         .secao-especial h4 { margin-top: 0; color: #FFD700; font-size: 14px; }
         #resultado { margin-top: 30px; white-space: pre-wrap; background: #111; padding: 20px; border-radius: 8px; display: none; border: 1px solid #FFD700; font-size: 14px; line-height: 1.6; }
-        hr { border: 0.5px solid #222; margin: 30px 0; }
 
         .btn-suporte {
             position: fixed; bottom: 20px; right: 20px; background: #25d366; color: white; padding: 12px 20px;
-            border-radius: 50px; text-decoration: none; font-size: 14px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            z-index: 1000; display: flex; align-items: center; gap: 8px;
+            border-radius: 50px; text-decoration: none; font-size: 14px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 1000;
         }
 
         .login-shortcut {
             position: absolute; top: 15px; right: 20px; cursor: pointer; color: #FFD700; background: rgba(255, 215, 0, 0.1);
-            padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 100; border: 1px solid transparent;
+            padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 100;
         }
     </style>
 </head>
@@ -90,9 +69,9 @@
     <div class="payment-card">
         <h2 style="font-size: 24px; color: #FFD700; margin-top: 0;">LIBERAR ACESSO! 🚀</h2>
         <p style="color: #eee; margin-bottom: 25px; font-size: 15px;">Escolha um plano:</p>
-        <button style="width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; background: #fff; color: #000; cursor: pointer;" onclick="iniciarCheckout('price_1Sz1w7GEaACih56ZWyTiPBAu')">🥗 DIETA ÚNICA - R$ 9,90</button>
-        <div style="margin-top: 20px;"></div>
-        <button style="width: 100%; padding: 12px; border: 2px solid #FFD700; border-radius: 8px; font-weight: bold; background: #fff; color: #000; cursor: pointer;" onclick="iniciarCheckout('price_1SzPP7GEaACih56ZkwV5mxN2')">📅 ACESSO ANUAL - R$ 29,90</button>
+        <button style="width: 100%; padding: 15px; border-radius: 8px; font-weight: bold; background: #fff; color: #000; cursor: pointer;" onclick="iniciarCheckout('price_1Sz1w7GEaACih56ZWyTiPBAu')">🥗 DIETA ÚNICA - R$ 9,90</button>
+        <div style="margin-top: 15px;"></div>
+        <button style="width: 100%; padding: 15px; border: 2.5px solid #FFD700; border-radius: 8px; font-weight: bold; background: #fff; color: #000; cursor: pointer;" onclick="iniciarCheckout('price_1SzPP7GEaACih56ZkwV5mxN2')">📅 ACESSO ANUAL - R$ 29,90</button>
         <p style="margin-top: 30px; font-size: 12px; color: #888; cursor: pointer; text-decoration: underline;" onclick="fecharModal()">← Voltar e editar</p>
     </div>
 </div>
@@ -106,7 +85,7 @@
         <h2>🍎 Reeducação Alimentar</h2>
         
         <div id="area-busca-rapida" class="secao-especial" style="display: none; border-style: solid; border-color: #FFD700;">
-            <h4 style="margin-bottom: 10px;">BUSCAR PLANO ATIVO</h4>
+            <h4 style="margin-bottom: 10px;">JÁ POSSUI UM PLANO ATIVO?</h4>
             <div style="display: flex; gap: 10px;">
                 <input type="email" id="email-busca" placeholder="E-mail cadastrado" style="margin-top: 0; flex: 1;">
                 <button onclick="buscarAcessoRapido()" style="width: auto; background: #FFD700; color: #000; border: none; padding: 0 15px; border-radius: 6px; font-weight: bold; cursor: pointer;">BUSCAR</button>
@@ -120,28 +99,18 @@
         <p class="subtitle">Personalize sua alimentação abaixo:</p>
         <div id="status-topo">PROCESSANDO...</div>
 
-        <label>Seu Peso Atual (kg)</label>
-        <input type="number" id="peso" placeholder="Ex: 80">
-        
-        <label>Meta de Calorias Diárias</label>
-        <input type="number" id="calorias" placeholder="Ex: 2100">
-        
-        <label>Número de Refeições</label>
+        <label>Peso (kg)</label><input type="number" id="peso" placeholder="Ex: 80">
+        <label>Calorias Diárias</label><input type="number" id="calorias" placeholder="Ex: 2100">
+        <label>Refeições</label>
         <select id="num-refeicoes">
-            <option value="4">4 Refeições</option>
-            <option value="5">5 Refeições</option>
-            <option value="6">6 Refeições</option>
+            <option value="4">4 Refeições</option><option value="5">5 Refeições</option><option value="6">6 Refeições</option>
         </select>
-
         <label>Objetivo</label>
         <select id="objetivo">
-            <option value="Emagrecimento">Emagrecimento</option>
-            <option value="Hipertrofia">Hipertrofia</option>
-            <option value="Definição">Definição</option>
+            <option value="Emagrecimento">Emagrecimento</option><option value="Hipertrofia">Hipertrofia</option><option value="Definição">Definição</option>
         </select>
 
         <hr>
-        <h3 style="color: #FFD700; font-size: 16px; text-align: center;">SELEÇÃO DE ALIMENTOS</h3>
         <div id="categorias-container"></div>
 
         <div class="secao-especial">
@@ -150,7 +119,7 @@
         </div>
 
         <label style="display: flex; align-items: center; font-weight: normal; font-size: 12px; margin-top: 20px;">
-            <input type="checkbox" id="aceite-clausula" style="width: 20px; margin-right: 10px;"> Confirmo que este programa não substitui acompanhamento médico.
+            <input type="checkbox" id="aceite-clausula" style="width: 20px; margin-right: 10px;"> Confirmo estar ciente dos termos.
         </label>
 
         <button id="btn-gerar" onclick="verificarAcessoEPagar()">GERAR E BAIXAR PLANO</button>
@@ -166,54 +135,46 @@
 
     const estruturaAlimentos = {
         "CARBOIDRATOS": {
-            "Arroz": ["Branco", "Integral", "Parboilizado", "Jasmine", "Basmati", "7 Grãos"],
-            "Feijão": ["Carioca", "Preto", "Branco", "Fradinho", "Vermelho"],
-            "Macarrão": ["Comum (Sêmola)", "Integral", "De arroz", "Sem glúten"],
-            "Cuscuz": ["De milho", "Nordestino", "Marroquino", "Integral"],
-            "Batata Inglesa": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Chips forno/airfryer", "Frita na airfryer"],
-            "Batata Doce": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Frita na airfryer"],
-            "Mandioca": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Frita na airfryer"],
-            "Pão": ["Francês", "Forma branco", "Forma integral", "Integral com grãos", "Sírio", "De aveia"],
-            "Tapioca": ["Tradicional", "Hidratada", "Integral"],
-            "Aveia": ["Em flocos finos", "Em flocos", "Farinha", "Farelo"],
-            "Flocão de Milho": ["Tradicional", "Integral"]
+            "Arroz": ["Branco", "Integral", "Parboilizado", "Jasmine", "7 Grãos"],
+            "Feijão": ["Carioca", "Preto", "Branco", "Fradinho"],
+            "Macarrão": ["Comum", "Integral", "De arroz"],
+            "Batatas": ["Inglesa Cozida", "Inglesa Assada", "Doce Cozida", "Doce Assada"],
+            "Pães": ["Francês", "Integral", "De Forma"],
+            "Outros": ["Cuscuz", "Mandioca", "Tapioca", "Aveia"]
         },
         "PROTEÍNAS": {
-            "Frango": ["Filé de peito", "Coxa e sobrecoxa (sem pele)"],
-            "Boi": ["Patinho", "Coxão mole", "Coxão duro", "Lagarto", "Músculo", "Alcatra limpa"],
-            "Porco": ["Lombo suíno", "Filé mignon suíno"],
-            "Ovos": ["Mexidos", "Cozidos", "Omelete", "Pochê", "Frito na água", "Frito com azeite"]
+            "Frango": ["Filé de peito", "Coxa/Sobrecoxa sem pele"],
+            "Boi": ["Patinho", "Alcatra", "Músculo"],
+            "Ovos": ["Cozidos", "Mexidos", "Omelete"],
+            "Peixes": ["Tilápia", "Merluza", "Atum"]
         },
-        "PEIXES": { "Peixes": ["Filé de tilápia", "Filé de merluza", "Filé de linguado", "Filé de atum fresco"] },
-        "GORDURAS": { "Gorduras Boas": ["Abacate", "Azeite de oliva extra virgem", "Castanha-do-pará", "Castanha de caju", "Amêndoas", "Nozes", "Amendoim", "Pasta de amendoim"] },
-        "LEGUMES": { "Legumes": ["Cenoura", "Brócolis", "Couve-flor", "Abobrinha", "Abóbora", "Berinjela", "Espinafre", "Chuchu", "Quiabo", "Vagem", "Pepino", "Beterraba", "Pimentão", "Couve"] },
-        "FRUTAS": { "Frutas": ["Banana", "Maçã", "Mamão", "Laranja", "Abacaxi", "Melancia", "Melão", "Manga", "Morango", "Uva", "Goiaba", "Pêra", "Kiwi", "Caju", "Limão", "Acerola", "Tangerina"] },
-        "SEMENTES": { "Sementes": ["Chia", "Linhaça", "Semente de abóbora", "Semente de girassol", "Gergelim", "Quinoa"] },
-        "OUTROS": { "Outros": ["Peito de peru", "Iogurte Natural", "Leite Integral", "Leite Desnatado", "Leite s/Lactose", "Leite De Amendoas", "Leite de soja", "Ricota", "Queijo Minas", "Queijo Muçarela", "Whey Protein", "Mel"] }
+        "GORDURAS & LATICÍNIOS": {
+            "Gorduras": ["Azeite", "Abacate", "Castanhas", "Pasta de Amendoim"],
+            "Laticínios": ["Iogurte Natural", "Leite Desnatado", "Queijo Minas", "Ricota"]
+        },
+        "VEGETAIS & FRUTAS": {
+            "Legumes": ["Cenoura", "Brócolis", "Abobrinha", "Chuchu", "Vagem"],
+            "Frutas": ["Banana", "Maçã", "Mamão", "Abacaxi", "Morango", "Uva"]
+        }
     };
 
-    const preparosUnificados = ["Cozido", "Assado", "Grelhado", "Refogado", "Na Airfryer", "Na frigideira", "Moído", "Desfiado", "Cozido no vapor", "Ensopado"];
+    const preparos = ["Cozido", "Grelhado", "Assado", "Airfryer", "Refogado"];
 
     async function inicializarTudo() {
         renderInterface();
         const urlParams = new URLSearchParams(window.location.search);
-        const pago = urlParams.get('pago');
-        const emailSalvo = localStorage.getItem('email_verificacao');
-        const rascunho = localStorage.getItem('rascunho_dieta');
-
-        if (pago === 'true' && emailSalvo && rascunho) {
-            const status = document.getElementById('status-topo');
-            status.style.display = 'block';
-            status.innerText = "✅ PAGAMENTO CONFIRMADO! GERANDO SEU PLANO...";
-            setTimeout(() => gerarDieta(JSON.parse(rascunho)), 1500);
-        } else {
-            limparDadosEApp();
+        if (urlParams.get('pago') === 'true') {
+            const rascunho = localStorage.getItem('rascunho_dieta');
+            if (rascunho) {
+                document.getElementById('status-topo').style.display = 'block';
+                document.getElementById('status-topo').innerText = "✅ PAGAMENTO CONFIRMADO! GERANDO...";
+                setTimeout(() => gerarDieta(JSON.parse(rascunho)), 1000);
+            }
         }
     }
 
     function renderInterface() {
         const container = document.getElementById('categorias-container');
-        container.innerHTML = '';
         for (let cat in estruturaAlimentos) {
             let html = `<div class="categoria-pai">${cat}</div>`;
             for (let sub in estruturaAlimentos[cat]) {
@@ -225,136 +186,98 @@
             }
             container.innerHTML += html;
         }
-        const prepCont = document.getElementById('preparos-unificados-container');
-        prepCont.innerHTML = '';
-        preparosUnificados.forEach(p => {
-            prepCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-geral" value="${p}"> ${p}</label>`;
+        preparos.forEach(p => {
+            document.getElementById('preparos-unificados-container').innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo" value="${p}"> ${p}</label>`;
         });
     }
 
-    function salvarProgressoLocal(email) {
+    async function verificarAcessoEPagar() {
+        const email = prompt("Seu e-mail:");
+        if (!email) return;
+        
         const dados = {
             peso: document.getElementById('peso').value,
             calorias: document.getElementById('calorias').value,
             refeicoes: document.getElementById('num-refeicoes').value,
             objetivo: document.getElementById('objetivo').value,
             alimentos: Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value),
-            preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value),
+            preparos: Array.from(document.querySelectorAll('input[name="preparo"]:checked')).map(i => i.value),
             email: email.toLowerCase().trim()
         };
+
         localStorage.setItem('rascunho_dieta', JSON.stringify(dados));
         localStorage.setItem('email_verificacao', dados.email);
-    }
 
-    async function verificarAcessoEPagar() {
-        if (Array.from(document.querySelectorAll('input[name="alimento"]:checked')).length < 5) return alert("Selecione pelo menos 5 alimentos!");
-        if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
-        
-        const email = prompt("Informe seu e-mail para salvar o plano:");
-        if (!email) return;
-        salvarProgressoLocal(email);
-
-        const { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', email.toLowerCase().trim()).maybeSingle();
+        const { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', dados.email).maybeSingle();
 
         if (!user || !user.pago || (user.tipo_plano === 'unica' && user.creditos <= 0)) {
             document.getElementById('payment-overlay').style.display = 'flex';
         } else {
-            await gerarDieta(JSON.parse(localStorage.getItem('rascunho_dieta')));
+            gerarDieta(dados);
         }
     }
 
     async function iniciarCheckout(priceId) {
         const email = localStorage.getItem('email_verificacao');
-        const response = await fetch('/api/checkout', {
+        const res = await fetch('/api/checkout', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ priceId, email, tipoPlano: priceId.includes('WyTiPBAu') ? 'unica' : 'anual' })
         });
-        const session = await response.json();
-        if (session.url) window.location.href = session.url;
+        const data = await res.json();
+        if (data.url) window.location.href = data.url;
     }
 
     async function gerarDieta(d) {
-        const divRes = document.getElementById('resultado');
         const status = document.getElementById('status-topo');
-        const btnDownloadPos = document.getElementById('btn-download-pos-geracao');
-        const btnGerar = document.getElementById('btn-gerar');
-
         status.style.display = 'block';
-        btnGerar.disabled = true;
-
-        const metaProt = d.objetivo === 'Emagrecimento' ? 2.2 : (d.objetivo === 'Hipertrofia' ? 1.8 : 2.0);
-        const metaGord = d.objetivo === 'Emagrecimento' ? 0.8 : (d.objetivo === 'Hipertrofia' ? 1.0 : 0.9);
-        const gorduraAlvoG = (parseFloat(d.peso) * metaGord).toFixed(1);
-        const proteinaAlvoG = (parseFloat(d.peso) * metaProt).toFixed(0);
-
-        const promptFinal = `Atue como um Nutricionista. Gere um cardápio de Reeducação Alimentar: Peso: ${d.peso}kg, Calorias: ${d.calorias}, Refeições: ${d.refeicoes}, Objetivo: ${d.objetivo}. Alimentos: ${d.alimentos.join(', ')}. Preparos: ${d.preparos.join(', ')}. Macros Alvo: Prot ${proteinaAlvoG}g, Gord ${gorduraAlvoG}g.`;
-
+        
         try {
-            const response = await fetch('/api/gerar-dieta', {
+            const res = await fetch('/api/gerar-dieta', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: promptFinal, email: d.email })
+                body: JSON.stringify({ prompt: `Gerar dieta para ${d.peso}kg`, email: d.email })
             });
-
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error);
-
+            const result = await res.json();
+            
+            const divRes = document.getElementById('resultado');
             divRes.innerText = result.dieta;
             divRes.style.display = 'block';
-            btnDownloadPos.style.display = 'block';
-            btnDownloadPos.onclick = () => window.open(result.pdf_url, '_blank');
+            
+            const btnPdf = document.getElementById('btn-download-pos-geracao');
+            btnPdf.style.display = 'block';
+            btnPdf.onclick = () => window.open(result.pdf_url, '_blank');
 
-            // SCROLL AUTOMÁTICO CORRIGIDO
-            setTimeout(() => {
-                divRes.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 500);
-
-            limparDadosEApp();
-        } catch (e) { alert("Erro: " + e.message); }
-        finally {
-            status.style.display = 'none';
-            btnGerar.disabled = false;
-        }
+            // SCROLL AUTOMÁTICO NA GERAÇÃO
+            setTimeout(() => { divRes.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 500);
+            
+        } catch (e) { alert("Erro ao conectar com o servidor."); }
+        finally { status.style.display = 'none'; }
     }
 
     async function buscarAcessoRapido() {
-        const email = document.getElementById('email-busca').value;
-        if (!email) return alert("Digite seu e-mail.");
+        const emailInput = document.getElementById('email-busca').value;
+        if (!emailInput) return alert("Digite o e-mail.");
         
         try {
-            const response = await fetch('/api/buscar-dieta', {
+            const res = await fetch('/api/buscar-dieta', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: email.toLowerCase().trim() })
+                body: JSON.stringify({ email: emailInput.toLowerCase().trim() })
             });
-            const data = await response.json();
+            const data = await res.json();
 
-            if (response.ok && data.pdf_url) {
-                const resBusca = document.getElementById('resultado-busca');
-                resBusca.style.display = 'block';
+            if (res.ok && data.pdf_url) {
+                const areaResult = document.getElementById('resultado-busca');
+                areaResult.style.display = 'block';
                 document.getElementById('btn-download-direto').onclick = () => window.open(data.pdf_url, '_blank');
                 
                 // SCROLL AUTOMÁTICO NA BUSCA
-                setTimeout(() => {
-                    resBusca.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 300);
+                setTimeout(() => { areaResult.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
             } else {
-                alert(data.error || "Nenhum plano ativo encontrado.");
+                alert("Nenhum plano ativo encontrado para este e-mail.");
             }
-        } catch (err) { alert("Erro ao conectar com o servidor."); }
-    }
-
-    function limparDadosEApp() {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('pago') === 'true') return;
-
-        localStorage.removeItem('rascunho_dieta');
-        localStorage.removeItem('email_verificacao');
-        document.querySelectorAll('input:not([type="button"]), select').forEach(i => {
-            if (i.type === 'checkbox') i.checked = false;
-            else i.value = '';
-        });
+        } catch (e) { alert("Erro ao conectar com o servidor."); }
     }
 
     function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
