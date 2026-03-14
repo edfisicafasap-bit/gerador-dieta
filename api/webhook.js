@@ -51,7 +51,7 @@ export default async function handler(req, res) {
     // ⚠️ CONFIRA SE ESTES SÃO SEUS PRICE IDs REAIS
     if (priceId === 'price_1Sz1w7GEaACih56ZWyTiPBAu') {
       tipoPlano = 'unica';
-    } else if (priceId === 'price_1SzPP7GEaACih56ZkwV5mxN2') {
+    } else if (priceId === 'price_1TAhibGEaACih56Z4TeYkNwK') {
       tipoPlano = 'anual';
     }
 
