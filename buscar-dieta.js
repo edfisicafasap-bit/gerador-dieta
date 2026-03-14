@@ -1,8 +1,13 @@
-import { supabase } from './supabase.js';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export default async function handler(req, res) {
-    // Garante que apenas requisições POST sejam aceitas
     if (req.method !== 'POST') {
+        res.setHeader('Allow', 'POST');
         return res.status(405).json({ error: 'Método não permitido' });
     }
 
@@ -10,38 +15,37 @@ export default async function handler(req, res) {
         const { email } = req.body;
 
         if (!email) {
-            return res.status(400).json({ error: 'O e-mail é obrigatório para a busca.' });
+            return res.status(400).json({ error: 'O e-mail é obrigatório.' });
         }
 
         const emailLimpo = email.toLowerCase().trim();
 
-        // Busca apenas as informações necessárias: a URL do PDF e a data
-        const { data: usuario, error: userError } = await supabase
+        // Buscamos apenas se existe um PDF para este e-mail
+        const { data: usuario, error: dbError } = await supabase
             .from('Usuarios_Dieta')
-            .select('pdf_url, ultima_geracao, tipo_plano')
+            .select('pdf_url')
             .eq('email', emailLimpo)
             .maybeSingle();
 
-        if (userError) throw userError;
+        if (dbError) throw dbError;
 
-        // Se o usuário existir e já tiver um PDF gerado
-        if (usuario && usuario.pdf_url) {
-            return res.status(200).json({ 
-                sucesso: true,
-                pdf_url: usuario.pdf_url,
-                ultima_geracao: usuario.ultima_geracao
-            });
-        } else {
-            // Caso o e-mail não esteja no banco ou ainda não gerou o PDF
-            return res.status(404).json({ 
-                error: 'Nenhuma Reeducação Alimentar encontrada para este e-mail.' 
-            });
+        // Se o usuário não existe no banco
+        if (!usuario) {
+            return res.status(404).json({ error: 'Nenhum cadastro encontrado.' });
         }
+
+        // Se o usuário existe, mas o campo pdf_url está vazio
+        if (!usuario.pdf_url) {
+            return res.status(404).json({ error: 'Você ainda não gerou o seu plano de Reeducação Alimentar.' });
+        }
+
+        // Se chegou aqui, o PDF existe. Retornamos o link direto.
+        return res.status(200).json({ 
+            pdf_url: usuario.pdf_url 
+        });
 
     } catch (error) {
         console.error('Erro na busca:', error.message);
-        return res.status(500).json({ 
-            error: 'Erro interno ao buscar os dados.' 
-        });
+        return res.status(500).json({ error: 'Erro interno ao buscar plano.' });
     }
 }
