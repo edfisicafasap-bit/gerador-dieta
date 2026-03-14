@@ -106,7 +106,7 @@
         <h2>🍎 Reeducação Alimentar</h2>
         
         <div id="area-busca-rapida" class="secao-especial" style="display: none; border-style: solid; border-color: #FFD700;">
-            <h4 style="margin-bottom: 10px;">BUSCAR PLANO ATIVO</h4>
+            <h4 style="margin-bottom: 10px;">BUSCAR CARDÁPIO GERADO</h4>
             <div style="display: flex; gap: 10px;">
                 <input type="email" id="email-busca" placeholder="E-mail cadastrado" style="margin-top: 0; flex: 1;">
                 <button onclick="buscarAcessoRapido()" style="width: auto; background: #FFD700; color: #000; border: none; padding: 0 15px; border-radius: 6px; font-weight: bold; cursor: pointer;">BUSCAR</button>
@@ -127,18 +127,20 @@
         <input type="number" id="calorias" placeholder="Ex: 2100">
         
         <label>Número de Refeições</label>
-        <select id="num-refeicoes">
-            <option value="4">4 Refeições</option>
-            <option value="5">5 Refeições</option>
-            <option value="6">6 Refeições</option>
-        </select>
+<select id="num-refeicoes">
+    <option value="" disabled selected>Selecione...</option>
+    <option value="4">4 Refeições</option>
+    <option value="5">5 Refeições</option>
+    <option value="6">6 Refeições</option>
+</select>
 
-        <label>Objetivo</label>
-        <select id="objetivo">
-            <option value="Emagrecimento">Emagrecimento</option>
-            <option value="Hipertrofia">Hipertrofia</option>
-            <option value="Definição">Definição</option>
-        </select>
+       <label>Objetivo</label>
+<select id="objetivo">
+    <option value="" disabled selected>Selecione...</option>
+    <option value="Emagrecimento">Emagrecimento</option>
+    <option value="Hipertrofia">Hipertrofia</option>
+    <option value="Definição">Definição</option>
+</select>
 
         <hr>
         <h3 style="color: #FFD700; font-size: 16px; text-align: center;">SELEÇÃO DE ALIMENTOS</h3>
@@ -265,13 +267,43 @@
 
     async function iniciarCheckout(priceId) {
         const email = localStorage.getItem('email_verificacao');
-        const response = await fetch('/api/checkout', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ priceId, email, tipoPlano: priceId.includes('WyTiPBAu') ? 'unica' : 'anual' })
-        });
-        const session = await response.json();
-        if (session.url) window.location.href = session.url;
+        
+        if (!email) {
+            alert("E-mail não encontrado. Por favor, informe seu e-mail novamente.");
+            return;
+        }
+
+        // Determina o tipo do plano para a API
+        const tipoPlano = priceId.includes('5mxN2') ? 'anual' : 'unica';
+
+        try {
+            console.log("Iniciando checkout...", { priceId, email, tipoPlano });
+
+            const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    priceId: priceId, 
+                    email: email.toLowerCase().trim(), 
+                    tipoPlano: tipoPlano 
+                })
+            });
+
+            const session = await response.json();
+
+            if (session.url) {
+                // Se tudo deu certo, redireciona para o Stripe
+                window.location.href = session.url;
+            } else {
+                // Se a API retornou um erro (ex: ID de preço errado)
+                console.error("Erro da API:", session.error);
+                alert("Erro ao abrir pagamento: " + (session.error || "Tente novamente."));
+            }
+        } catch (err) {
+            // Se o servidor estiver fora do ar ou houver erro de rede
+            console.error("Erro de conexão:", err);
+            alert("Erro de conexão. Verifique sua internet ou os logs da Vercel.");
+        }
     }
 
     async function gerarDieta(d) {
