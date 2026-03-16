@@ -8,25 +8,32 @@ export async function uploadPDFSupabase(conteudo, nomeArquivo) {
   try {
     const doc = new jsPDF();
     
-    // Limpa caracteres que podem quebrar a formatação simples
-    const textoLimpo = conteudo.replace(/[#*]/g, '');
+    // LIMPEZA REFORÇADA: Remove negritos (**), títulos (#) e asteriscos soltos (*)
+    // O uso de regex garante que remova todas as ocorrências de forma limpa.
+    const textoLimpo = conteudo
+      .replace(/\*\*/g, '')  // Remove negrito
+      .replace(/#/g, '')     // Remove hashtags de títulos
+      .replace(/\*/g, '')    // Remove asteriscos restantes
+      .trim();
     
     const larguraMax = 180;
     const linhas = doc.splitTextToSize(textoLimpo, larguraMax);
     
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
+    doc.setFontSize(11); // Reduzi levemente para caber melhor o conteúdo técnico
 
     let y = 20; // Posição vertical inicial
     const margemSuperior = 20;
     const limitePagina = 275; // Limite antes de criar nova página
 
     linhas.forEach(linha => {
-        // Se a próxima linha for ultrapassar o limite, cria nova página
+        // Se a próxima linha ultrapassar o limite, cria nova página
         if (y > limitePagina) {
             doc.addPage();
             y = margemSuperior; // Reseta o cursor para o topo da nova página
         }
+        
+        // Adiciona a linha ao documento
         doc.text(linha, 15, y);
         y += 7; // Espaçamento entre linhas
     });
