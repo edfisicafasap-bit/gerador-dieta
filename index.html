@@ -97,7 +97,7 @@
     </div>
 
     <div id="tmb-wrapper">
-        <h2>🔥 Passo 1: Plano Calórico</h2>
+        <h2>🔥 Descubra sua meta de calorias diária</h2>
         <p class="subtitle">Calcule sua meta baseada no seu objetivo</p>
 
         <label>Gênero</label>
@@ -137,7 +137,7 @@
             <h4>Sua Meta Diária</h4>
             <div id="goalResult" class="result-val">--</div>
             <p id="detailedDesc" style="font-size: 14px; color: #ccc; margin-top: 15px;"></p>
-            <button class="btn-calc" style="margin-top: 20px;" onclick="irParaDieta()">MONTAR MINHA DIETA ↓</button>
+            <button class="btn-calc" style="margin-top: 20px;" onclick="irParaDieta()">QUERO UM PLANO ALIMENTAR</button>
         </div>
     </div>
 
@@ -240,7 +240,8 @@
 
         const caloriesResult = Math.round(finalCalories);
         document.getElementById('goalResult').innerText = caloriesResult + " kcal";
-        document.getElementById('detailedDesc').innerHTML = `Para <span class="highlight">${goalDisplay}</span>, você deve consumir cerca de <span class="highlight">${caloriesResult} kcal</span> por dia.`;
+        document.getElementById('detailedDesc').innerHTML = `Para <span class="highlight">${goalDisplay}</span>, você deve consumir cerca de <span class="highlight">${caloriesResult} kcal</span> por dia.<br>
+    Descubra a quantidade ideal de cada alimento para conquistar seu objetivo com saúde!`;
 
         // Salvar no localStorage para persistência
         localStorage.setItem('tmb_weight', weight);
