@@ -156,8 +156,7 @@
                 <button id="btn-download-direto">📥 BAIXAR MEU CARDÁPIO PDF</button>
             </div>
         </div>
-
-        <p class="subtitle">Personalize sua alimentação abaixo:</p>
+<p class="subtitle">Personalize sua alimentação abaixo:</p>
         <div id="status-topo">PROCESSANDO...</div>
 
         <label>Seu Peso Atual (kg)</label>
@@ -202,10 +201,11 @@
 </div>
 
 <script>
-// --- CONFIGURAÇÕES SUPABASE ---
+// --- CONFIGURAÇÕES SUPABASE (ORIGINAIS) ---
 const S_URL = 'https://xyqqngskrjzhxbsackul.supabase.co';
 const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cXFuZ3Nrcmp6aHhic2Fja3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NTI3NzksImV4cCI6MjA4NTUyODc3OX0.B90q1Jv-vodVIV_dLFUCOekyshrv3HekVpPugpPaHRI';
 const _supabase = supabase.createClient(S_URL, S_KEY);
+
 const estruturaAlimentos = {
     "CARBOIDRATOS": {
         "Arroz": ["Branco", "Integral", "Parboilizado", "Jasmine", "Basmati", "7 Grãos"],
@@ -289,9 +289,7 @@ function irParaDieta() {
     document.getElementById('calorias').value = localStorage.getItem('tmb_calories');
     document.getElementById('objetivo').value = localStorage.getItem('tmb_goal');
     
-    // Garantir que a busca rápida esteja fechada ao entrar
-    document.getElementById('area-busca-rapida').style.display = 'none';
-
+    // Ajuste: Apenas rola para a seção, sem abrir a busca.
     setTimeout(() => {
         document.getElementById('dieta-section').scrollIntoView({ behavior: 'smooth' });
     }, 300);
@@ -394,24 +392,18 @@ async function gerarDieta(d) {
     status.style.display = 'block';
     btnGerar.disabled = true;
 
-    let metaProt, metaGord, margemProt;
+    let metaProt, metaGord;
     const pesoUser = parseFloat(d.peso);
 
     if (d.objetivo === 'Emagrecimento') {
         metaProt = 2.2; metaGord = 0.8; 
-        margemProt = "85% de fontes diretas (carnes/ovos), 15% de resíduo vegetal vindo dos carboidratos";
     } else if (d.objetivo === 'Hipertrofia') {
         metaProt = 1.8; metaGord = 1.0; 
-        margemProt = "75% de fontes diretas, 25% de resíduo vegetal vindo dos carboidratos";
     } else {
         metaProt = 2.0; metaGord = 0.9; 
-        margemProt = "80% de fontes diretas, 20% de resíduo vegetal vindo dos carboidratos";
     }
 
-    const gorduraAlvoG = (pesoUser * metaGord).toFixed(1);
-    const proteinaAlvoG = (pesoUser * metaProt).toFixed(0);
-
-    const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, para um paciente de ${pesoUser}kg, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
+   const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, para um paciente de ${pesoUser}kg, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
 REGRAS DE FORMATAÇÃO: PROIBIDO usar símbolos de Markdown como asteriscos (**), hashtags (#), hífens excessivos ou tabelas. Gere um texto limpo e legível usando apenas quebras de linha.
 
@@ -468,7 +460,6 @@ ITENS COMPLEMENTARES:
 2. DATA: ${new Date().toLocaleString()}.
 
 RODAPÉ: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional."`;
-
     try {
         const response = await fetch('/api/gerar-dieta', {
             method: 'POST',
@@ -493,8 +484,7 @@ RODAPÉ: "Este plano alimentar foi gerado para fins educativos. Não substitui a
 }
 
 async function buscarAcessoRapido() {
-    const emailInput = document.getElementById('email-busca');
-    const email = emailInput ? emailInput.value : '';
+    const email = document.getElementById('email-busca').value;
     if (!email) return alert("Digite seu e-mail.");
     
     try {
@@ -512,14 +502,10 @@ async function buscarAcessoRapido() {
 }
 
 function alternarBuscaRapida() { 
-    // Garante que a seção de dieta esteja visível para mostrar a busca
+    // Ajuste: Garante que a seção principal apareça para mostrar a busca
     document.getElementById('dieta-section').style.display = 'block';
     const area = document.getElementById('area-busca-rapida');
     area.style.display = (area.style.display === 'none' || area.style.display === '') ? 'block' : 'none';
-    
-    if (area.style.display === 'block') {
-        area.scrollIntoView({ behavior: 'smooth' });
-    }
 }
 
 function limparDadosEApp() {
@@ -530,7 +516,6 @@ function limparDadosEApp() {
 }
 
 function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
-
 </script>
 </body>
 </html>
