@@ -238,10 +238,17 @@
             goalDisplay = "manter e definir seu corpo";
         }
 
-        const caloriesResult = Math.round(finalCalories);
-        document.getElementById('goalResult').innerText = caloriesResult + " kcal";
-        document.getElementById('detailedDesc').innerHTML = `Para <span class="highlight">${goalDisplay}</span>, você deve consumir cerca de <span class="highlight">${caloriesResult} kcal</span> por dia.<br>
-    Descubra a quantidade ideal de cada alimento para conquistar seu objetivo com saúde!`;
+       const caloriesResult = Math.round(finalCalories);
+
+document.getElementById('goalResult').innerText = caloriesResult + " kcal";
+
+document.getElementById('detailedDesc').innerHTML = 
+    `Para <span class="highlight">${goalDisplay}</span>, você deve consumir cerca de <span class="highlight">${caloriesResult} kcal</span> por dia.
+    <br><br>
+    <div style="border-left: 4px solid #FFD400; padding: 10px; background-color: #f9f9f9; border-radius: 4px;">
+        <strong style="color: #000;">🚀 Transforme essas calorias em resultados reais!</strong><br>
+        <span style="color: #333;">Pegue seu plano alimentar exclusivo agora e saiba exatamente o que comer em cada refeição.</span>
+    </div>`;
 
         // Salvar no localStorage para persistência
         localStorage.setItem('tmb_weight', weight);
