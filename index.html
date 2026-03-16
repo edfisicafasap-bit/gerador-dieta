@@ -418,6 +418,8 @@
 
        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, para um paciente de ${pesoUser}kg, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
+REGRAS DE FORMATAÇÃO: PROIBIDO usar símbolos de Markdown como asteriscos (**), hashtags (#), hífens excessivos ou tabelas. Gere um texto limpo e legível usando apenas quebras de linha.
+
 DIRETRIZES DE EQUILÍBRIO CALÓRICO (OBRIGATÓRIO):
 O plano deve seguir rigorosamente esta distribuição baseada no peso de ${pesoUser}kg:
 1. GORDURAS: Total de ${gorduraAlvoG}g (Considere 9 kcal por grama).
