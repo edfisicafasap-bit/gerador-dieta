@@ -265,139 +265,197 @@
     }
 // --- CONFIGURAÇÕES SUPABASE ---
     const S_URL = 'https://xyqqngskrjzhxbsackul.supabase.co';
-    const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cXFuZ3Nrcmp6aHhic2Fja3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NTI3NzksImV4cCI6MjA4NTUyODc3OX0.B90q1Jv-vodVIV_dLFUCOekyshrv3HekVpPugpPaHRI';
-    const _supabase = supabase.createClient(S_URL, S_KEY);
+const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cXFuZ3Nrcmp6aHhic2Fja3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NTI3NzksImV4cCI6MjA4NTUyODc3OX0.B90q1Jv-vodVIV_dLFUCOekyshrv3HekVpPugpPaHRI';
+const _supabase = supabase.createClient(S_URL, S_KEY);
 
-    const estruturaAlimentos = {
-        "CARBOIDRATOS": {
-            "Arroz": ["Branco", "Integral", "Parboilizado", "Jasmine", "Basmati", "7 Grãos"],
-            "Feijão": ["Carioca", "Preto", "Branco", "Fradinho", "Vermelho"],
-            "Macarrão": ["Comum (Sêmola)", "Integral", "De arroz", "Sem glúten"],
-            "Cuscuz": ["De milho", "Nordestino", "Marroquino", "Integral"],
-            "Batata Inglesa": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Chips forno/airfryer", "Frita na airfryer"],
-            "Batata Doce": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Frita na airfryer"],
-            "Mandioca": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Frita na airfryer"],
-            "Pão": ["Francês", "Forma branco", "Forma integral", "Integral com grãos", "Sírio", "De aveia"],
-            "Tapioca": ["Tradicional", "Hidratada", "Integral"],
-            "Aveia": ["Em flocos finos", "Em flocos", "Farinha", "Farelo"],
-            "Flocão de Milho": ["Tradicional", "Integral"]
-        },
-        "PROTEÍNAS": {
-            "Frango": ["Filé de peito", "Coxa e sobrecoxa (sem pele)"],
-            "Boi": ["Patinho", "Coxão mole", "Coxão duro", "Lagarto", "Músculo", "Alcatra limpa"],
-            "Porco": ["Lombo suíno", "Filé mignon suíno"],
-            "Ovos": ["Mexidos", "Cozidos", "Omelete", "Pochê", "Frito na água", "Frito com azeite"]
-        },
-        "PEIXES": { "Peixes": ["Filé de tilápia", "Filé de merluza", "Filé de linguado", "Filé de atum fresco"] },
-        "GORDURAS": { "Gorduras Boas": ["Abacate", "Azeite de oliva extra virgem", "Castanha-do-pará", "Castanha de caju", "Amêndoas", "Nozes", "Amendoim", "Pasta de amendoim"] },
-        "LEGUMES": { "Legumes": ["Cenoura", "Brócolis", "Couve-flor", "Abobrinha", "Abóbora", "Berinjela", "Espinafre", "Chuchu", "Quiabo", "Vagem", "Pepino", "Beterraba", "Pimentão", "Couve"] },
-        "FRUTAS": { "Frutas": ["Banana", "Maçã", "Mamão", "Laranja", "Abacaxi", "Melancia", "Melão", "Manga", "Morango", "Uva", "Goiaba", "Pêra", "Kiwi", "Caju", "Limão", "Acerola", "Tangerina"] },
-        "SEMENTES": { "Sementes": ["Chia", "Linhaça", "Semente de abóbora", "Semente de girassol", "Gergelim", "Quinoa"] },
-        "OUTROS": { "Outros": ["Peito de peru", "Iogurte Natural", "Leite Integral", "Leite Desnatado", "Leite s/Lactose", "Leite De Amendoas", "Leite de soja", "Ricota", "Queijo Minas", "Queijo Muçarela", "Whey Protein", "Mel"] }
-    };
+const estruturaAlimentos = {
+    "CARBOIDRATOS": {
+        "Arroz": ["Branco", "Integral", "Parboilizado", "Jasmine", "Basmati", "7 Grãos"],
+        "Feijão": ["Carioca", "Preto", "Branco", "Fradinho", "Vermelho"],
+        "Macarrão": ["Comum (Sêmola)", "Integral", "De arroz", "Sem glúten"],
+        "Cuscuz": ["De milho", "Nordestino", "Marroquino", "Integral"],
+        "Batata Inglesa": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Chips forno/airfryer", "Frita na airfryer"],
+        "Batata Doce": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Frita na airfryer"],
+        "Mandioca": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Frita na airfryer"],
+        "Pão": ["Francês", "Forma branco", "Forma integral", "Integral com grãos", "Sírio", "De aveia"],
+        "Tapioca": ["Tradicional", "Hidratada", "Integral"],
+        "Aveia": ["Em flocos finos", "Em flocos", "Farinha", "Farelo"],
+        "Flocão de Milho": ["Tradicional", "Integral"]
+    },
+    "PROTEÍNAS": {
+        "Frango": ["Filé de peito", "Coxa e sobrecoxa (sem pele)"],
+        "Boi": ["Patinho", "Coxão mole", "Coxão duro", "Lagarto", "Músculo", "Alcatra limpa"],
+        "Porco": ["Lombo suíno", "Filé mignon suíno"],
+        "Ovos": ["Mexidos", "Cozidos", "Omelete", "Pochê", "Frito na água", "Frito com azeite"]
+    },
+    "PEIXES": { "Peixes": ["Filé de tilápia", "Filé de merluza", "Filé de linguado", "Filé de atum fresco"] },
+    "GORDURAS": { "Gorduras Boas": ["Abacate", "Azeite de oliva extra virgem", "Castanha-do-pará", "Castanha de caju", "Amêndoas", "Nozes", "Amendoim", "Pasta de amendoim"] },
+    "LEGUMES": { "Legumes": ["Cenoura", "Brócolis", "Couve-flor", "Abobrinha", "Abóbora", "Berinjela", "Espinafre", "Chuchu", "Quiabo", "Vagem", "Pepino", "Beterraba", "Pimentão", "Couve"] },
+    "FRUTAS": { "Frutas": ["Banana", "Maçã", "Mamão", "Laranja", "Abacaxi", "Melancia", "Melão", "Manga", "Morango", "Uva", "Goiaba", "Pêra", "Kiwi", "Caju", "Limão", "Acerola", "Tangerina"] },
+    "SEMENTES": { "Sementes": ["Chia", "Linhaça", "Semente de abóbora", "Semente de girassol", "Gergelim", "Quinoa"] },
+    "OUTROS": { "Outros": ["Peito de peru", "Iogurte Natural", "Leite Integral", "Leite Desnatado", "Leite s/Lactose", "Leite De Amendoas", "Leite de soja", "Ricota", "Queijo Minas", "Queijo Muçarela", "Whey Protein", "Mel"] }
+};
 
-    const preparosUnificados = ["Cozido", "Assado", "Grelhado", "Refogado", "Na Airfryer", "Na frigideira", "Moído", "Desfiado", "Cozido no vapor", "Ensopado"];
+const preparosUnificados = ["Cozido", "Assado", "Grelhado", "Refogado", "Na Airfryer", "Na frigideira", "Moído", "Desfiado", "Cozido no vapor", "Ensopado"];
 
-    async function inicializarTudo() {
-        renderInterface();
-        const urlParams = new URLSearchParams(window.location.search);
-        const pago = urlParams.get('pago');
-        const emailSalvo = localStorage.getItem('email_verificacao');
-        const rascunho = localStorage.getItem('rascunho_dieta');
+// --- LÓGICA DA CALCULADORA TMB ---
+function calculateTMB() {
+    const gender = document.getElementById('calc-gender').value;
+    const age = parseFloat(document.getElementById('calc-age').value);
+    const weight = parseFloat(document.getElementById('calc-weight').value);
+    const height = parseFloat(document.getElementById('calc-height').value);
+    const activity = parseFloat(document.getElementById('calc-activity').value);
+    const goalValue = document.getElementById('calc-goal').value;
 
-        if (pago === 'true' && emailSalvo && rascunho) {
-            document.getElementById('tmb-wrapper').style.display = 'none'; // Esconde calculadora se já pagou
-            document.getElementById('dieta-section').style.display = 'block';
-            const status = document.getElementById('status-topo');
-            status.style.display = 'block';
-            status.innerText = "✅ PAGAMENTO CONFIRMADO! GERANDO SEU PLANO...";
-            setTimeout(() => gerarDieta(JSON.parse(rascunho)), 1500);
-        } else {
-            limparDadosEApp();
-        }
+    if (!age || !weight || !height) {
+        alert("Por favor, preencha todos os campos para calcular.");
+        return;
     }
 
-    function renderInterface() {
-        const container = document.getElementById('categorias-container');
-        container.innerHTML = '';
-        for (let cat in estruturaAlimentos) {
-            let html = `<div class="categoria-pai">${cat}</div>`;
-            for (let sub in estruturaAlimentos[cat]) {
-                html += `<details><summary>${sub}</summary><div class="grid-alimentos">`;
-                estruturaAlimentos[cat][sub].forEach(item => {
-                    html += `<label class="item-alimento"><input type="checkbox" name="alimento" value="${sub}: ${item}"> ${item}</label>`;
-                });
-                html += `</div></details>`;
-            }
-            container.innerHTML += html;
-        }
-        const prepCont = document.getElementById('preparos-unificados-container');
-        prepCont.innerHTML = '';
-        preparosUnificados.forEach(p => {
-            prepCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-geral" value="${p}"> ${p}</label>`;
-        });
+    let bmr;
+    if (gender === 'male') {
+        bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+    } else {
+        bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
     }
 
-    function salvarProgressoLocal(email) {
-        const dados = {
-            peso: document.getElementById('peso').value,
-            calorias: document.getElementById('calorias').value,
-            refeicoes: document.getElementById('num-refeicoes').value,
-            objetivo: document.getElementById('objetivo').value,
-            alimentos: Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value),
-            preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value),
-            email: email.toLowerCase().trim()
-        };
-        localStorage.setItem('rascunho_dieta', JSON.stringify(dados));
-        localStorage.setItem('email_verificacao', dados.email);
+    const tdee = bmr * activity;
+    let finalCalories;
+    let goalDisplay;
+
+    if (goalValue === 'Emagrecimento') {
+        finalCalories = tdee - (tdee * 0.20);
+        goalDisplay = "focar em perda de gordura";
+    } else if (goalValue === 'Hipertrofia') {
+        finalCalories = tdee + (tdee * 0.15);
+        goalDisplay = "ganhar massa muscular";
+    } else if (goalValue === 'Definição') {
+        finalCalories = tdee;
+        goalDisplay = "manter e definir seu corpo";
     }
 
-    async function verificarAcessoEPagar() {
-        if (Array.from(document.querySelectorAll('input[name="alimento"]:checked')).length < 5) return alert("Selecione pelo menos 5 alimentos!");
-        if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
-        
-        const email = prompt("Informe seu e-mail para salvar o plano:");
-        if (!email) return;
-        salvarProgressoLocal(email);
+    const caloriesResult = Math.round(finalCalories);
+    document.getElementById('goalResult').innerText = caloriesResult + " kcal";
+    document.getElementById('detailedDesc').innerHTML = `Para <span class="highlight">${goalDisplay}</span>, você deve consumir cerca de <span class="highlight">${caloriesResult} kcal</span> por dia.`;
 
-        const { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', email.toLowerCase().trim()).maybeSingle();
+    localStorage.setItem('tmb_weight', weight);
+    localStorage.setItem('tmb_calories', caloriesResult);
+    localStorage.setItem('tmb_goal', goalValue);
 
-        if (!user || !user.pago || (user.tipo_plano === 'unica' && user.creditos <= 0)) {
-            document.getElementById('payment-overlay').style.display = 'flex';
-        } else {
-            await gerarDieta(JSON.parse(localStorage.getItem('rascunho_dieta')));
-        }
-    }
+    document.getElementById('resultContainer').style.display = 'block';
+    document.getElementById('resultContainer').scrollIntoView({ behavior: 'smooth' });
+}
 
-    async function iniciarCheckout(priceId) {
-        const email = localStorage.getItem('email_verificacao');
-        if (!email) { alert("E-mail não encontrado. Informe novamente."); return; }
+function irParaDieta() {
+    document.getElementById('dieta-section').style.display = 'block';
+    document.getElementById('peso').value = localStorage.getItem('tmb_weight');
+    document.getElementById('calorias').value = localStorage.getItem('tmb_calories');
+    document.getElementById('objetivo').value = localStorage.getItem('tmb_goal');
+    setTimeout(() => {
+        document.getElementById('dieta-section').scrollIntoView({ behavior: 'smooth' });
+    }, 300);
+}
 
-        const tipoPlano = priceId.includes('5mxN2') ? 'anual' : 'unica';
+async function inicializarTudo() {
+    renderInterface();
+    const urlParams = new URLSearchParams(window.location.search);
+    const pago = urlParams.get('pago');
+    const emailSalvo = localStorage.getItem('email_verificacao');
+    const rascunho = localStorage.getItem('rascunho_dieta');
 
-        try {
-            const response = await fetch('/api/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ priceId: priceId, email: email.toLowerCase().trim(), tipoPlano: tipoPlano })
-            });
-            const session = await response.json();
-            if (session.url) window.location.href = session.url;
-            else alert("Erro ao abrir pagamento.");
-        } catch (err) { alert("Erro de conexão."); }
-    }
-
-    async function gerarDieta(d) {
-        const divRes = document.getElementById('resultado');
+    if (pago === 'true' && emailSalvo && rascunho) {
+        document.getElementById('tmb-wrapper').style.display = 'none';
+        document.getElementById('dieta-section').style.display = 'block';
         const status = document.getElementById('status-topo');
-        const btnDownloadPos = document.getElementById('btn-download-pos-geracao');
-        const btnGerar = document.getElementById('btn-gerar');
-
         status.style.display = 'block';
-        btnGerar.disabled = true;
+        status.innerText = "✅ PAGAMENTO CONFIRMADO! GERANDO SEU PLANO...";
+        setTimeout(() => gerarDieta(JSON.parse(rascunho)), 1500);
+    } else {
+        limparDadosEApp();
+    }
+}
 
-      let metaProt, metaGord, margemProt;
-    const pesoUser = parseFloat(d.weight || d.peso); // Garante que pega o peso corretamente
+function renderInterface() {
+    const container = document.getElementById('categorias-container');
+    container.innerHTML = '';
+    for (let cat in estruturaAlimentos) {
+        let html = `<div class="categoria-pai">${cat}</div>`;
+        for (let sub in estruturaAlimentos[cat]) {
+            html += `<details><summary>${sub}</summary><div class="grid-alimentos">`;
+            estruturaAlimentos[cat][sub].forEach(item => {
+                html += `<label class="item-alimento"><input type="checkbox" name="alimento" value="${sub}: ${item}"> ${item}</label>`;
+            });
+            html += `</div></details>`;
+        }
+        container.innerHTML += html;
+    }
+    const prepCont = document.getElementById('preparos-unificados-container');
+    prepCont.innerHTML = '';
+    preparosUnificados.forEach(p => {
+        prepCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-geral" value="${p}"> ${p}</label>`;
+    });
+}
+
+function salvarProgressoLocal(email) {
+    const dados = {
+        peso: document.getElementById('peso').value,
+        calorias: document.getElementById('calorias').value,
+        refeicoes: document.getElementById('num-refeicoes').value,
+        objetivo: document.getElementById('objetivo').value,
+        alimentos: Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value),
+        preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value),
+        email: email.toLowerCase().trim()
+    };
+    localStorage.setItem('rascunho_dieta', JSON.stringify(dados));
+    localStorage.setItem('email_verificacao', dados.email);
+}
+
+async function verificarAcessoEPagar() {
+    if (Array.from(document.querySelectorAll('input[name="alimento"]:checked')).length < 5) return alert("Selecione pelo menos 5 alimentos!");
+    if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
+    
+    const email = prompt("Informe seu e-mail para salvar o plano:");
+    if (!email) return;
+    salvarProgressoLocal(email);
+
+    const { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', email.toLowerCase().trim()).maybeSingle();
+
+    if (!user || !user.pago || (user.tipo_plano === 'unica' && user.creditos <= 0)) {
+        document.getElementById('payment-overlay').style.display = 'flex';
+    } else {
+        await gerarDieta(JSON.parse(localStorage.getItem('rascunho_dieta')));
+    }
+}
+
+async function iniciarCheckout(priceId) {
+    const email = localStorage.getItem('email_verificacao');
+    if (!email) { alert("E-mail não encontrado. Informe novamente."); return; }
+    const tipoPlano = priceId.includes('TAhib') ? 'anual' : 'unica';
+
+    try {
+        const response = await fetch('/api/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ priceId: priceId, email: email.toLowerCase().trim(), tipoPlano: tipoPlano })
+        });
+        const session = await response.json();
+        if (session.url) window.location.href = session.url;
+        else alert("Erro ao abrir pagamento.");
+    } catch (err) { alert("Erro de conexão."); }
+}
+
+async function gerarDieta(d) {
+    const divRes = document.getElementById('resultado');
+    const status = document.getElementById('status-topo');
+    const btnDownloadPos = document.getElementById('btn-download-pos-geracao');
+    const btnGerar = document.getElementById('btn-gerar');
+
+    status.style.display = 'block';
+    btnGerar.disabled = true;
+
+    // --- LÓGICA DE PROTEÍNAS INTEGRADA ---
+    let metaProt, metaGord, margemProt;
+    const pesoUser = parseFloat(d.peso);
 
     if (d.objetivo === 'Emagrecimento') {
         metaProt = 2.2; 
@@ -474,60 +532,62 @@ ITENS COMPLEMENTARES:
 
 RODAPÉ: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional."`;
 
-        try {
-            const response = await fetch('/api/gerar-dieta', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: promptFinal, email: d.email })
-            });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error);
-
-            divRes.innerText = result.dieta;
-            divRes.style.display = 'block';
-            btnDownloadPos.style.display = 'block';
-            btnDownloadPos.onclick = () => window.open(result.pdf_url, '_blank');
-            
-            setTimeout(() => { divRes.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 500);
-            limparDadosEApp();
-        } catch (e) { alert("Erro: " + e.message); }
-        finally {
-            status.style.display = 'none';
-            btnGerar.disabled = false;
-        }
-    }
-
-    async function buscarAcessoRapido() {
-        const email = document.getElementById('email-busca').value;
-        if (!email) return alert("Digite seu e-mail.");
-        try {
-            const response = await fetch('/api/buscar-dieta', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: email.toLowerCase().trim() })
-            });
-            const data = await response.json();
-            if (response.ok && data.pdf_url) {
-                const resBusca = document.getElementById('resultado-busca');
-                resBusca.style.display = 'block';
-                document.getElementById('btn-download-direto').onclick = () => window.open(data.pdf_url, '_blank');
-                setTimeout(() => { resBusca.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
-            } else { alert(data.error || "Nenhum plano ativo encontrado."); }
-        } catch (err) { alert("Erro ao conectar com o servidor."); }
-    }
-
-    function limparDadosEApp() {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('pago') === 'true') return;
-        localStorage.removeItem('rascunho_dieta');
-        localStorage.removeItem('email_verificacao');
-        document.querySelectorAll('#dieta-section input:not([type="button"]), #dieta-section select').forEach(i => {
-            if (i.type === 'checkbox') i.checked = false;
-            else i.value = '';
+      try {
+        const response = await fetch('/api/gerar-dieta', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: promptFinal, email: d.email })
         });
-    }
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error);
 
-    function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
+        // Limpeza de símbolos ao exibir na tela
+        divRes.innerText = result.dieta.replace(/[#*]/g, '');
+        divRes.style.display = 'block';
+        btnDownloadPos.style.display = 'block';
+        btnDownloadPos.onclick = () => window.open(result.pdf_url, '_blank');
+        
+        setTimeout(() => { divRes.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 500);
+        limparDadosEApp();
+    } catch (e) { alert("Erro: " + e.message); }
+    finally {
+        status.style.display = 'none';
+        btnGerar.disabled = false;
+    }
+}
+
+async function buscarAcessoRapido() {
+    const emailInput = document.getElementById('email-busca');
+    const email = emailInput ? emailInput.value : '';
+    if (!email) return alert("Digite seu e-mail.");
+    
+    try {
+        const response = await fetch('/api/buscar-dieta', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email.toLowerCase().trim() })
+        });
+        const data = await response.json();
+        if (response.ok && data.pdf_url) {
+            document.getElementById('resultado-busca').style.display = 'block';
+            document.getElementById('btn-download-direto').onclick = () => window.open(data.pdf_url, '_blank');
+        } else { alert(data.error || "Nenhum plano encontrado."); }
+    } catch (err) { alert("Erro ao conectar."); }
+}
+
+function alternarBuscaRapida() { 
+    const area = document.getElementById('area-busca-rapida');
+    area.style.display = (area.style.display === 'none' || area.style.display === '') ? 'block' : 'none';
+}
+
+function limparDadosEApp() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('pago') === 'true') return;
+    localStorage.removeItem('rascunho_dieta');
+    localStorage.removeItem('email_verificacao');
+}
+
+function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
     function alternarBuscaRapida() { 
         const area = document.getElementById('area-busca-rapida');
         area.style.display = area.style.display === 'none' ? 'block' : 'none';
