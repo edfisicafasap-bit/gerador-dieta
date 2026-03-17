@@ -384,7 +384,7 @@ document.getElementById('detailedDesc').innerHTML =
         const tipoPlano = priceId.includes('5mxN2') ? 'anual' : 'unica';
 
         try {
-            const response = await fetch('/api/checkout', {
+            const response = await fetch('/api/checkout.js', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ priceId: priceId, email: email.toLowerCase().trim(), tipoPlano: tipoPlano })
@@ -483,7 +483,7 @@ ITENS COMPLEMENTARES:
 RODAPÉ: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional."`;
 
         try {
-            const response = await fetch('/api/gerar-dieta', {
+            const response = await fetch('/api/gerar-dieta.js', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt: promptFinal, email: d.email })
