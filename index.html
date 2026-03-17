@@ -22,6 +22,7 @@
         label { display:block; margin-top:18px; font-size:14px; font-weight: bold; color: #eee; }
         input, select, textarea { width:100%; padding:12px; margin-top:6px; border-radius:6px; border:1px solid #333; background: #111; color: #fff; font-size: 15px; box-sizing: border-box; }
         
+        /* BOTÕES */
         #btn-gerar, .btn-calc { width:100%; margin-top:30px; padding:18px; background:#FFD700; border:none; border-radius:8px; font-size:16px; font-weight:bold; color:#000; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
         #btn-gerar:disabled { background: #555; cursor: not-allowed; }
         
@@ -32,10 +33,12 @@
         }
         #btn-download-pos-geracao:hover, #btn-download-direto:hover { background: #FFD700; color: #000; }
 
+        /* CALCULADORA ESPECÍFICOS */
         .result-box-tmb { margin-top: 30px; padding: 20px; background: #111; border-radius: 8px; border: 2px solid #FFD700; display: none; text-align: center; }
         .result-val { font-size: 32px; font-weight: bold; color: #fff; margin-bottom: 5px; }
         .highlight { color: #FFD700; font-weight: bold; }
 
+        /* GERADOR DE DIETA ESPECÍFICOS */
         #status-topo { display: none; background: #FFD700; color: #000; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 20px; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
 
@@ -69,6 +72,7 @@
             padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 100;
         }
 
+        /* CONTROLE DE SEÇÕES */
         #dieta-section { display: none; }
     </style>
 </head>
@@ -198,7 +202,76 @@
 </div>
 
 <script>
-    // --- CONFIGURAÇÕES SUPABASE ---
+    // --- LÓGICA DA CALCULADORA TMB ---
+    function calculateTMB() {
+        const gender = document.getElementById('calc-gender').value;
+        const age = parseFloat(document.getElementById('calc-age').value);
+        const weight = parseFloat(document.getElementById('calc-weight').value);
+        const height = parseFloat(document.getElementById('calc-height').value);
+        const activity = parseFloat(document.getElementById('calc-activity').value);
+        const goalValue = document.getElementById('calc-goal').value;
+
+        if (!age || !weight || !height) {
+            alert("Por favor, preencha todos os campos para calcular.");
+            return;
+        }
+
+        let bmr;
+        if (gender === 'male') {
+            bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+        } else {
+            bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+        }
+
+        const tdee = bmr * activity;
+        let finalCalories;
+        let goalDisplay;
+
+        if (goalValue === 'Emagrecimento') {
+            finalCalories = tdee - (tdee * 0.20);
+            goalDisplay = "focar em perda de gordura";
+        } else if (goalValue === 'Hipertrofia') {
+            finalCalories = tdee + (tdee * 0.15);
+            goalDisplay = "ganhar massa muscular";
+        } else if (goalValue === 'Definição') {
+            finalCalories = tdee;
+            goalDisplay = "manter e definir seu corpo";
+        }
+
+       const caloriesResult = Math.round(finalCalories);
+
+document.getElementById('goalResult').innerText = caloriesResult + " kcal";
+
+document.getElementById('detailedDesc').innerHTML = 
+    `Para <span class="highlight">${goalDisplay}</span>, você deve consumir cerca de <span class="highlight">${caloriesResult} kcal</span> por dia.
+    <br><br>
+    <div style="border-left: 4px solid #FFD400; padding: 12px; background-color: #f9f9f9; border-radius: 4px; box-shadow: 2px 2px 5px rgba(0,0,0,0.05);">
+        <strong style="color: #000; font-size: 1.1em;">🚀 Transforme essas calorias em resultados reais!</strong><br>
+        <span style="color: #333;">Monte seu plano alimentar exclusivo <strong>escolhendo seus alimentos favoritos</strong> e saiba exatamente o quanto comer em cada refeição.</span>
+    </div>`;
+
+        // Salvar no localStorage para persistência
+        localStorage.setItem('tmb_weight', weight);
+        localStorage.setItem('tmb_calories', caloriesResult);
+        localStorage.setItem('tmb_goal', goalValue);
+
+        document.getElementById('resultContainer').style.display = 'block';
+        document.getElementById('resultContainer').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function irParaDieta() {
+        document.getElementById('dieta-section').style.display = 'block';
+        
+        // Auto-preenchimento
+        document.getElementById('peso').value = localStorage.getItem('tmb_weight');
+        document.getElementById('calorias').value = localStorage.getItem('tmb_calories');
+        document.getElementById('objetivo').value = localStorage.getItem('tmb_goal');
+
+        setTimeout(() => {
+            document.getElementById('dieta-section').scrollIntoView({ behavior: 'smooth' });
+        }, 300);
+    }
+// --- CONFIGURAÇÕES SUPABASE ---
     const S_URL = 'https://xyqqngskrjzhxbsackul.supabase.co';
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cXFuZ3Nrcmp6aHhic2Fja3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NTI3NzksImV4cCI6MjA4NTUyODc3OX0.B90q1Jv-vodVIV_dLFUCOekyshrv3HekVpPugpPaHRI';
     const _supabase = supabase.createClient(S_URL, S_KEY);
@@ -233,55 +306,23 @@
 
     const preparosUnificados = ["Cozido", "Assado", "Grelhado", "Refogado", "Na Airfryer", "Na frigideira", "Moído", "Desfiado", "Cozido no vapor", "Ensopado"];
 
-    function calculateTMB() {
-        const gender = document.getElementById('calc-gender').value;
-        const age = parseFloat(document.getElementById('calc-age').value);
-        const weight = parseFloat(document.getElementById('calc-weight').value);
-        const height = parseFloat(document.getElementById('calc-height').value);
-        const activity = parseFloat(document.getElementById('calc-activity').value);
-        const goalValue = document.getElementById('calc-goal').value;
+    async function inicializarTudo() {
+        renderInterface();
+        const urlParams = new URLSearchParams(window.location.search);
+        const pago = urlParams.get('pago');
+        const emailSalvo = localStorage.getItem('email_verificacao');
+        const rascunho = localStorage.getItem('rascunho_dieta');
 
-        if (!age || !weight || !height) {
-            alert("Por favor, preencha todos os campos para calcular.");
-            return;
-        }
-
-        let bmr = (gender === 'male') 
-            ? 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age)
-            : 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
-
-        const tdee = bmr * activity;
-        let finalCalories, goalDisplay;
-
-        if (goalValue === 'Emagrecimento') {
-            finalCalories = tdee - (tdee * 0.20);
-            goalDisplay = "focar em perda de gordura";
-        } else if (goalValue === 'Hipertrofia') {
-            finalCalories = tdee + (tdee * 0.15);
-            goalDisplay = "ganhar massa muscular";
+        if (pago === 'true' && emailSalvo && rascunho) {
+            document.getElementById('tmb-wrapper').style.display = 'none'; // Esconde calculadora se já pagou
+            document.getElementById('dieta-section').style.display = 'block';
+            const status = document.getElementById('status-topo');
+            status.style.display = 'block';
+            status.innerText = "✅ PAGAMENTO CONFIRMADO! GERANDO SEU PLANO...";
+            setTimeout(() => gerarDieta(JSON.parse(rascunho)), 1500);
         } else {
-            finalCalories = tdee;
-            goalDisplay = "manter e definir seu corpo";
+            limparDadosEApp();
         }
-
-        const caloriesResult = Math.round(finalCalories);
-        document.getElementById('goalResult').innerText = caloriesResult + " kcal";
-        document.getElementById('detailedDesc').innerHTML = `Para <span class="highlight">${goalDisplay}</span>, consuma <span class="highlight">${caloriesResult} kcal</span> por dia.`;
-
-        localStorage.setItem('tmb_weight', weight);
-        localStorage.setItem('tmb_calories', caloriesResult);
-        localStorage.setItem('tmb_goal', goalValue);
-
-        document.getElementById('resultContainer').style.display = 'block';
-        document.getElementById('resultContainer').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function irParaDieta() {
-        document.getElementById('dieta-section').style.display = 'block';
-        document.getElementById('peso').value = localStorage.getItem('tmb_weight');
-        document.getElementById('calorias').value = localStorage.getItem('tmb_calories');
-        document.getElementById('objetivo').value = localStorage.getItem('tmb_goal');
-        setTimeout(() => { document.getElementById('dieta-section').scrollIntoView({ behavior: 'smooth' }); }, 300);
     }
 
     function renderInterface() {
@@ -305,30 +346,7 @@
         });
     }
 
-    async function inicializarTudo() {
-        renderInterface();
-        const urlParams = new URLSearchParams(window.location.search);
-        const pago = urlParams.get('pago');
-        const emailSalvo = localStorage.getItem('email_verificacao');
-        const rascunho = localStorage.getItem('rascunho_dieta');
-
-        if (pago === 'true' && emailSalvo && rascunho) {
-            document.getElementById('tmb-wrapper').style.display = 'none';
-            document.getElementById('dieta-section').style.display = 'block';
-            const status = document.getElementById('status-topo');
-            status.style.display = 'block';
-            status.innerText = "✅ PAGAMENTO CONFIRMADO! GERANDO SEU PLANO...";
-            setTimeout(() => gerarDieta(JSON.parse(rascunho)), 1500);
-        }
-    }
-
-    async function verificarAcessoEPagar() {
-        if (Array.from(document.querySelectorAll('input[name="alimento"]:checked')).length < 5) return alert("Selecione pelo menos 5 alimentos!");
-        if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
-        
-        const email = prompt("Informe seu e-mail para salvar o plano:");
-        if (!email) return;
-
+    function salvarProgressoLocal(email) {
         const dados = {
             peso: document.getElementById('peso').value,
             calorias: document.getElementById('calorias').value,
@@ -338,54 +356,75 @@
             preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value),
             email: email.toLowerCase().trim()
         };
-        
         localStorage.setItem('rascunho_dieta', JSON.stringify(dados));
         localStorage.setItem('email_verificacao', dados.email);
+    }
 
-        const { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', dados.email).maybeSingle();
+    async function verificarAcessoEPagar() {
+        if (Array.from(document.querySelectorAll('input[name="alimento"]:checked')).length < 5) return alert("Selecione pelo menos 5 alimentos!");
+        if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos!");
+        
+        const email = prompt("Informe seu e-mail para salvar o plano:");
+        if (!email) return;
+        salvarProgressoLocal(email);
+
+        const { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', email.toLowerCase().trim()).maybeSingle();
 
         if (!user || !user.pago || (user.tipo_plano === 'unica' && user.creditos <= 0)) {
             document.getElementById('payment-overlay').style.display = 'flex';
         } else {
-            gerarDieta(dados);
+            await gerarDieta(JSON.parse(localStorage.getItem('rascunho_dieta')));
         }
     }
 
     async function iniciarCheckout(priceId) {
         const email = localStorage.getItem('email_verificacao');
-        const tipoPlano = (priceId === 'price_1TAhibGEaACih56Z4TeYkNwK') ? 'anual' : 'unica';
+        if (!email) { alert("E-mail não encontrado. Informe novamente."); return; }
+
+        const tipoPlano = priceId.includes('5mxN2') ? 'anual' : 'unica';
 
         try {
-            const response = await fetch('/api/checkout.js', { 
+            const response = await fetch('/api/checkout.js', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ priceId, email, tipoPlano })
+                body: JSON.stringify({ priceId: priceId, email: email.toLowerCase().trim(), tipoPlano: tipoPlano })
             });
             const session = await response.json();
             if (session.url) window.location.href = session.url;
-            else alert("Erro ao gerar link de pagamento.");
-        } catch (err) { alert("Erro ao conectar com servidor."); }
+            else alert("Erro ao abrir pagamento.");
+        } catch (err) { alert("Erro de conexão."); }
     }
 
     async function gerarDieta(d) {
         const divRes = document.getElementById('resultado');
         const status = document.getElementById('status-topo');
-        const btnGerar = document.getElementById('btn-gerar');
         const btnDownloadPos = document.getElementById('btn-download-pos-geracao');
-        
+        const btnGerar = document.getElementById('btn-gerar');
+
         status.style.display = 'block';
         btnGerar.disabled = true;
 
-        const pesoUser = parseFloat(d.peso);
-        let metaProt = 2.0, metaGord = 0.9, margemProt = "80% direta";
+      let metaProt, metaGord, margemProt;
+    const pesoUser = parseFloat(d.weight || d.peso); // Garante que pega o peso corretamente
 
-        if (d.objetivo === 'Emagrecimento') { metaProt = 2.2; metaGord = 0.8; margemProt = "85% direta"; }
-        else if (d.objetivo === 'Hipertrofia') { metaProt = 1.8; metaGord = 1.0; margemProt = "75% direta"; }
+    if (d.objetivo === 'Emagrecimento') {
+        metaProt = 2.2; 
+        metaGord = 0.8; 
+        margemProt = "85% de fontes diretas (carnes/ovos), 15% de resíduo vegetal vindo dos carboidratos";
+    } else if (d.objetivo === 'Hipertrofia') {
+        metaProt = 1.8; 
+        metaGord = 1.0; 
+        margemProt = "75% de fontes diretas, 25% de resíduo vegetal vindo dos carboidratos";
+    } else {
+        metaProt = 2.0; 
+        metaGord = 0.9; 
+        margemProt = "80% de fontes diretas, 20% de resíduo vegetal vindo dos carboidratos";
+    }
 
-        const protG = (pesoUser * metaProt).toFixed(0);
-        const gordG = (pesoUser * metaGord).toFixed(0);
+    const gorduraAlvoG = (pesoUser * metaGord).toFixed(1);
+    const proteinaAlvoG = (pesoUser * metaProt).toFixed(0);
 
-        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, para um paciente de ${pesoUser}kg, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
+       const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, para um paciente de ${pesoUser}kg, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
 
 REGRAS DE FORMATAÇÃO: PROIBIDO usar símbolos de Markdown como asteriscos (**), hashtags (#), hífens excessivos ou tabelas. Gere um texto limpo e legível usando apenas quebras de linha.
 
@@ -449,7 +488,6 @@ RODAPÉ: "Este plano alimentar foi gerado para fins educativos. Não substitui a
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt: promptFinal, email: d.email })
             });
-
             const result = await response.json();
             if (!response.ok) throw new Error(result.error);
 
@@ -471,7 +509,7 @@ RODAPÉ: "Este plano alimentar foi gerado para fins educativos. Não substitui a
         const email = document.getElementById('email-busca').value;
         if (!email) return alert("Digite seu e-mail.");
         try {
-            const response = await fetch('/api/buscar-dieta.js', {
+            const response = await fetch('/api/buscar-dieta', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: email.toLowerCase().trim() })
@@ -481,6 +519,7 @@ RODAPÉ: "Este plano alimentar foi gerado para fins educativos. Não substitui a
                 const resBusca = document.getElementById('resultado-busca');
                 resBusca.style.display = 'block';
                 document.getElementById('btn-download-direto').onclick = () => window.open(data.pdf_url, '_blank');
+                setTimeout(() => { resBusca.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
             } else { alert(data.error || "Nenhum plano ativo encontrado."); }
         } catch (err) { alert("Erro ao conectar com o servidor."); }
     }
@@ -490,6 +529,10 @@ RODAPÉ: "Este plano alimentar foi gerado para fins educativos. Não substitui a
         if (urlParams.get('pago') === 'true') return;
         localStorage.removeItem('rascunho_dieta');
         localStorage.removeItem('email_verificacao');
+        document.querySelectorAll('#dieta-section input:not([type="button"]), #dieta-section select').forEach(i => {
+            if (i.type === 'checkbox') i.checked = false;
+            else i.value = '';
+        });
     }
 
     function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
