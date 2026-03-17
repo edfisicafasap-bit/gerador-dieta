@@ -377,32 +377,62 @@ document.getElementById('detailedDesc').innerHTML =
         }
     }
 
-    async function iniciarCheckout(priceId) {
-        const email = localStorage.getItem('email_verificacao');
-        if (!email) { alert("E-mail não encontrado. Informe novamente."); return; }
+  async function iniciarCheckout(priceId) {
+    const email = localStorage.getItem('email_verificacao');
+    if (!email) { alert("E-mail não encontrado."); return; }
 
-        const tipoPlano = priceId.includes('5mxN2') ? 'anual' : 'unica';
+    const tipoPlano = (priceId === 'price_1TAhibGEaACih56Z4TeYkNwK') ? 'anual' : 'unica';
 
-        try {
-            const response = await fetch('/api/checkout.js', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ priceId: priceId, email: email.toLowerCase().trim(), tipoPlano: tipoPlano })
-            });
-            const session = await response.json();
-            if (session.url) window.location.href = session.url;
-            else alert("Erro ao abrir pagamento.");
-        } catch (err) { alert("Erro de conexão."); }
+    try {
+        // Mudança: Usamos a URL completa relativa para evitar redirecionamentos
+        const response = await fetch('/api/checkout', { 
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json' 
+            },
+            body: JSON.stringify({ priceId, email, tipoPlano })
+        });
+
+        if (response.status === 405) {
+            throw new Error("O servidor recusou o método POST. Verifique se o arquivo existe na pasta /api.");
+        }
+
+        const session = await response.json();
+        if (session.url) window.location.href = session.url;
+        else alert("Erro ao gerar link de pagamento.");
+    } catch (err) { 
+        console.error(err);
+        alert("Erro: " + err.message); 
     }
+}
 
-    async function gerarDieta(d) {
-        const divRes = document.getElementById('resultado');
-        const status = document.getElementById('status-topo');
-        const btnDownloadPos = document.getElementById('btn-download-pos-geracao');
-        const btnGerar = document.getElementById('btn-gerar');
+async function gerarDieta(d) {
+    const divRes = document.getElementById('resultado');
+    const status = document.getElementById('status-topo');
+    status.style.display = 'block';
 
-        status.style.display = 'block';
-        btnGerar.disabled = true;
+    try {
+        const response = await fetch('/api/gerar-dieta', { // Remova o .js se não funcionar com, ou vice-versa
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ prompt: promptFinal, email: d.email })
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Erro desconhecido");
+
+        divRes.innerText = result.dieta;
+        divRes.style.display = 'block';
+    } catch (e) {
+        alert("Erro na geração: " + e.message);
+    } finally {
+        status.style.display = 'none';
+    }
+}
 
       let metaProt, metaGord, margemProt;
     const pesoUser = parseFloat(d.weight || d.peso); // Garante que pega o peso corretamente
