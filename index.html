@@ -236,11 +236,33 @@
     /* -------------------------------------------------------------------------
        INICIALIZAÇÃO E INTERFACE
     ------------------------------------------------------------------------- */
-    async function inicializarTudo() {
-        renderInterface();
+   async function inicializarTudo() {
+        renderInterface(); // Desenha os alimentos na tela
+        
+        // 1. Verifica se tem "?pago=true" na URL
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('pago') === 'true' && localStorage.getItem('rascunho_dieta')) {
-            gerarDieta(JSON.parse(localStorage.getItem('rascunho_dieta')));
+        const foiPago = urlParams.get('pago') === 'true';
+        
+        if (foiPago) {
+            // 2. Busca o rascunho que salvamos no LocalStorage antes de ir para o Stripe
+            const rascunhoSalvo = localStorage.getItem('rascunho_dieta');
+            
+            if (rascunhoSalvo) {
+                const dadosDieta = JSON.parse(rascunhoSalvo);
+                
+                // 3. Mostra o status para o usuário não achar que travou
+                document.getElementById('dieta-section').style.display = 'block';
+                document.getElementById('status-topo').style.display = 'block';
+                document.getElementById('status-topo').innerText = "✅ PAGAMENTO CONFIRMADO! GERANDO SEU PLANO...";
+                
+                // 4. CHAMA A IA AUTOMATICAMENTE
+                gerarDieta(dadosDieta);
+                
+                // Limpa a URL para não ficar gerando toda vez que der F5 (opcional)
+                window.history.replaceState({}, document.title, "/");
+            } else {
+                alert("Pagamento confirmado, mas não encontrei os alimentos selecionados. Por favor, preencha novamente e clique em Gerar (não será cobrado de novo).");
+            }
         }
     }
 
