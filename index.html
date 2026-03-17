@@ -334,7 +334,7 @@
         - Não use markdown (** ou #). Texto limpo numerado de 1 a ${d.refeicoes}.`;
 
         try {
-            const res = await fetch('/api/gerar-dieta.js', {
+            const res = await fetch('/api/gerar-dieta', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt: promptFinal, email: d.email })
