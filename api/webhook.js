@@ -1,21 +1,22 @@
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
+// Configuração do Stripe e Supabase
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const supabase = createClient(
   process.env.SUPABASE_URL, 
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// 1. CRUCIAL: Desativa o Body Parser automático da Vercel
+// 1. OBRIGATÓRIO: Desativa o Body Parser da Vercel para não corromper a assinatura
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
-// Função auxiliar para converter a requisição em texto bruto (Buffer)
-async function buffer(readable) {
+// Função para ler o corpo bruto (Raw Body) de forma robusta
+async function getRawBody(readable) {
   const chunks = [];
   for await (const chunk of readable) {
     chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
@@ -24,7 +25,9 @@ async function buffer(readable) {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Método não permitido' });
+  }
 
   const sig = req.headers['stripe-signature'];
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -32,37 +35,52 @@ export default async function handler(req, res) {
   let event;
 
   try {
-    // 2. Lemos o corpo EXATAMENTE como ele chegou, sem formatação
-    const rawBody = await buffer(req);
-
+    // 2. Lemos o corpo EXATAMENTE como ele chegou do Stripe
+    const rawBody = await getRawBody(req);
+    
+    // 3. Verifica a assinatura original do Stripe
     event = stripe.webhooks.constructEvent(rawBody, sig, endpointSecret);
   } catch (err) {
-    console.error(`❌ Erro na assinatura: ${err.message}`);
+    console.error(`❌ Erro de Assinatura: ${err.message}`);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // Se passou da linha acima, a assinatura é VÁLIDA!
+  // 4. Lógica após confirmação de pagamento
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-    const emailUsuario = session.customer_details?.email?.toLowerCase().trim();
+    
+    // Pegamos o e-mail do cliente (priorizando o e-mail de faturamento)
+    const emailUsuario = (session.customer_details?.email || session.customer_email)?.toLowerCase().trim();
 
-    // Buscar itens para confirmar o Price ID (Plano Único ou Anual)
-    const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
-    const priceId = lineItems.data[0].price.id;
+    try {
+      // Buscamos o item comprado para definir o plano
+      const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+      const priceId = lineItems.data[0]?.price?.id;
 
-    let tipoPlano = priceId === 'price_1Sz1w7GEaACih56ZWyTiPBAu' ? 'unica' : 'anual';
+      // Seus IDs de preço do Stripe
+      const ID_PLANO_UNICO = 'price_1Sz1w7GEaACih56ZWyTiPBAu';
+      const tipoPlano = priceId === ID_PLANO_UNICO ? 'unica' : 'anual';
 
-    // Salva ou atualiza o usuário no seu banco de Reeducação Alimentar
-    await supabase.from('Usuarios_Dieta').upsert({ 
-      email: emailUsuario,
-      pago: true,
-      tipo_plano: tipoPlano,
-      creditos: tipoPlano === 'unica' ? 1 : 999,
-      data_reset: new Date().toISOString()
-    });
+      // 5. Upsert no Supabase (Cria se não existe, atualiza se existe)
+      const { error: dbError } = await supabase
+        .from('Usuarios_Dieta')
+        .upsert({ 
+          email: emailUsuario,
+          pago: true,
+          tipo_plano: tipoPlano,
+          creditos: tipoPlano === 'unica' ? 1 : 999,
+          data_reset: new Date().toISOString()
+        }, { onConflict: 'email' });
 
-    console.log(`✅ Acesso liberado para: ${emailUsuario}`);
+      if (dbError) throw dbError;
+
+      console.log(`✅ Sucesso: Plano ${tipoPlano} liberado para ${emailUsuario}`);
+    } catch (dbErr) {
+      console.error(`❌ Erro ao salvar no Banco: ${dbErr.message}`);
+      return res.status(500).json({ error: 'Erro ao atualizar banco de dados' });
+    }
   }
 
-  res.json({ received: true });
+  // Retorna 200 para o Stripe parar de tentar reenviar
+  res.status(200).json({ received: true });
 }
