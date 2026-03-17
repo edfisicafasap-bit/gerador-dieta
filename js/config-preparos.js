@@ -1,6 +1,6 @@
 // config-preparos.js
 
-export const CONFIG_PREPAROS = {
+const CONFIG_PREPAROS = {
   // =====================
   // 🐂 BOI
   // =====================
