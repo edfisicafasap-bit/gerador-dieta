@@ -351,8 +351,45 @@
         else gerarDieta(rascunho);
     }
 
-    async function iniciarCheckout(priceId) { /* Sua lógica de Stripe original aqui */ }
-    function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
+    async function iniciarCheckout(priceId) {
+        // Pega os dados que salvamos no rascunho (especialmente o e-mail)
+        const rascunho = JSON.parse(localStorage.getItem('rascunho_dieta'));
+        
+        if (!rascunho || !rascunho.email) {
+            alert("Erro ao recuperar seus dados. Por favor, tente gerar o plano novamente.");
+            return;
+        }
+
+        try {
+            // Chama a sua API de checkout na Vercel
+            const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    priceId: priceId, 
+                    email: rascunho.email,
+                    tipoPlano: priceId.includes('TAhib') ? 'anual' : 'unica' 
+                }),
+            });
+
+            const data = await response.json();
+
+            // Se a API retornar a URL, o navegador abre o Stripe
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                alert("Erro: " + (data.error || "Não foi possível iniciar o checkout."));
+            }
+        } catch (err) {
+            console.error("Erro no checkout:", err);
+            alert("Erro de conexão com o servidor de pagamentos.");
+        }
+    }
+
+    function fecharModal() { 
+        document.getElementById('payment-overlay').style.display = 'none'; 
+    }
+
     function alternarBuscaRapida() { 
         const area = document.getElementById('area-busca-rapida');
         area.style.display = area.style.display === 'none' ? 'block' : 'none';
