@@ -385,7 +385,63 @@
         const protG = (pesoUser * metaProt).toFixed(0);
         const gordG = (pesoUser * metaGord).toFixed(0);
 
-        const promptFinal = `Atue como um Nutricionista. Gere um plano de ${d.calorias}kcal para ${d.objetivo}. Peso: ${pesoUser}kg, ${d.refeicoes} refeições. Alimentos: ${d.alimentos.join(', ')}. Preparos: ${d.preparos.join(', ')}. Prot: ${protG}g, Gord: ${gordG}g. Sem markdown.`;
+        const promptFinal = `Atue como um Nutricionista Prático. Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis. Gere um plano de ${d.calorias}kcal para ${d.objetivo}, para um paciente de ${pesoUser}kg, dividido em ${d.refeicoes} refeições. Use estes alimentos: ${d.alimentos.join(', ')}. Preparos selecionados pelo usuário: ${d.preparos.join(', ')}.
+
+REGRAS DE FORMATAÇÃO: PROIBIDO usar símbolos de Markdown como asteriscos (**), hashtags (#), hífens excessivos ou tabelas. Gere um texto limpo e legível usando apenas quebras de linha.
+
+DIRETRIZES DE EQUILÍBRIO CALÓRICO (OBRIGATÓRIO):
+O plano deve seguir rigorosamente esta distribuição baseada no peso de ${pesoUser}kg:
+1. GORDURAS: Total de ${gorduraAlvoG}g (Considere 9 kcal por grama).
+2. PROTEÍNAS: Total de ${proteinaAlvoG}g (Considere 4 kcal por grama). Utilize a regra de ${margemProt}.
+3. CARBOIDRATOS (LÓGICA DE EXCLUSÃO): Subtraia as calorias das gorduras e proteínas do total de ${d.calorias}kcal diárias. O restante deve ser preenchido por carboidratos (Considere 4 kcal por grama).
+
+ESTRATÉGIA DE CÁLCULO:
+- Distribua as ${gorduraAlvoG}g de gordura entre as ${d.refeicoes} refeições (aprox. ${(gorduraAlvoG/d.refeicoes).toFixed(1)}g por refeição).
+
+DIRETRIZES SUPREMAS
+
+DETERMINAÇÃO DE REFEIÇÕES:
+Voce deve gerar EXATAMENTE ${d.refeicoes} refeicoes.
+- Se ${d.refeicoes} for 4: Use (1. Cafe da Manha, 2. Almoco, 3. Cafe da Tarde, 4. Jantar).
+- Se ${d.refeicoes} for 5: Use (1. Cafe da Manha, 2. Almoco, 3. Cafe da Tarde, 4. Jantar, 5. Ceia).
+- Se ${d.refeicoes} for 6: Use (1. Desjejum, 2. Cafe da Manha, 3. Almoco, 4. Cafe da Tarde, 5. Jantar, 6. Ceia).
+
+REGRAS POR HORÁRIO:
+CAFÉ DA MANHÃ: Máximo 3 itens. Transformar em: Bowl, Shake, Vitamina, Sanduíche ou Omelete. 
+ALMOÇO/JANTAR: Estrutura [Base de Carboidrato] + [Proteína] + [Legumes/Salada]. Arroz e Feijão são obrigatórios na base se selecionados.
+CEIA: Refeições leves (frutas, iogurte, etc).
+
+Alimentos permitidos: Utilize apenas os alimentos previamente selecionados.
+Proibido Alimentos Soltos: Nunca liste ingredientes isolados. Transforme-os em preparações.
+Coerência Cultural: Respeite os hábitos brasileiros.
+
+PLANEJAMENTO ALIMENTAR ESTRUTURADO:
+
+BLOCO 1: OPÇÕES A (PADRÃO com Arroz e Feijão)
+Gere as ${d.refeicoes} refeições. 
+REGRAS DE FORMATO:
+- O título deve ser APENAS o nome da refeição (ex: "1. Café da Manhã", "2. Almoço"). 
+- NÃO crie nomes para os pratos (ex: NÃO escreva "Sanduíche de Lombo").
+- Liste os alimentos em tópicos com suas respectivas quantidades.
+- Se houver alimentos que não combinam no mesmo prato (ex: fruta e carne), liste-os apenas como itens separados da mesma refeição.
+
+RESUMO DE MACROS (OPÇÕES A)
+Proteinas Totais: ${proteinaAlvoG}g | Carboidratos Totais: [Soma]g | Gorduras Totais: ${gorduraAlvoG}g
+
+BLOCO 2: OPÇÕES B (VARIAÇÃO SEM Arroz e Feijão)
+Mesma estrutura do Bloco 1. No almoço e jantar, é proibido o uso de arroz e feijão.
+
+RESUMO DE MACROS (OPÇÕES B)
+Proteinas Totais: ${proteinaAlvoG}g | Carboidratos Totais: [Soma]g | Gorduras Totais: ${gorduraAlvoG}g
+
+PROTOCOLO DE VALIDAÇÃO:
+A gordura total deve ser rigorosamente próxima de ${gorduraAlvoG}g. Não use o padrão de 70g. Use bases reais (TACO/TBCA).
+
+ITENS COMPLEMENTARES:
+1. HIDRATAÇÃO: Informe a recomendação de ${(pesoUser * 0.035).toFixed(1)}L de água por dia.
+2. DATA: ${new Date().toLocaleString()}.
+
+RODAPÉ: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional."`;
 
         try {
             const response = await fetch('/api/gerar-dieta.js', {
