@@ -1,4 +1,4 @@
-export const TABELA_ALIMENTOS = {
+const TABELA_ALIMENTOS = {
   // =====================
   // 🍚 CARBOIDRATOS
   // =====================
