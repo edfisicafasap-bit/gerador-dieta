@@ -395,14 +395,34 @@ document.getElementById('detailedDesc').innerHTML =
         } catch (err) { alert("Erro de conexão."); }
     }
 
-    async function gerarDieta(d) {
-        const divRes = document.getElementById('resultado');
-        const status = document.getElementById('status-topo');
-        const btnDownloadPos = document.getElementById('btn-download-pos-geracao');
-        const btnGerar = document.getElementById('btn-gerar');
+   async function gerarDieta(d) {
+    const divRes = document.getElementById('resultado');
+    const status = document.getElementById('status-topo');
+    const btnDownloadPos = document.getElementById('btn-download-pos-geracao');
+    const btnGerar = document.getElementById('btn-gerar');
 
-        status.style.display = 'block';
-        btnGerar.disabled = true;
+    // --- NOVO: LÓGICA DE MENSAGENS DINÂMICAS ---
+    const mensagens = [
+        "🔍 ANALISANDO SUAS PREFERENCIAS...",
+        "🥦 SELECIONANDO MELHORES PREPAROS...",
+        "🍳 AJUSTANDO MODOS DE PREPARO...",
+        "⚖️ CALCULANDO MACRONUTRIENTES...",
+        "📝 MONTANDO SEU CARDÁPIO PERSONALIZADO...",
+        "🚀 FINALIZANDO SEU PLANO DE REEDUCAÇÃO..."
+    ];
+    
+    let msgIndex = 0;
+    status.style.display = 'block';
+    status.innerText = mensagens[0];
+
+    // Muda a mensagem a cada 2.5 segundos
+    const intervaloMensagens = setInterval(() => {
+        msgIndex = (msgIndex + 1) % mensagens.length;
+        status.innerText = mensagens[msgIndex];
+    }, 2500);
+    // ------------------------------------------
+
+    btnGerar.disabled = true;
 
       let metaProt, metaGord, margemProt;
     const pesoUser = parseFloat(d.weight || d.peso); // Garante que pega o peso corretamente
@@ -485,28 +505,35 @@ ITENS COMPLEMENTARES:
 
 RODAPÉ: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional."`;
 
-        try {
-            const response = await fetch('/api/gerar-dieta.js', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: promptFinal, email: d.email })
-            });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error);
+       try {
+        const response = await fetch('/api/gerar-dieta.js', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: promptFinal, email: d.email })
+        });
+        
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error);
 
-            divRes.innerText = result.dieta;
-            divRes.style.display = 'block';
-            btnDownloadPos.style.display = 'block';
-            btnDownloadPos.onclick = () => window.open(result.pdf_url, '_blank');
-            
-            setTimeout(() => { divRes.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 500);
-            limparDadosEApp();
-        } catch (e) { alert("Erro: " + e.message); }
-        finally {
-            status.style.display = 'none';
-            btnGerar.disabled = false;
-        }
+        // Para as mensagens antes de exibir o resultado
+        clearInterval(intervaloMensagens); 
+        status.style.display = 'none';
+
+        divRes.innerText = result.dieta;
+        divRes.style.display = 'block';
+        btnDownloadPos.style.display = 'block';
+        btnDownloadPos.onclick = () => window.open(result.pdf_url, '_blank');
+        
+        setTimeout(() => { divRes.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 500);
+        limparDadosEApp();
+    } catch (e) { 
+        clearInterval(intervaloMensagens); // Para as mensagens em caso de erro
+        status.style.display = 'none';
+        alert("Erro: " + e.message); 
+    } finally {
+        btnGerar.disabled = false;
     }
+}
 
     async function buscarAcessoRapido() {
         const email = document.getElementById('email-busca').value;
