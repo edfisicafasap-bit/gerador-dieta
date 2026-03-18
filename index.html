@@ -290,21 +290,28 @@
     /* -------------------------------------------------------------------------
        NOVA LÓGICA DE CÁLCULO (INJETADA SEM REMOVER O RESTO)
     ------------------------------------------------------------------------- */
-    function prepararInstrucoesPrompt(d) {
+   function prepararInstrucoesPrompt(d) {
         const peso = parseFloat(d.peso);
         // Regras de Trainer: 2.2g Prot (Emagrecer), 1.8g (Ganhar), 2.0g (Definir)
         const fatorProt = (d.objetivo === 'Emagrecimento') ? 2.2 : (d.objetivo === 'Hipertrofia') ? 1.8 : 2.0;
         const totalProt = Math.round(peso * fatorProt);
-        const totalGord = Math.round(peso * 0.9); // Média saudável
+        const totalGord = Math.round(peso * 0.9); 
         const protPorRef = Math.round(totalProt / d.refeicoes);
 
         let matchPreparos = "";
         d.alimentos.forEach(item => {
             const nomeAlimento = item.split(': ')[1].toLowerCase();
-            // Busca match no seu arquivo config-preparos.js (externo)
+            
+            // 1. Encontra a chave (ex: "patinho") no seu arquivo JS
             const chaveMatch = Object.keys(CONFIG_PREPAROS).find(k => nomeAlimento.includes(k));
+            
             if (chaveMatch) {
-                const preparoEscolhido = CONFIG_PREPAROS[chaveMatch].find(p => d.preparos.includes(p)) || CONFIG_PREPAROS[chaveMatch][0];
+                // CORREÇÃO AQUI: Acessamos a lista 'preparos_sugeridos' antes de usar o .find()
+                const listaDePreparos = CONFIG_PREPAROS[chaveMatch].preparos_sugeridos;
+                
+                // Busca se o usuário marcou algum preparo que esse alimento aceita
+                const preparoEscolhido = listaDePreparos.find(p => d.preparos.includes(p)) || listaDePreparos[0];
+                
                 matchPreparos += `- ${item.toUpperCase()}: Preparar como ${preparoEscolhido.toUpperCase()}. (Meta: aprox. ${Math.round((protPorRef/28)*100)}g se for carne, ou 2-3 unid se ovos).\n`;
             }
         });
