@@ -52,4 +52,18 @@ const CONFIG_PREPAROS = {
     animal: "Frango",
     preparos_sugeridos: ["Assado", "Na Airfryer", "Cozido", "Ensopado", "Desfiado"]
   }
+}; // <--- EU ADICIONEI ESTA CHAVE QUE FALTAVA
+
+const FATOR_PREPARO = {
+    // PROTEÍNAS (Carnes, Frango, Peixe) - Geralmente encolhem (Fator < 1)
+    "Grelhado": 0.75,       // Perde ~25% de água. Ex: 100g cru -> 75g pronto
+    "Assado": 0.70,         // Perde ~30% de água. Ex: 100g cru -> 70g pronto
+    "Na Airfryer": 0.65,    // Desidrata mais. Ex: 100g cru -> 65g pronto
+    "Na frigideira": 0.72,  // Perda similar ao grelhado, levemente menor
+    "Moído": 0.80,          // Perde gordura/água mas retém volume
+    "Desfiado": 0.70,       // Geralmente cozido e depois processado
+    "Cozido": 0.85,         // Retém mais umidade que o grelhado
+    "Cozido no vapor": 0.90, // Perda mínima de nutrientes e peso
+    "Ensopado": 1.0,        // O peso se mantém pela absorção do molho
+    "Refogado": 0.82        // Perda moderada
 };
