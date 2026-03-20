@@ -224,7 +224,6 @@
         const caloriesResult = Math.round(finalCalories);
         
         document.getElementById('goalResult').innerText = caloriesResult + " kcal";
-        // TEXTO COM DESTAQUE AMARELO PEDIDO
         document.getElementById('tmb-msg-v2').innerHTML = `
             Seu corpo precisa de <span class="highlight-text">${caloriesResult} calorias</span> por dia para ${goalValue.toLowerCase()}. 
             Deseja transformar esses números em um plano alimentar <span class="destaque-amarelo">somente com os alimentos que você gosta de comer</span>? 
@@ -284,9 +283,13 @@
             const nomeAlimento = item.split(': ')[1].toLowerCase();
             const chaveMatch = Object.keys(CONFIG_PREPAROS).find(k => nomeAlimento.includes(k));
             if (chaveMatch) {
-                const listaDePreparos = CONFIG_PREPAROS[chaveMatch].preparos_sugeridos;
-                const preparoEscolhido = listaDePreparos.find(p => d.preparos.includes(p)) || listaDePreparos[0];
-                matchPreparos += `- ${item.toUpperCase()}: Preparar como ${preparoEscolhido.toUpperCase()}.\n`;
+                const listaDePreparosSugeridos = CONFIG_PREPAROS[chaveMatch].preparos_sugeridos;
+                const preparoEscolhido = d.preparos.find(p => listaDePreparosSugeridos.includes(p)) || listaDePreparosSugeridos[0];
+                
+                // INTEGRAÇÃO DO FATOR DE PREPARO
+                const fator = FATOR_PREPARO[preparoEscolhido] || 1.0;
+                
+                matchPreparos += `- ${item.toUpperCase()}: Preparar como ${preparoEscolhido.toUpperCase()} (Fator de correção: ${fator}).\n`;
             }
         });
         return { totalProt, totalGord, protPorRef, matchPreparos };
@@ -313,13 +316,20 @@
         const interval = setInterval(() => { if (msgIndex < mensagens.length) { status.innerText = mensagens[msgIndex]; msgIndex++; } }, 1800);
 
         const promptFinal = `
-            Atue como um Nutricionista Esportivo.
+            Atue como um Nutricionista Esportivo de alto nível.
             Gere um plano alimentar de ${d.calorias} kcal para o objetivo de ${d.objetivo}.
             Dados do Aluno: Peso ${d.peso}kg, ${d.refeicoes} refeições por dia.
             Metas Calculadas: ${info.totalProt}g de Proteína e ${info.totalGord}g de Gordura.
             ALIMENTOS SELECIONADOS: ${d.alimentos.join(', ')}
-            MODOS DE PREPARO: ${info.matchPreparos}
-            REGRAS: Divida em ${d.refeicoes} refeições. Cada uma com aprox. ${info.protPorRef}g de proteína. Use apenas os alimentos e preparos listados.
+            DETALHES DE PREPARO:
+            ${info.matchPreparos}
+            
+            REGRAS CRÍTICAS DE PRESCRIÇÃO:
+            1. Divida em ${d.refeicoes} refeições. Cada uma com aprox. ${info.protPorRef}g de proteína.
+            2. PESO DOS ALIMENTOS: Para carnes e peixes, informe SEMPRE o peso do alimento JÁ PRONTO (após preparo).
+            3. Use o "Fator de correção" fornecido em cada item para ajustar o peso final. Ex: Se o aluno precisa de 100g de proteína crua e o fator é 0.75, prescreva aprox. 75g do alimento pronto no plano.
+            4. Para Arroz, Feijão e Macarrão, considere o peso já COZIDO.
+            5. Use apenas os alimentos e preparos listados acima.
         `;
 
         try {
