@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     
     <title>Reeducação Alimentar.</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
@@ -20,39 +18,43 @@
         .container { max-width:600px; margin:auto; padding:20px; background:#000; position: relative; }
         
         h2 { color:#FFD400; text-align: center; margin-bottom: 5px; font-size: 22px; text-transform: uppercase; font-weight: 900; }
-        h3 { color:#FFD400; border-bottom: 2px solid #333; padding-bottom: 10px; margin-top: 30px; text-align: center; font-size: 18px; text-transform: uppercase; font-weight: 700; }
         p.subtitle { text-align: center; color: #ccc; font-size: 14px; margin-bottom: 25px; }
         
         label { display:block; margin-top:18px; font-size:13px; font-weight: 700; color: #eee; text-transform: uppercase; }
-        input, select, textarea { width:100%; padding:14px; margin-top:6px; border-radius:8px; border:1px solid #222; background: #111; color: #fff; font-size: 15px; box-sizing: border-box; font-family: 'Montserrat'; }
+        input, select { width:100%; padding:14px; margin-top:6px; border-radius:8px; border:1px solid #222; background: #111; color: #fff; font-size: 15px; box-sizing: border-box; font-family: 'Montserrat'; }
         
         #btn-gerar, .btn-calc { 
             width:100%; margin-top:20px; padding:20px; background:#FFD400; border:none; border-radius:10px; 
             font-size:16px; font-weight:900; color:#000; cursor: pointer; transition: 0.3s; text-transform: uppercase; 
         }
-        
-        #btn-download-pos-geracao, #btn-download-direto { 
-            width:100%; margin-top:20px; padding:18px; background:#000; border: 2px solid #FFD400; border-radius:10px; 
-            font-size:16px; font-weight:900; color:#FFD400; cursor: pointer; text-transform: uppercase; 
+
+        /* RESULTADO TMB PREMIUM */
+        .result-box-tmb { 
+            margin-top: 30px; padding: 30px; background: linear-gradient(145deg, #111, #000); 
+            border-radius: 15px; border: 2px solid #FFD400; display: none; text-align: center;
+            box-shadow: 0 0 25px rgba(255, 212, 0, 0.2);
         }
+        .result-val { font-size: 45px; font-weight: 900; color: #FFD400; margin: 10px 0; text-shadow: 0 0 10px rgba(255, 212, 0, 0.4); }
+        .result-text { font-size: 15px; line-height: 1.6; color: #fff; }
+        .highlight-text { color: #FFD400; font-weight: 900; }
 
         .step-section { display: none; }
         .step-active { display: block; animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .result-box-tmb { margin-top: 30px; padding: 25px; background: #111; border-radius: 12px; border: 2px solid #FFD400; display: none; text-align: center; }
-        .result-val { font-size: 38px; font-weight: 900; color: #fff; margin-bottom: 5px; }
-        
-        /* NOVO STATUS DINÂMICO */
-        #status-topo { 
-            display: none; background: #111; color: #FFD400; padding: 20px; border-radius: 12px; 
-            text-align: center; font-weight: 900; margin-top: 20px; border: 1px solid #FFD400;
-            text-transform: uppercase; font-size: 14px; letter-spacing: 1px;
-        }
-        
+        /* MODAL DE PAGAMENTO - DESIGN INVERTIDO */
         #payment-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
-        .payment-card { background: #111; padding: 35px; border-radius: 20px; text-align: center; max-width: 400px; border: 1px solid #FFD400; }
+        .payment-card { background: #111; padding: 35px; border-radius: 20px; text-align: center; max-width: 420px; border: 1px solid #333; }
         
+        .plan-option { margin-bottom: 25px; text-align: left; }
+        .plan-btn { width: 100%; padding: 20px; border-radius: 12px; font-weight: 900; font-size: 16px; cursor: pointer; text-transform: uppercase; border: none; transition: 0.2s; }
+        .plan-desc { font-size: 13px; color: #aaa; margin-top: 10px; line-height: 1.4; display: block; }
+        
+        /* Único agora com borda amarela */
+        .btn-unica { background: transparent; color: #FFD400; border: 2px solid #FFD400; }
+        /* Anual agora com fundo branco (destaque total) */
+        .btn-anual { background: #fff; color: #000; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+
         .categoria-pai { color: #FFD400; font-size: 15px; font-weight: 900; margin: 25px 0 10px 0; padding-left: 10px; text-transform: uppercase; border-left: 4px solid #FFD400; }
         details { background: #0a0a0a; border: 1px solid #222; border-radius: 8px; margin-bottom: 8px; }
         summary { padding: 14px; cursor: pointer; color: #fff; font-weight: 700; font-size: 13px; text-transform: uppercase; list-style: none; display: flex; justify-content: space-between; align-items: center; }
@@ -64,14 +66,11 @@
         
         .secao-especial { background: #111; border: 1px dashed #FFD400; padding: 20px; border-radius: 12px; margin: 25px 0; }
         
-        #resultado { 
-            margin-top: 20px; white-space: pre-wrap; background: #111; padding: 25px; 
-            border-radius: 15px; display: none; border: 1px solid #FFD400; font-size: 15px; 
-            line-height: 1.8; color: #eee;
-        }
-
+        #status-topo { display: none; background: #111; color: #FFD400; padding: 20px; border-radius: 12px; text-align: center; font-weight: 900; margin-top: 20px; border: 1px solid #FFD400; text-transform: uppercase; }
+        #resultado { margin-top: 20px; white-space: pre-wrap; background: #111; padding: 25px; border-radius: 15px; display: none; border: 1px solid #FFD400; font-size: 15px; line-height: 1.8; color: #eee; }
+        #btn-download-pos-geracao { width:100%; margin-top:20px; padding:18px; background:#000; border: 2px solid #FFD400; border-radius:10px; font-size:16px; font-weight:900; color:#FFD400; cursor: pointer; text-transform: uppercase; }
+        
         .btn-suporte { position: fixed; bottom: 20px; right: 20px; background: #25d366; color: white; padding: 12px 20px; border-radius: 50px; text-decoration: none; font-size: 14px; font-weight: bold; z-index: 1000; display: flex; align-items: center; gap: 8px; }
-        .login-shortcut { position: absolute; top: 15px; right: 20px; cursor: pointer; color: #FFD400; background: rgba(255, 212, 0, 0.1); padding: 10px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 100; }
     </style>
 </head>
 <body onload="inicializarTudo()">
@@ -80,20 +79,23 @@
 
 <div id="payment-overlay">
     <div class="payment-card">
-        <h2 style="font-size: 24px; color: #FFD400; margin-top: 0;">LIBERAR ACESSO! 🚀</h2>
-        <p style="color: #eee; margin-bottom: 25px; font-size: 15px;">Escolha um plano:</p>
-        <button style="width: 100%; padding: 15px; border-radius: 10px; font-weight: 900; background: #fff; color: #000; cursor: pointer; border: none; text-transform: uppercase;" onclick="iniciarCheckout('price_1Sz1w7GEaACih56ZWyTiPBAu')">🥗 DIETA ÚNICA - R$ 9,90</button>
-        <div style="margin-top: 20px;"></div>
-        <button style="width: 100%; padding: 15px; border: 2px solid #FFD400; border-radius: 10px; font-weight: 900; background: transparent; color: #FFD400; cursor: pointer; text-transform: uppercase;" onclick="iniciarCheckout('price_1TAhibGEaACih56Z4TeYkNwK')">📅 ACESSO ANUAL - R$ 69,90</button>
-        <p style="margin-top: 30px; font-size: 12px; color: #888; cursor: pointer; text-decoration: underline;" onclick="fecharModal()">← Voltar e editar</p>
+        <h2 style="color: #FFD400; margin-bottom: 30px;">Libere seu Acesso 🚀</h2>
+        
+        <div class="plan-option">
+            <button class="plan-btn btn-unica" onclick="iniciarCheckout('price_1Sz1w7GEaACih56ZWyTiPBAu')">🥗 DIETA ÚNICA - R$ 9,90</button>
+            <span class="plan-desc">Geração de um plano alimentar personalizado único enviado ao seu e-mail.</span>
+        </div>
+
+        <div class="plan-option">
+            <button class="plan-btn btn-anual" onclick="iniciarCheckout('price_1TAhibGEaACih56Z4TeYkNwK')">📅 ACESSO ANUAL - R$ 69,90</button>
+            <span class="plan-desc">Você pode gerar até 2 planos alimentares por semana durante o período de 1 ano.</span>
+        </div>
+
+        <p style="margin-top: 20px; font-size: 12px; color: #666; cursor: pointer; text-decoration: underline;" onclick="fecharModal()">← Voltar e ajustar alimentos</p>
     </div>
 </div>
 
 <div class="container">
-    <div class="login-shortcut" onclick="alternarBuscaRapida()" title="Acessar meu plano">
-        <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z"/></svg>
-    </div>
-
     <div id="step-1" class="step-section step-active">
         <h2>🔥 Meta de calorias diária</h2>
         <p class="subtitle">Calcule sua meta baseada no seu objetivo</p>
@@ -120,24 +122,18 @@
             <option value="Hipertrofia">Ganhar Massa (Bulking)</option>
         </select>
         <button class="btn-calc" onclick="calculateTMB()">CALCULAR AGORA</button>
+        
         <div id="resultContainer" class="result-box-tmb">
-            <h4>SUA META DIÁRIA:</h4>
+            <p class="result-text" id="tmb-msg-v2"></p>
             <div id="goalResult" class="result-val">--</div>
-            <button class="btn-calc" style="margin-top: 20px; background: #fff; color: #000;" onclick="irParaDieta()">MONTAR MEU PLANO →</button>
+            <p class="result-text" style="font-size: 13px; color: #aaa; margin-top: 15px;">Agora vamos transformar esse número em uma dieta que realmente funciona.</p>
+            <button class="btn-calc" style="margin-top: 25px; background: #FFD400; color: #000;" onclick="irParaDieta()">MONTAR MEU PLANO →</button>
         </div>
     </div>
 
     <div id="step-2" class="step-section">
         <h2>🍎 Configuração do Plano</h2>
-        <div id="area-busca-rapida" class="secao-especial" style="display: none; border-style: solid; border-color: #FFD700;">
-            <div style="display: flex; gap: 10px;">
-                <input type="email" id="email-busca" placeholder="E-mail cadastrado" style="margin-top: 0; flex: 1;">
-                <button onclick="buscarAcessoRapido()" style="width: auto; background: #FFD700; color: #000; padding: 0 15px; border-radius: 6px; font-weight: bold; cursor: pointer;">BUSCAR</button>
-            </div>
-        </div>
-
         <p class="subtitle">Personalize sua alimentação abaixo:</p>
-        
         <label>Seu Peso Atual (kg)</label>
         <input type="number" id="peso">
         <label>Meta de Calorias Diárias</label>
@@ -154,17 +150,14 @@
             <option value="Hipertrofia">Hipertrofia</option>
             <option value="Definição">Definição</option>
         </select>
-        
         <div id="categorias-container"></div>
         <div class="secao-especial">
             <h4>🍳 MODOS DE PREPARO</h4>
             <div id="preparos-unificados-container" class="grid-alimentos"></div>
         </div>
-
         <label style="display: flex; align-items: center; font-weight: normal; font-size: 12px; text-transform: none;">
             <input type="checkbox" id="aceite-clausula" style="width: 20px; margin-right: 10px;"> Confirmo que este programa não substitui acompanhamento médico.
         </label>
-
         <div id="status-topo">PROCESSANDO SEU PLANO...</div>
         <button id="btn-gerar" onclick="verificarAcessoEPagar()">GERAR PLANO AGORA</button>
     </div>
@@ -225,13 +218,19 @@
         const height = parseFloat(document.getElementById('calc-height').value);
         const activity = parseFloat(document.getElementById('calc-activity').value);
         const goalValue = document.getElementById('calc-goal').value;
-        if (!age || !weight || !height) return;
+        if (!age || !weight || !height) return alert("Preencha todos os campos.");
+        
         let bmr = (gender === 'male') ? 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age) : 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
         const tdee = bmr * activity;
         let finalCalories = (goalValue === 'Emagrecimento') ? tdee * 0.8 : (goalValue === 'Hipertrofia') ? tdee * 1.15 : tdee;
         const caloriesResult = Math.round(finalCalories);
+        
         document.getElementById('goalResult').innerText = caloriesResult + " kcal";
+        document.getElementById('tmb-msg-v2').innerHTML = `Seu corpo precisa de <span class="highlight-text">${caloriesResult} calorias</span> por dia para <span class="highlight-text">${goalValue.toLowerCase()}</span>.`;
+        
         document.getElementById('resultContainer').style.display = 'block';
+        document.getElementById('resultContainer').scrollIntoView({ behavior: 'smooth' });
+        
         localStorage.setItem('tmb_weight', weight);
         localStorage.setItem('tmb_calories', caloriesResult);
         localStorage.setItem('tmb_goal', goalValue);
@@ -249,11 +248,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('pago') === 'true') {
             const rascunho = localStorage.getItem('rascunho_dieta');
-            if (rascunho) {
-                mudarPasso(2);
-                gerarDieta(JSON.parse(rascunho), true); // Indica que o pagamento já foi confirmado
-                window.history.replaceState({}, document.title, "/");
-            }
+            if (rascunho) { mudarPasso(2); gerarDieta(JSON.parse(rascunho), true); window.history.replaceState({}, document.title, "/"); }
         }
     }
 
@@ -264,18 +259,14 @@
             let html = `<div class="categoria-pai">${cat}</div>`;
             for (let sub in estruturaAlimentos[cat]) {
                 html += `<details><summary>${sub}</summary><div class="grid-alimentos">`;
-                estruturaAlimentos[cat][sub].forEach(item => {
-                    html += `<label class="item-alimento"><input type="checkbox" name="alimento" value="${sub}: ${item}"> ${item}</label>`;
-                });
+                estruturaAlimentos[cat][sub].forEach(item => { html += `<label class="item-alimento"><input type="checkbox" name="alimento" value="${sub}: ${item}"> ${item}</label>`; });
                 html += `</div></details>`;
             }
             container.innerHTML += html;
         }
         const pCont = document.getElementById('preparos-unificados-container');
         pCont.innerHTML = '';
-        preparosUnificados.forEach(p => {
-            pCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-geral" value="${p}"> ${p}</label>`;
-        });
+        preparosUnificados.forEach(p => { pCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-geral" value="${p}"> ${p}</label>`; });
     }
 
     function prepararInstrucoesPrompt(d) {
@@ -283,6 +274,8 @@
         const fatorProt = (d.objetivo === 'Emagrecimento') ? 2.2 : (d.objetivo === 'Hipertrofia') ? 1.8 : 2.0;
         const totalProt = Math.round(peso * fatorProt);
         const totalGord = Math.round(peso * 0.9); 
+        const protPorRef = Math.round(totalProt / d.refeicoes);
+        
         let matchPreparos = "";
         d.alimentos.forEach(item => {
             const nomeAlimento = item.split(': ')[1].toLowerCase();
@@ -290,24 +283,20 @@
             if (chaveMatch) {
                 const listaDePreparos = CONFIG_PREPAROS[chaveMatch].preparos_sugeridos;
                 const preparoEscolhido = listaDePreparos.find(p => d.preparos.includes(p)) || listaDePreparos[0];
-                matchPreparos += `- ${item.toUpperCase()}: ${preparoEscolhido.toUpperCase()}.\n`;
+                matchPreparos += `- ${item.toUpperCase()}: Preparar como ${preparoEscolhido.toUpperCase()}.\n`;
             }
         });
-        return { totalProt, totalGord, matchPreparos };
+        return { totalProt, totalGord, protPorRef, matchPreparos };
     }
 
-    /* -----------------------------------------------------------
-       NOVA FUNÇÃO GERAR DIETA COM STATUS DINÂMICO
-    ----------------------------------------------------------- */
     async function gerarDieta(d, pagoConfirmado = false) {
         const divRes = document.getElementById('resultado');
         const status = document.getElementById('status-topo');
-        const infoCalculada = prepararInstrucoesPrompt(d);
+        const info = prepararInstrucoesPrompt(d);
 
         status.style.display = 'block';
         status.scrollIntoView({ behavior: 'smooth' });
 
-        // SEQUÊNCIA DE MENSAGENS
         const mensagens = [
             "🔐 VERIFICANDO ACESSO...",
             "✅ PAGAMENTO CONFIRMADO!",
@@ -317,17 +306,18 @@
             "⏳ QUASE PRONTO, AJUSTANDO DETALHES..."
         ];
 
-        let msgIndex = 0;
-        if (pagoConfirmado) msgIndex = 1; // Pula a primeira se já vem do Stripe
+        let msgIndex = pagoConfirmado ? 1 : 0;
+        const interval = setInterval(() => { if (msgIndex < mensagens.length) { status.innerText = mensagens[msgIndex]; msgIndex++; } }, 1800);
 
-        const interval = setInterval(() => {
-            if (msgIndex < mensagens.length) {
-                status.innerText = mensagens[msgIndex];
-                msgIndex++;
-            }
-        }, 1800);
-
-        const promptFinal = `Atue como um Nutricionista. Gere um plano de ${d.calorias}kcal para ${d.objetivo}. Peso: ${d.peso}kg. ALIMENTOS: ${d.alimentos.join(', ')}.`;
+        const promptFinal = `
+            Atue como um Nutricionista Esportivo.
+            Gere um plano alimentar de ${d.calorias} kcal para o objetivo de ${d.objetivo}.
+            Dados do Aluno: Peso ${d.peso}kg, ${d.refeicoes} refeições por dia.
+            Metas Calculadas: ${info.totalProt}g de Proteína e ${info.totalGord}g de Gordura.
+            ALIMENTOS SELECIONADOS: ${d.alimentos.join(', ')}
+            MODOS DE PREPARO: ${info.matchPreparos}
+            REGRAS: Divida em ${d.refeicoes} refeições. Cada uma com aprox. ${info.protPorRef}g de proteína. Use apenas os alimentos e preparos listados.
+        `;
 
         try {
             const res = await fetch('/api/gerar-dieta', {
@@ -336,17 +326,15 @@
                 body: JSON.stringify({ prompt: promptFinal, email: d.email })
             });
             const data = await res.json();
-            
             clearInterval(interval);
             mudarPasso(3);
-            
             divRes.innerText = data.dieta;
             divRes.style.display = 'block';
             document.getElementById('btn-download-pos-geracao').style.display = 'block';
             document.getElementById('btn-download-pos-geracao').onclick = () => window.open(data.pdf_url, '_blank');
         } catch (e) { 
             clearInterval(interval);
-            alert("Erro ao gerar."); 
+            alert("Erro ao gerar plano."); 
         } finally { 
             status.style.display = 'none'; 
         }
@@ -354,8 +342,8 @@
 
     async function verificarAcessoEPagar() {
         const alimentos = Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value);
-        if (alimentos.length < 5) return alert("Selecione no mínimo 5 alimentos.");
-        const email = prompt("E-mail:");
+        if (alimentos.length < 5) return alert("Selecione pelo menos 5 alimentos.");
+        const email = prompt("Seu e-mail para acesso:");
         if (!email) return;
 
         const rascunho = {
@@ -384,14 +372,10 @@
             });
             const data = await response.json();
             if (data.url) window.location.href = data.url;
-        } catch (err) { alert("Erro no pagamento."); }
+        } catch (err) { alert("Erro no checkout."); }
     }
 
     function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
-    function alternarBuscaRapida() { 
-        const area = document.getElementById('area-busca-rapida');
-        area.style.display = area.style.display === 'none' ? 'block' : 'none';
-    }
 </script>
 </body>
 </html>
