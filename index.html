@@ -271,29 +271,36 @@
         preparosUnificados.forEach(p => { pCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-geral" value="${p}"> ${p}</label>`; });
     }
 
-    function prepararInstrucoesPrompt(d) {
-        const peso = parseFloat(d.peso);
-        const fatorProt = (d.objetivo === 'Emagrecimento') ? 2.2 : (d.objetivo === 'Hipertrofia') ? 1.8 : 2.0;
-        const totalProt = Math.round(peso * fatorProt);
-        const totalGord = Math.round(peso * 0.9); 
-        const protPorRef = Math.round(totalProt / d.refeicoes);
-        
-        let matchPreparos = "";
-        d.alimentos.forEach(item => {
-            const nomeAlimento = item.split(': ')[1].toLowerCase();
-            const chaveMatch = Object.keys(CONFIG_PREPAROS).find(k => nomeAlimento.includes(k));
-            if (chaveMatch) {
-                const listaDePreparosSugeridos = CONFIG_PREPAROS[chaveMatch].preparos_sugeridos;
-                const preparoEscolhido = d.preparos.find(p => listaDePreparosSugeridos.includes(p)) || listaDePreparosSugeridos[0];
-                
-                // INTEGRAÇÃO DO FATOR DE PREPARO
-                const fator = FATOR_PREPARO[preparoEscolhido] || 1.0;
-                
-                matchPreparos += `- ${item.toUpperCase()}: Preparar como ${preparoEscolhido.toUpperCase()} (Fator de correção: ${fator}).\n`;
-            }
-        });
-        return { totalProt, totalGord, protPorRef, matchPreparos };
-    }
+  function prepararInstrucoesPrompt(d) {
+    const peso = parseFloat(d.peso);
+    const caloriasMeta = parseFloat(d.calorias);
+    
+    // Definição de Proteína e Gordura
+    const fatorProt = (d.objetivo === 'Emagrecimento') ? 2.2 : (d.objetivo === 'Hipertrofia') ? 1.8 : 2.0;
+    const totalProt = Math.round(peso * fatorProt);
+    const totalGord = Math.round(peso * 0.9); 
+
+    // LÓGICA DE OURO: Cálculo do Carboidrato Restante
+    // (Calorias Totais - Calorias de Prot e Gord) / 4
+    const calProtGord = (totalProt * 4) + (totalGord * 9);
+    const totalCarbo = Math.round((caloriasMeta - calProtGord) / 4);
+    
+    const protPorRef = Math.round(totalProt / d.refeicoes);
+    
+    let matchPreparos = "";
+    d.alimentos.forEach(item => {
+        const nomeAlimento = item.split(': ')[1].toLowerCase();
+        const chaveMatch = Object.keys(CONFIG_PREPAROS).find(k => nomeAlimento.includes(k));
+        if (chaveMatch) {
+            const listaDePreparosSugeridos = CONFIG_PREPAROS[chaveMatch].preparos_sugeridos;
+            const preparoEscolhido = d.preparos.find(p => listaDePreparosSugeridos.includes(p)) || listaDePreparosSugeridos[0];
+            const fator = FATOR_PREPARO[preparoEscolhido] || 1.0;
+            matchPreparos += `- ${item.toUpperCase()}: Preparar como ${preparoEscolhido.toUpperCase()} (Fator: ${fator}).\n`;
+        }
+    });
+
+    return { totalProt, totalGord, totalCarbo, protPorRef, matchPreparos };
+}
 
     async function gerarDieta(d, pagoConfirmado = false) {
         const divRes = document.getElementById('resultado');
@@ -319,7 +326,7 @@
             Atue como um Nutricionista Esportivo de alto nível.
             Gere um plano alimentar de ${d.calorias} kcal para o objetivo de ${d.objetivo}.
             Dados do Aluno: Peso ${d.peso}kg, ${d.refeicoes} refeições por dia.
-            Metas Calculadas: ${info.totalProt}g de Proteína e ${info.totalGord}g de Gordura.
+            Metas Calculadas: ${info.totalProt}g de Proteína e ${info.totalGord}g de Gordura e  ${info.totalCarbo}g de Carboidratos
             ALIMENTOS SELECIONADOS: ${d.alimentos.join(', ')}
             DETALHES DE PREPARO:
             ${info.matchPreparos}
