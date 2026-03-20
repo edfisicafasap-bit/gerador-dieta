@@ -28,21 +28,22 @@
             font-size:16px; font-weight:900; color:#000; cursor: pointer; transition: 0.3s; text-transform: uppercase; 
         }
 
-        /* RESULTADO TMB PREMIUM */
+        /* RESULTADO TMB PREMIUM REESTRUTURADO */
         .result-box-tmb { 
-            margin-top: 30px; padding: 30px; background: linear-gradient(145deg, #111, #000); 
+            margin-top: 30px; padding: 35px 25px; background: linear-gradient(145deg, #111, #000); 
             border-radius: 15px; border: 2px solid #FFD400; display: none; text-align: center;
             box-shadow: 0 0 25px rgba(255, 212, 0, 0.2);
         }
-        .result-val { font-size: 45px; font-weight: 900; color: #FFD400; margin: 10px 0; text-shadow: 0 0 10px rgba(255, 212, 0, 0.4); }
-        .result-text { font-size: 15px; line-height: 1.6; color: #fff; }
+        .result-val { font-size: 52px; font-weight: 900; color: #FFD400; margin: 0; text-shadow: 0 0 15px rgba(255, 212, 0, 0.4); line-height: 1; }
+        .result-text { font-size: 15px; line-height: 1.6; color: #fff; margin-top: 20px; font-weight: 400; }
         .highlight-text { color: #FFD400; font-weight: 900; }
+        .destaque-amarelo { background: #FFD400; color: #000; padding: 2px 4px; font-weight: 900; border-radius: 3px; }
 
         .step-section { display: none; }
         .step-active { display: block; animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* MODAL DE PAGAMENTO - DESIGN INVERTIDO */
+        /* MODAL DE PAGAMENTO */
         #payment-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
         .payment-card { background: #111; padding: 35px; border-radius: 20px; text-align: center; max-width: 420px; border: 1px solid #333; }
         
@@ -50,9 +51,7 @@
         .plan-btn { width: 100%; padding: 20px; border-radius: 12px; font-weight: 900; font-size: 16px; cursor: pointer; text-transform: uppercase; border: none; transition: 0.2s; }
         .plan-desc { font-size: 13px; color: #aaa; margin-top: 10px; line-height: 1.4; display: block; }
         
-        /* Único agora com borda amarela */
         .btn-unica { background: transparent; color: #FFD400; border: 2px solid #FFD400; }
-        /* Anual agora com fundo branco (destaque total) */
         .btn-anual { background: #fff; color: #000; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
 
         .categoria-pai { color: #FFD400; font-size: 15px; font-weight: 900; margin: 25px 0 10px 0; padding-left: 10px; text-transform: uppercase; border-left: 4px solid #FFD400; }
@@ -124,10 +123,9 @@
         <button class="btn-calc" onclick="calculateTMB()">CALCULAR AGORA</button>
         
         <div id="resultContainer" class="result-box-tmb">
-            <p class="result-text" id="tmb-msg-v2"></p>
             <div id="goalResult" class="result-val">--</div>
-            <p class="result-text" style="font-size: 13px; color: #aaa; margin-top: 15px;">Agora vamos transformar esse número em uma dieta que realmente funciona.</p>
-            <button class="btn-calc" style="margin-top: 25px; background: #FFD400; color: #000;" onclick="irParaDieta()">MONTAR MEU PLANO →</button>
+            <p class="result-text" id="tmb-msg-v2"></p>
+            <button class="btn-calc" style="margin-top: 30px; background: #FFD400; color: #000; box-shadow: 0 8px 20px rgba(255, 212, 0, 0.3);" onclick="irParaDieta()">MONTAR MEU PLANO →</button>
         </div>
     </div>
 
@@ -226,7 +224,12 @@
         const caloriesResult = Math.round(finalCalories);
         
         document.getElementById('goalResult').innerText = caloriesResult + " kcal";
-        document.getElementById('tmb-msg-v2').innerHTML = `Seu corpo precisa de <span class="highlight-text">${caloriesResult} calorias</span> por dia para <span class="highlight-text">${goalValue.toLowerCase()}</span>.`;
+        // TEXTO COM DESTAQUE AMARELO PEDIDO
+        document.getElementById('tmb-msg-v2').innerHTML = `
+            Seu corpo precisa de <span class="highlight-text">${caloriesResult} calorias</span> por dia para ${goalValue.toLowerCase()}. 
+            Deseja transformar esses números em um plano alimentar <span class="destaque-amarelo">somente com os alimentos que você gosta de comer</span>? 
+            É só clicar no botão abaixo:
+        `;
         
         document.getElementById('resultContainer').style.display = 'block';
         document.getElementById('resultContainer').scrollIntoView({ behavior: 'smooth' });
@@ -303,7 +306,7 @@
             "📊 CALCULANDO MACRONUTRIENTES...",
             "🍳 SELECIONANDO MELHORES PREPAROS...",
             "🧠 INTELIGÊNCIA ARTIFICIAL MONTANDO CARDÁPIO...",
-            "⏳ QUASE PRONTO, AJUSTANDO DETALHES..."
+            "⏳ QUASE PRONTO..."
         ];
 
         let msgIndex = pagoConfirmado ? 1 : 0;
