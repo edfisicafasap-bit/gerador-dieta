@@ -7,6 +7,7 @@
     
     <title>Reeducação Alimentar</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
@@ -69,12 +70,36 @@
         #resultado { margin-top: 20px; white-space: pre-wrap; background: #111; padding: 25px; border-radius: 15px; display: none; border: 1px solid #FFD400; font-size: 15px; line-height: 1.8; color: #eee; }
         #btn-download-pos-geracao { width:100%; margin-top:20px; padding:18px; background:#000; border: 2px solid #FFD400; border-radius:10px; font-size:16px; font-weight:900; color:#FFD400; cursor: pointer; text-transform: uppercase; }
         
-        .btn-suporte { position: fixed; bottom: 20px; right: 20px; background: #25d366; color: white; padding: 12px 20px; border-radius: 50px; text-decoration: none; font-size: 14px; font-weight: bold; z-index: 1000; display: flex; align-items: center; gap: 8px; }
+        .btn-suporte { 
+    position: fixed; 
+    bottom: 20px; 
+    right: 20px; 
+    background: #25d366; 
+    color: white; 
+    padding: 12px 20px; 
+    border-radius: 50px; 
+    text-decoration: none; 
+    font-size: 14px; 
+    font-weight: bold; 
+    z-index: 1000; 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; /* Aumentei um pouco o espaço entre ícone e texto */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    transition: 0.3s;
+}
+
+.btn-suporte:hover {
+    transform: scale(1.1);
+    background: #20ba5a;
+}
     </style>
 </head>
 <body onload="inicializarTudo()">
 
-<a href="https://wa.me/5522992587653" target="_blank" class="btn-suporte">SUPORTE</a>
+<a href="https://wa.me/5522992587653" target="_blank" class="btn-suporte">
+    <i class="fab fa-whatsapp" style="font-size: 20px;"></i> SUPORTE
+</a>
 
 <div id="payment-overlay">
     <div class="payment-card">
@@ -404,12 +429,22 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
         }
     }
 
-    async function verificarAcessoEPagar() {
+   async function verificarAcessoEPagar() {
+        // 1. Validações Iniciais (Segurança e UI)
+        const aceitouTermos = document.getElementById('aceite-clausula').checked;
+        if (!aceitouTermos) {
+            return alert("Por favor, aceite a declaração de ciência antes de gerar seu plano.");
+        }
+
         const alimentos = Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value);
-        if (alimentos.length < 5) return alert("Selecione pelo menos 5 alimentos.");
+        if (alimentos.length < 5) {
+            return alert("Selecione pelo menos 5 alimentos para garantir a variedade do plano.");
+        }
+
         const email = prompt("Seu e-mail para acesso:");
         if (!email) return;
 
+        // 2. Montagem do Rascunho
         const rascunho = {
             peso: document.getElementById('peso').value,
             calorias: document.getElementById('calorias').value,
@@ -419,27 +454,62 @@ ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educat
             preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value),
             email: email.toLowerCase().trim()
         };
+
+        // Salva no LocalStorage para recuperar após o checkout do Stripe
         localStorage.setItem('rascunho_dieta', JSON.stringify(rascunho));
 
-        const { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', email.toLowerCase().trim()).maybeSingle();
-        if (!user || !user.pago) document.getElementById('payment-overlay').style.display = 'flex';
-        else gerarDieta(rascunho);
+        try {
+            // 3. Consulta ao Supabase
+            const { data: user, error } = await _supabase
+                .from('Usuarios_Dieta')
+                .select('*')
+                .eq('email', rascunho.email)
+                .maybeSingle();
+
+            if (error) throw error;
+
+            // 4. Decisão de Fluxo: Gerar ou Pagar
+            if (!user || !user.pago) {
+                document.getElementById('payment-overlay').style.display = 'flex';
+            } else {
+                gerarDieta(rascunho);
+            }
+        } catch (err) {
+            console.error("Erro ao verificar acesso:", err);
+            alert("Erro ao conectar com o banco de dados. Tente novamente.");
+        }
     }
 
     async function iniciarCheckout(priceId) {
         const rascunho = JSON.parse(localStorage.getItem('rascunho_dieta'));
+        if (!rascunho || !rascunho.email) return alert("Erro ao recuperar seus dados. Reinicie o processo.");
+
         try {
             const response = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ priceId, email: rascunho.email, tipoPlano: priceId.includes('TAhib') ? 'anual' : 'unica' }),
+                body: JSON.stringify({ 
+                    priceId, 
+                    email: rascunho.email, 
+                    tipoPlano: priceId.includes('TAhib') ? 'anual' : 'unica' 
+                }),
             });
+
             const data = await response.json();
-            if (data.url) window.location.href = data.url;
-        } catch (err) { alert("Erro no checkout."); }
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                throw new Error("URL de checkout não encontrada.");
+            }
+        } catch (err) {
+            console.error("Erro no checkout:", err);
+            alert("Ocorreu um erro ao iniciar o pagamento. Tente novamente.");
+        }
     }
 
-    function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
+    function fecharModal() { 
+        document.getElementById('payment-overlay').style.display = 'none'; 
+    }
 </script>
 </body>
 </html>
