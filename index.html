@@ -412,29 +412,32 @@ REGRAS SUPREMAS:
 - PROIBIDO: Não exiba macros por linha. Exiba apenas o nome do alimento e a quantidade em gramas.
 - PROTEÍNA VEGETAL: A proteína do arroz/aveia conta. Se o total passar de ${info.totalProt}g, mantenha as porções de carne e aceite o excedente.
 
+AJUSTE DINÂMICO DE PESO: Você TEM PERMISSÃO para aumentar ou diminuir as gramagens dos alimentos (ex: de 150g para 230g) para que a soma real chegue o mais próximo possível das METAS DO SISTEMA enviadas (${info.totalProt}g P e ${info.totalCarbo}g C).
+
 PLANEJAMENTO ALIMENTAR ESTRUTURADO
 
 BLOCO 1: OPÇÕES A (PADRÃO)
 Priorize arroz e feijão no almoço e jantar. Para cada uma das ${d.refeicoes} refeições, liste APENAS:
-- Nome do Alimento (Quantidade em gramas)
-- Modo de Preparo sugerido
-
+- [Nome do Alimento] ([Quantidade]g)
+- [Nome do Alimento] ([Quantidade]g)
+SUGESTÃO DE PREPARO: [Escreva aqui como combinar os itens de forma resumida].
 
 RESUMO DE MACROS (OPÇÕES A)
 Apresente a soma real baseada nos alimentos listados:
-Proteína Total: ~${info.totalProt}g | Carboidrato Total: ~${info.totalCarbo}g
+Proteína Total: ~${info.totalProt}g | Carboidrato Total: ~${info.totalCarbo}g | Gordura Total: ~${info.totalGord}g
 
 ---
 
 BLOCO 2: OPÇÕES B (VARIAÇÃO SEM ARROZ/FEIJÃO)
 Gere variações das mesmas refeições. PROIBIDO Arroz e Feijão no Almoço e Jantar aqui.
 Para cada uma das ${d.refeicoes} refeições, liste APENAS:
-- Nome do Alimento (Quantidade em gramas)
-- Modo de Preparo sugerido
+- [Nome do Alimento] ([Quantidade]g)
+- [Nome do Alimento] ([Quantidade]g)
+SUGESTÃO DE PREPARO: [Escreva aqui como combinar os itens de forma resumida].
 
 
 RESUMO DE MACROS (OPÇÕES B)
-Proteína Total: ~${info.totalProt}g | Carboidrato Total: ~${info.totalCarbo}g
+Proteína Total: ~${info.totalProt}g | Carboidrato Total: ~${info.totalCarbo}g | Gordura Total: ~${info.totalGord}g
 
 ---
 
