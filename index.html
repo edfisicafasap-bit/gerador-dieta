@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     
-    <title>Reeducação Alimentar.</title>
+    <title>Reeducação Alimentar</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -81,8 +81,8 @@
         <h2 style="color: #FFD400; margin-bottom: 30px;">Libere seu Acesso 🚀</h2>
         
         <div class="plan-option">
-            <button class="plan-btn btn-unica" onclick="iniciarCheckout('price_1Sz1w7GEaACih56ZWyTiPBAu')">🥗 DIETA ÚNICA - R$ 9,90</button>
-            <span class="plan-desc">Geração de um plano alimentar personalizado único enviado ao seu e-mail.</span>
+            <button class="plan-btn btn-unica" onclick="iniciarCheckout('price_1Sz1w7GEaACih56ZWyTiPBAu')">📊 PLANEJAMENTO ÚNICO- R$ 9,90</button>
+            <span class="plan-desc">Receba um plano alimentar personalizado agora mesmo.</span>
         </div>
 
         <div class="plan-option">
@@ -125,7 +125,7 @@
         <div id="resultContainer" class="result-box-tmb">
             <div id="goalResult" class="result-val">--</div>
             <p class="result-text" id="tmb-msg-v2"></p>
-            <button class="btn-calc" style="margin-top: 30px; background: #FFD400; color: #000; box-shadow: 0 8px 20px rgba(255, 212, 0, 0.3);" onclick="irParaDieta()">MONTAR MEU PLANO →</button>
+            <button class="btn-calc" style="margin-top: 30px; background: #FFD400; color: #000; box-shadow: 0 8px 20px rgba(255, 212, 0, 0.3);" onclick="irParaDieta()">MONTAR MEU PLANO AGORA</button>
         </div>
     </div>
 
@@ -154,10 +154,10 @@
             <div id="preparos-unificados-container" class="grid-alimentos"></div>
         </div>
         <label style="display: flex; align-items: center; font-weight: normal; font-size: 12px; text-transform: none;">
-            <input type="checkbox" id="aceite-clausula" style="width: 20px; margin-right: 10px;"> Confirmo que este programa não substitui acompanhamento médico.
+            <input type="checkbox" id="aceite-clausula" style="width: 20px; margin-right: 10px;"> Declaro que estou ciente de que não tenho problemas de saúde, alergias ou restrições alimentares que me impeçam de seguir este plano. Entendo que este programa é uma ferramenta de apoio e não substitui uma consulta personalizada com médico ou nutricionista.
         </label>
         <div id="status-topo">PROCESSANDO SEU PLANO...</div>
-        <button id="btn-gerar" onclick="verificarAcessoEPagar()">GERAR PLANO AGORA</button>
+        <button id="btn-gerar" onclick="verificarAcessoEPagar()">GERAR PLANO AGORA →</button>
     </div>
 
     <div id="step-3" class="step-section">
@@ -225,9 +225,9 @@
         
         document.getElementById('goalResult').innerText = caloriesResult + " kcal";
         document.getElementById('tmb-msg-v2').innerHTML = `
-            Seu corpo precisa de <span class="highlight-text">${caloriesResult} calorias</span> por dia para ${goalValue.toLowerCase()}. 
-            Deseja transformar esses números em um plano alimentar <span class="destaque-amarelo">somente com os alimentos que você gosta de comer</span>? 
-            É só clicar no botão abaixo:
+            Seu corpo precisa de <span class="highlight-text">${caloriesResult} calorias</span> por dia para ${goalValue.toLowerCase()}.<br> 
+            Deseja transformar esses números em um plano alimentar <span class="destaque-amarelo">somente com os alimentos que você gosta de comer?</span><br> 
+            É só clicar no botão abaixo ↓
         `;
         
         document.getElementById('resultContainer').style.display = 'block';
@@ -271,17 +271,24 @@
         preparosUnificados.forEach(p => { pCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-geral" value="${p}"> ${p}</label>`; });
     }
 
-  function prepararInstrucoesPrompt(d) {
+function prepararInstrucoesPrompt(d) {
     const peso = parseFloat(d.peso);
     const caloriasMeta = parseFloat(d.calorias);
     
-    // Definição de Proteína e Gordura
-    const fatorProt = (d.objetivo === 'Emagrecimento') ? 2.2 : (d.objetivo === 'Hipertrofia') ? 1.8 : 2.0;
-    const totalProt = Math.round(peso * fatorProt);
-    const totalGord = Math.round(peso * 0.9); 
+    // 1. Definição de Proteína baseada nos 3 Objetivos (Ajustada)
+    let fatorProt;
+    if (d.objetivo === 'Emagrecimento') {
+        fatorProt = 2.0; // Protege massa magra no déficit
+    } else if (d.objetivo === 'Hipertrofia') {
+        fatorProt = 1.8; // Foco em superávit de carbo para treino
+    } else {
+        fatorProt = 1.6; // Manutenção / Definição: Equilíbrio total
+    }
 
-    // LÓGICA DE OURO: Cálculo do Carboidrato Restante
-    // (Calorias Totais - Calorias de Prot e Gord) / 4
+    const totalProt = Math.round(peso * fatorProt);
+    const totalGord = Math.round(peso * 0.9); // Saúde hormonal e saciedade
+
+    // 2. LÓGICA DE OURO: Cálculo do Carboidrato Restante
     const calProtGord = (totalProt * 4) + (totalGord * 9);
     const totalCarbo = Math.round((caloriasMeta - calProtGord) / 4);
     
@@ -314,29 +321,66 @@
             "🔐 VERIFICANDO ACESSO...",
             "✅ PAGAMENTO CONFIRMADO!",
             "📊 CALCULANDO MACRONUTRIENTES...",
-            "🍳 SELECIONANDO MELHORES PREPAROS...",
-            "🧠 INTELIGÊNCIA ARTIFICIAL MONTANDO CARDÁPIO...",
-            "⏳ QUASE PRONTO..."
+            "🍳 SELECIONANDO OS MELHORES PREPAROS...",
+            "⚡ ORGANIZANDO O CARDÁPIO...",
+            "⏳ QUASE PRONTO...",
+             "⏳ QUASE PRONTO... AGUARDE..."
         ];
 
         let msgIndex = pagoConfirmado ? 1 : 0;
         const interval = setInterval(() => { if (msgIndex < mensagens.length) { status.innerText = mensagens[msgIndex]; msgIndex++; } }, 1800);
 
         const promptFinal = `
-            Atue como um Nutricionista Esportivo de alto nível.
-            Gere um plano alimentar de ${d.calorias} kcal para o objetivo de ${d.objetivo}.
-            Dados do Aluno: Peso ${d.peso}kg, ${d.refeicoes} refeições por dia.
+            Atue como um Nutricionista Prático. Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou.". Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis.
             Metas Calculadas: ${info.totalProt}g de Proteína e ${info.totalGord}g de Gordura e  ${info.totalCarbo}g de Carboidratos
             ALIMENTOS SELECIONADOS: ${d.alimentos.join(', ')}
             DETALHES DE PREPARO:
             ${info.matchPreparos}
+
+DIRETRIZES SUPREMAS
+
+DETERMINAÇÃO DE REFEIÇÕES:
+Voce deve gerar EXATAMENTE ${d.refeicoes} refeicoes.
+- Se ${d.refeicoes} for 4: Use (1. Cafe da Manha, 2. Almoco, 3. Cafe da Tarde, 4. Jantar).
+- Se ${d.refeicoes} for 5: Use (1. Cafe da Manha, 2. Almoco, 3. Cafe da Tarde, 4. Jantar, 5. Ceia).
+- Se ${d.refeicoes} for 6: Use (1. Desjejum, 2. Cafe da Manha, 3. Almoco, 4. Cafe da Tarde, 5. Jantar, 6. Ceia).
+
+DICA: Nunca pule o Cafe da Tarde entre o Almoco e o Jantar.
+
             
             REGRAS CRÍTICAS DE PRESCRIÇÃO:
             1. Divida em ${d.refeicoes} refeições. Cada uma com aprox. ${info.protPorRef}g de proteína.
             2. PESO DOS ALIMENTOS: Para carnes e peixes, informe SEMPRE o peso do alimento JÁ PRONTO (após preparo).
             3. Use o "Fator de correção" fornecido em cada item para ajustar o peso final. Ex: Se o aluno precisa de 100g de proteína crua e o fator é 0.75, prescreva aprox. 75g do alimento pronto no plano.
-            4. Para Arroz, Feijão e Macarrão, considere o peso já COZIDO.
-            5. Use apenas os alimentos e preparos listados acima.
+            4. Use apenas os alimentos e preparos listados acima.
+
+PLANEJAMENTO ALIMENTAR ESTRUTURADO
+
+BLOCO 1: OPÇÕES A (PADRÃO)
+Nesta seção, gere as ${d.refeicoes} refeições seguindo os nomes definidos nas "DIRETRIZES SUPREMAS". Priorize arroz e feijão no almoço e jantar.
+Para cada uma das ${d.refeicoes} refeições, liste:
+- Ingredientes (com quantidades)
+
+RESUMO DE MACROS (OPÇÕES A)
+Proteinas Totais: [Soma Real]g | Carboidratos Totais: [Soma Real]g | Gorduras Totais: [Soma Real]g
+
+BLOCO 2: OPÇÕES B (VARIAÇÃO)
+Nesta seção, gere as mesmas ${d.refeicoes} refeições com macros equivalentes ao Bloco 1. No almoço e jantar, é proibido o uso de arroz e feijão.
+Para cada uma das ${d.refeicoes} refeições, liste:
+- Ingredientes (com quantidades)
+
+RESUMO DE MACROS (OPÇÕES B)
+Proteinas Totais: [Soma Real]g | Carboidratos Totais: [Soma Real]g | Gorduras Totais: [Soma Real]g
+
+PROTOCOLO DE VALIDAÇÃO
+Antes de exibir, valide: "A Opção B de almoço/jantar está sem arroz e feijão? Os macros estão equilibrados? O prato parece algo que se come no Brasil? só prossiga caso seja refeições reais, caso contrário, refaça!"
+IMPORTANTE: Valide internamente, mas não escreva esta validação ou protocolo no resultado final.
+
+ITENS COMPLEMENTARES:
+1. HIDRATAÇÃO: Informe a recomendação de ${(parseFloat(d.peso) * 0.035).toFixed(1)}L de água por dia.
+2. DATA: ${new Date().toLocaleString()}.
+
+ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional."`; 
         `;
 
         try {
