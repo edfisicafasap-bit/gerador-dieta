@@ -381,6 +381,8 @@ d.alimentos.forEach(item => {
     const promptFinal = `
 Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTICA dos macros UTILIZANDO AS INFORMAÇÕES PRESCRITAS. Você deve montar refeições para bater as metas diarias com VALORES APROXIMADOS DA META.
 
+REGRAS DE FORMATAÇÃO: Responda apenas em TEXTO PLANO (Plain Text). É PROIBIDO o uso de qualquer sintaxe Markdown, como asteriscos ( ou ), cerquilhas (#) ou sublinhados (_). Use apenas letras maiúsculas para títulos e hífens (-) para listas."
+
 OBJETIVO DO PLANO: ${d.calorias} kcal para ${d.objetivo}.
 METAS TÉCNICAS TOTAIS: P: ${info.totalProt}g | C: ${info.totalCarbo}g | G: ${info.totalGord}g.
 METAS POR REFEIÇÃO (ALVO): ~${info.alvoCaloricoRef} kcal | ~${info.protPorRef}g Prot.
@@ -411,10 +413,6 @@ Para cada refeição liste:
 - Alimento (Gramagem APROXIMADA E REAL para bater a meta)
 SUGESTÃO DE PREPARO: (Como preparar os itens acima ).
 
-RESUMO DE MACROS (OPÇÕES A)
-(Calcule a soma real de tudo que você listou acima):
-Proteína Total: ~[Soma]g | Carboidrato Total: ~[Soma]g | Gordura Total: ~[Soma]g
-
 ---
 BLOCO 2: OPÇÕES B (VARIAÇÃO SEM ARROZ E FEIJÃO)
 (Mesmo formato, trocando arroz/feijão por outras fontes de carbo da lista técnica).
@@ -424,7 +422,7 @@ ITENS COMPLEMENTARES:
 1. HIDRATAÇÃO: Informe a recomendação de ${(parseFloat(d.peso) * 0.035).toFixed(1)}L de água por dia.
 2. DATA: ${new Date().toLocaleString()}.
 
-ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional. Os valores nutricionais são estimativas baseadas em tabelas de referência padrão."`;
+ACRESCENTE UM RODAPÉ ESCRITO: "ESTE PLANO ALIMENTAR FOI GERADO COM BASE EM ESTIMATIVAS NUTRICIONAIS PADRÃO. Os valores de macros e calorias são aproximados para fins de orientação. Se notar qualquer inconsistência ou precisar de ajuda para organizar suas porções, clique no botão de SUPORTE para falar conosco via WhatsApp. Este programa não substitui consulta médica ou nutricional personalizada."`;
   
         try {
             const res = await fetch('/api/gerar-dieta', {
