@@ -368,72 +368,54 @@ function prepararInstrucoesPrompt(d) {
         let msgIndex = pagoConfirmado ? 1 : 0;
         const interval = setInterval(() => { if (msgIndex < mensagens.length) { status.innerText = mensagens[msgIndex]; msgIndex++; } }, 1800);
 
-        const promptFinal = `
-            Atue como um Assistente Técnico em Nutrição para a ORGANIZAÇÃO do cardápio. 
-IMPORTANTE: OS CÁLCULOS ABAIXO SÃO SOBERANOS E FORAM GERADOS PELO SISTEMA. NÃO RECALCULE E NÃO ALTERE OS NÚMEROS.
-Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou.". Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis.
-            Metas Calculadas: ${info.totalProt}g de Proteína e ${info.totalGord}g de Gordura e  ${info.totalCarbo}g de Carboidratos
-            ALIMENTOS SELECIONADOS: ${d.alimentos.join(', ')}
-            DETALHES DE PREPARO:
-            ${info.matchPreparos}
+    const promptFinal = `
+Atue como um Assistente Técnico em Nutrição focado em ORGANIZAÇÃO de cardápio. 
 
-DIRETRIZES SUPREMAS
+IMPORTANTE: Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou.". 
 
-DETERMINAÇÃO DE REFEIÇÕES:
-Voce deve gerar EXATAMENTE ${d.refeicoes} refeicoes.
-- Se ${d.refeicoes} for 4: Use (1. Cafe da Manha, 2. Almoco, 3. Cafe da Tarde, 4. Jantar).
-- Se ${d.refeicoes} for 5: Use (1. Cafe da Manha, 2. Almoco, 3. Cafe da Tarde, 4. Jantar, 5. Ceia).
-- Se ${d.refeicoes} for 6: Use (1. Desjejum, 2. Cafe da Manha, 3. Almoco, 4. Cafe da Tarde, 5. Jantar, 6. Ceia).
+METAS ALVO (REFERÊNCIA DO SISTEMA):
+- Carboidratos: ~${info.totalCarbo}g (Prioridade Máxima)
+- Proteínas: ~${info.totalProt}g
+- Gorduras: ~${info.totalGord}g
+- ALIMENTOS SELECIONADOS: ${d.alimentos.join(', ')}
+- DETALHES DE PREPARO: ${info.matchPreparos}
 
-METAS TOTAIS DIÁRIAS (OBRIGATÓRIAS):
-- Proteína Total: ${info.totalProt}g
-- Gordura Total: ${info.totalGord}g
-- Carboidrato Total: ${info.totalCarbo}g (ALVO PRINCIPAL)
-
-DISTRIBUIÇÃO SUGERIDA POR REFEIÇÃO:
-Cada uma das ${d.refeicoes} refeições deve ter aproximadamente:
-- ${info.protPorRef}g de Proteína | ${info.carboPorRef}g de Carboidrato | ${info.gordPorRef}g de Gordura.
-
-REGRAS DE OURO:
-1. Converta as metas acima em quantidades reais de alimentos (ex: 150g de Arroz, 100g de Frango).
-2. A soma final de todos os alimentos no cardápio DEVE bater exatamente ${info.totalCarbo}g de carboidratos.
-3. Use apenas "comida de verdade" e os preparos indicados.
-4. Para carnes e peixes, informe o peso do alimento JÁ PRONTO.
+DIRETRIZES DE EXECUÇÃO (SILENCIOSAS):
+1. Use as metas acima como ALVOS aproximados. Não tente ser matematicamente exato se isso resultar em gramagens irreais. Uma variação de 5% para mais ou para menos é aceitável e desejada para manter a naturalidade.
+2. Contabilize a proteína de TODOS os alimentos (incluindo arroz, feijão e aveia). Se o total de proteína ultrapassar levemente o alvo por causa disso, MANTENHA as porções de carne/ovo e aceite o excedente.
+3. Use apenas "comida de verdade" e os preparos indicados. Para proteínas, informe o peso JÁ PRONTO.
 
 PLANEJAMENTO ALIMENTAR ESTRUTURADO
 
 BLOCO 1: OPÇÕES A (PADRÃO)
-Priorize arroz e feijão no almoço e jantar.
-Para cada refeição, liste os ingredientes seguindo este formato EXATO:
-- Nome do Alimento (Quantidade em gramas) - [Macros Individuais: P: Xg, C: Xg, G: Xg]
+Priorize arroz e feijão no almoço e jantar. Para cada uma das ${d.refeicoes} refeições, liste APENAS:
+- Nome do Alimento (Quantidade em gramas)
+- Modo de Preparo sugerido
+
 
 RESUMO DE MACROS (OPÇÕES A)
-(Some os valores exatos listados acima e apresente o total):
-- Proteína Total: [Soma]g | Carboidratos Totais: [Soma]g | Gorduras Totais: [Soma]g
+Apresente a soma real baseada nos alimentos listados:
+Proteína Total: ~[Soma]g | Carboidrato Total: ~[Soma]g | Gordura Total: ~[Soma]g
 
 ---
 
 BLOCO 2: OPÇÕES B (VARIAÇÃO)
-Gere uma variação completa das mesmas refeições. PROIBIDO Arroz e Feijão no Almoço e Jantar aqui. Use outras fontes de carboidrato dos selecionados.
-Para cada refeição, liste os ingredientes seguindo este formato EXATO:
-- Nome do Alimento (Quantidade em gramas) - [Macros Individuais: P: Xg, C: Xg, G: Xg]
+Gere variações das mesmas refeições. PROIBIDO Arroz e Feijão no Almoço e Jantar aqui.
+Para cada uma das ${d.refeicoes} refeições, liste APENAS:
+- Nome do Alimento (Quantidade em gramas)
+- Modo de Preparo sugerido
+
 
 RESUMO DE MACROS (OPÇÕES B)
-(Some os valores exatos listados acima e apresente o total):
-- Proteína Total: [Soma]g | Carboidratos Totais: [Soma]g | Gorduras Totais: [Soma]g
+Proteína Total: ~[Soma]g | Carboidrato Total: ~[Soma]g | Gordura Total: ~[Soma]g
 
 ---
-
-PROTOCOLO DE VERIFICAÇÃO TÉCNICA (Obrigatório antes de responder):
-1. Verifique se a Proteína do Arroz, Feijão, Aveia e Pães foi somada ao total de proteínas.
-2. Se a soma das proteínas ultrapassar a meta inicial de ${info.totalProt}g devido aos acompanhamentos vegetais, NÃO reduza a porção de carne/ovo. Mantenha a proteína de alto valor biológico e aceite o excedente.
-3. A prioridade máxima é que a soma dos CARBOHIDRATOS de todas as refeições resulte exatamente em ${info.totalCarbo}g. Ajuste as gramagens dos alimentos para que esse número bata.
 
 ITENS COMPLEMENTARES:
 1. HIDRATAÇÃO: Informe a recomendação de ${(parseFloat(d.peso) * 0.035).toFixed(1)}L de água por dia.
 2. DATA: ${new Date().toLocaleString()}.
 
-ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional."`; 
+ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional. Os valores nutricionais são estimativas baseadas em tabelas de referência padrão."`;
   
         try {
             const res = await fetch('/api/gerar-dieta', {
