@@ -81,7 +81,7 @@
         <h2 style="color: #FFD400; margin-bottom: 30px;">Libere seu Acesso 🚀</h2>
         
         <div class="plan-option">
-            <button class="plan-btn btn-unica" onclick="iniciarCheckout('price_1Sz1w7GEaACih56ZWyTiPBAu')">📊 PLANEJAMENTO ÚNICO- R$ 9,90</button>
+            <button class="plan-btn btn-unica" onclick="iniciarCheckout('price_1Sz1w7GEaACih56ZWyTiPBAu')">📊 PLANEJAMENTO ÚNICO - R$ 9,90</button>
             <span class="plan-desc">Receba um plano alimentar personalizado agora mesmo.</span>
         </div>
 
@@ -120,18 +120,18 @@
             <option value="Definição">Manter Peso (Definição)</option>
             <option value="Hipertrofia">Ganhar Massa (Bulking)</option>
         </select>
-        <button class="btn-calc" onclick="calculateTMB()">CALCULAR AGORA</button>
+        <button class="btn-calc" onclick="calculateTMB()">DESCOBRIR MINHA META CALÓRICA →</button>
         
         <div id="resultContainer" class="result-box-tmb">
             <div id="goalResult" class="result-val">--</div>
             <p class="result-text" id="tmb-msg-v2"></p>
-            <button class="btn-calc" style="margin-top: 30px; background: #FFD400; color: #000; box-shadow: 0 8px 20px rgba(255, 212, 0, 0.3);" onclick="irParaDieta()">MONTAR MEU PLANO AGORA</button>
+            <button class="btn-calc" style="margin-top: 30px; background: #FFD400; color: #000; box-shadow: 0 8px 20px rgba(255, 212, 0, 0.3);" onclick="irParaDieta()">MONTAR MEU PLANO AGORA →</button>
         </div>
     </div>
 
     <div id="step-2" class="step-section">
         <h2>🍎 Configuração do Plano</h2>
-        <p class="subtitle">Personalize sua alimentação abaixo:</p>
+        <p class="subtitle">Selecionamos os melhores e mais saudáveis alimentos para você. Para um plano mais eficiente e rico em nutrientes, diversifique suas escolhas em cada categoria.</p>
         <label>Seu Peso Atual (kg)</label>
         <input type="number" id="peso">
         <label>Meta de Calorias Diárias</label>
@@ -226,7 +226,8 @@
         document.getElementById('goalResult').innerText = caloriesResult + " kcal";
         document.getElementById('tmb-msg-v2').innerHTML = `
             Seu corpo precisa de <span class="highlight-text">${caloriesResult} calorias</span> por dia para ${goalValue.toLowerCase()}.<br> 
-            Deseja transformar esses números em um plano alimentar <span class="destaque-amarelo">somente com os alimentos que você gosta de comer?</span><br> 
+            Deseja transformar esses números em um plano alimentar<br>
+ <span class="destaque-amarelo">somente com os alimentos que você gosta de comer?</span><br> 
             É só clicar no botão abaixo ↓
         `;
         
@@ -381,8 +382,7 @@ ITENS COMPLEMENTARES:
 2. DATA: ${new Date().toLocaleString()}.
 
 ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional."`; 
-        
-
+  
         try {
             const res = await fetch('/api/gerar-dieta', {
                 method: 'POST',
