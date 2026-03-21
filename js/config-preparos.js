@@ -1,551 +1,89 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    
-    <title>Reeducação Alimentar</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
-    <script src="js/tabela-taco.js"></script>
-    <script src="js/config-preparos.js"></script>
+// config-preparos.js
 
-    <style>
-        body { background:#000; margin:0; font-family: 'Montserrat', sans-serif; color: #fff; padding-bottom: 50px; }
-        .container { max-width:600px; margin:auto; padding:20px; background:#000; position: relative; }
-        
-        h2 { color:#FFD400; text-align: center; margin-bottom: 5px; font-size: 22px; text-transform: uppercase; font-weight: 900; }
-        p.subtitle { text-align: center; color: #ccc; font-size: 14px; margin-bottom: 25px; }
-        
-        label { display:block; margin-top:18px; font-size:13px; font-weight: 700; color: #eee; text-transform: uppercase; }
-        input, select { width:100%; padding:14px; margin-top:6px; border-radius:8px; border:1px solid #222; background: #111; color: #fff; font-size: 15px; box-sizing: border-box; font-family: 'Montserrat'; }
-        
-        #btn-gerar, .btn-calc { 
-            width:100%; margin-top:20px; padding:20px; background:#FFD400; border:none; border-radius:10px; 
-            font-size:16px; font-weight:900; color:#000; cursor: pointer; transition: 0.3s; text-transform: uppercase; 
-        }
+const CONFIG_PREPAROS = {
+  // =====================
+  // 🐂 BOI
+  // =====================
+  "patinho": {
+    animal: "Boi",
+    preparos_sugeridos: ["Moído", "Grelhado", "Na frigideira", "Cozido", "Ensopado", "Na Airfryer"]
+  },
+  "coxão mole": {
+    animal: "Boi",
+    preparos_sugeridos: ["Grelhado", "Na frigideira", "Assado", "Cozido", "Refogado"]
+  },
+  "coxão duro": {
+    animal: "Boi",
+    preparos_sugeridos: ["Cozido", "Ensopado", "Moído", "Desfiado", "Refogado"]
+  },
+  "lagarto": {
+    animal: "Boi",
+    preparos_sugeridos: ["Assado", "Cozido", "Desfiado", "Cozido no vapor"]
+  },
+  "músculo": {
+    animal: "Boi",
+    preparos_sugeridos: ["Cozido", "Ensopado", "Moído", "Refogado"]
+  },
+  "alcatra limpa": {
+    animal: "Boi",
+    preparos_sugeridos: ["Grelhado", "Na frigideira", "Assado", "Na Airfryer"]
+  },
 
-        /* RESULTADO TMB PREMIUM REESTRUTURADO */
-        .result-box-tmb { 
-            margin-top: 30px; padding: 35px 25px; background: linear-gradient(145deg, #111, #000); 
-            border-radius: 15px; border: 2px solid #FFD400; display: none; text-align: center;
-            box-shadow: 0 0 25px rgba(255, 212, 0, 0.2);
-        }
-        .result-val { font-size: 52px; font-weight: 900; color: #FFD400; margin: 0; text-shadow: 0 0 15px rgba(255, 212, 0, 0.4); line-height: 1; }
-        .result-text { font-size: 15px; line-height: 1.6; color: #fff; margin-top: 20px; font-weight: 400; }
-        .highlight-text { color: #FFD400; font-weight: 900; }
-        .destaque-amarelo { background: #FFD400; color: #000; padding: 2px 4px; font-weight: 900; border-radius: 3px; }
+  // =====================
+  // 🐷 PORCO
+  // =====================
+  "lombo suíno": {
+    animal: "Porco",
+    preparos_sugeridos: ["Grelhado", "Assado", "Na Airfryer", "Na frigideira", "Cozido"]
+  },
+  "filé mignon suíno": {
+    animal: "Porco",
+    preparos_sugeridos: ["Grelhado", "Na frigideira", "Assado", "Na Airfryer", "Cozido no vapor"]
+  },
 
-        .step-section { display: none; }
-        .step-active { display: block; animation: fadeIn 0.4s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  // =====================
+  // 🐔 FRANGO
+  // =====================
+  "filé de peito": {
+    animal: "Frango",
+    preparos_sugeridos: ["Grelhado", "Desfiado", "Na Airfryer", "Na frigideira", "Cozido", "Cozido no vapor", "Refogado"]
+  },
+  "coxa e sobrecoxa (sem pele)": {
+    animal: "Frango",
+    preparos_sugeridos: ["Assado", "Na Airfryer", "Cozido", "Ensopado", "Desfiado"]
+  },
 
-        /* MODAL DE PAGAMENTO */
-        #payment-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
-        .payment-card { background: #111; padding: 35px; border-radius: 20px; text-align: center; max-width: 420px; border: 1px solid #333; }
-        
-        .plan-option { margin-bottom: 25px; text-align: left; }
-        .plan-btn { width: 100%; padding: 20px; border-radius: 12px; font-weight: 900; font-size: 16px; cursor: pointer; text-transform: uppercase; border: none; transition: 0.2s; }
-        .plan-desc { font-size: 13px; color: #aaa; margin-top: 10px; line-height: 1.4; display: block; }
-        
-        .btn-unica { background: transparent; color: #FFD400; border: 2px solid #FFD400; }
-        .btn-anual { background: #fff; color: #000; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+  // =====================
+  // 🐟 PEIXES
+  // =====================
+  "filé de tilápia": {
+    animal: "Peixe",
+    preparos_sugeridos: ["Grelhado", "Assado", "Na Airfryer", "Cozido no vapor", "Na frigideira"]
+  },
+  "filé de merluza": {
+    animal: "Peixe",
+    preparos_sugeridos: ["Assado", "Cozido no vapor", "Ensopado", "Grelhado"]
+  },
+  "filé de linguado": {
+    animal: "Peixe",
+    preparos_sugeridos: ["Grelhado", "Assado", "Cozido no vapor"]
+  },
+  "filé de atum fresco": {
+    animal: "Peixe",
+    preparos_sugeridos: ["Grelhado", "Na frigideira", "Assado"]
+  }
+};
 
-        .categoria-pai { color: #FFD400; font-size: 15px; font-weight: 900; margin: 25px 0 10px 0; padding-left: 10px; text-transform: uppercase; border-left: 4px solid #FFD400; }
-        details { background: #0a0a0a; border: 1px solid #222; border-radius: 8px; margin-bottom: 8px; }
-        summary { padding: 14px; cursor: pointer; color: #fff; font-weight: 700; font-size: 13px; text-transform: uppercase; list-style: none; display: flex; justify-content: space-between; align-items: center; }
-        summary::after { content: '▼'; font-size: 10px; color: #FFD400; }
-        
-        .grid-alimentos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 12px 12px 12px; }
-        .item-alimento { display: flex; align-items: center; font-size: 12px; color: #bbb; cursor: pointer; padding: 6px 0; }
-        .item-alimento input { width: auto; margin: 0 10px 0 0; }
-        
-        .secao-especial { background: #111; border: 1px dashed #FFD400; padding: 20px; border-radius: 12px; margin: 25px 0; }
-        
-        #status-topo { display: none; background: #111; color: #FFD400; padding: 20px; border-radius: 12px; text-align: center; font-weight: 900; margin-top: 20px; border: 1px solid #FFD400; text-transform: uppercase; }
-        #resultado { margin-top: 20px; white-space: pre-wrap; background: #111; padding: 25px; border-radius: 15px; display: none; border: 1px solid #FFD400; font-size: 15px; line-height: 1.8; color: #eee; }
-        #btn-download-pos-geracao { width:100%; margin-top:20px; padding:18px; background:#000; border: 2px solid #FFD400; border-radius:10px; font-size:16px; font-weight:900; color:#FFD400; cursor: pointer; text-transform: uppercase; }
-        
-        .btn-suporte { 
-    position: fixed; 
-    bottom: 20px; 
-    right: 20px; 
-    background: #25d366; 
-    color: white; 
-    padding: 12px 20px; 
-    border-radius: 50px; 
-    text-decoration: none; 
-    font-size: 14px; 
-    font-weight: bold; 
-    z-index: 1000; 
-    display: flex; 
-    align-items: center; 
-    gap: 10px; /* Aumentei um pouco o espaço entre ícone e texto */
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    transition: 0.3s;
-}
-
-.btn-suporte:hover {
-    transform: scale(1.1);
-    background: #20ba5a;
-}
-    </style>
-</head>
-<body onload="inicializarTudo()">
-
-<a href="https://wa.me/5522992587653" target="_blank" class="btn-suporte">
-    <i class="fab fa-whatsapp" style="font-size: 20px;"></i> SUPORTE
-</a>
-
-<div id="payment-overlay">
-    <div class="payment-card">
-        <h2 style="color: #FFD400; margin-bottom: 30px;">Libere seu Acesso 🚀</h2>
-        
-        <div class="plan-option">
-            <button class="plan-btn btn-unica" onclick="iniciarCheckout('price_1Sz1w7GEaACih56ZWyTiPBAu')">📊 PLANEJAMENTO ÚNICO - R$ 9,90</button>
-            <span class="plan-desc">Receba um plano alimentar personalizado agora mesmo.</span>
-        </div>
-
-        <div class="plan-option">
-            <button class="plan-btn btn-anual" onclick="iniciarCheckout('price_1TAhibGEaACih56Z4TeYkNwK')">📅 ACESSO ANUAL - R$ 69,90</button>
-            <span class="plan-desc">Você pode gerar até 2 planos alimentares por semana durante o período de 1 ano.</span>
-        </div>
-
-        <p style="margin-top: 20px; font-size: 12px; color: #666; cursor: pointer; text-decoration: underline;" onclick="fecharModal()">← Voltar e ajustar alimentos</p>
-    </div>
-</div>
-
-<div class="container">
-    <div id="step-1" class="step-section step-active">
-        <h2>🔥 Meta de calorias diária</h2>
-        <p class="subtitle">Calcule sua meta baseada no seu objetivo</p>
-        <label>Gênero</label>
-        <select id="calc-gender"><option value="male">Masculino</option><option value="female">Feminino</option></select>
-        <label>Idade</label>
-        <input type="number" id="calc-age" placeholder="Ex: 28">
-        <label>Peso atual (kg)</label>
-        <input type="number" id="calc-weight" step="0.1" placeholder="Ex: 75.0">
-        <label>Altura (cm)</label>
-        <input type="number" id="calc-height" placeholder="Ex: 170">
-        <label>Nível de Atividade</label>
-        <select id="calc-activity">
-            <option value="1.2">Sedentário (Escritório / Sem treino)</option>
-            <option value="1.375">Leve (Treino 1-3 dias/semana)</option>
-            <option value="1.55">Moderado (Treino 3-5 dias/semana)</option>
-            <option value="1.725">Intenso (Treino pesado 6-7 dias)</option>
-            <option value="1.9">Atleta (Treino pesado + Trabalho braçal)</option>
-        </select>
-        <label>Seu Objetivo Principal</label>
-        <select id="calc-goal">
-            <option value="Emagrecimento">Perder Gordura (Cutting)</option>
-            <option value="Definição">Manter Peso (Definição)</option>
-            <option value="Hipertrofia">Ganhar Massa (Bulking)</option>
-        </select>
-        <button class="btn-calc" onclick="calculateTMB()">DESCOBRIR MINHA META CALÓRICA →</button>
-        
-        <div id="resultContainer" class="result-box-tmb">
-            <div id="goalResult" class="result-val">--</div>
-            <p class="result-text" id="tmb-msg-v2"></p>
-            <button class="btn-calc" style="margin-top: 30px; background: #FFD400; color: #000; box-shadow: 0 8px 20px rgba(255, 212, 0, 0.3);" onclick="irParaDieta()">MONTAR MEU PLANO AGORA →</button>
-        </div>
-    </div>
-
-    <div id="step-2" class="step-section">
-        <h2>🍎 Configuração do Plano</h2>
-        <p class="subtitle">Selecionamos os melhores e mais saudáveis alimentos para você. Para um plano mais eficiente e rico em nutrientes, diversifique suas escolhas em cada categoria.</p>
-        <label>Seu Peso Atual (kg)</label>
-        <input type="number" id="peso">
-        <label>Meta de Calorias Diárias</label>
-        <input type="number" id="calorias">
-        <label>Número de Refeições</label>
-        <select id="num-refeicoes">
-            <option value="4">4 Refeições</option>
-            <option value="5">5 Refeições</option>
-            <option value="6">6 Refeições</option>
-        </select>
-        <label>Objetivo</label>
-        <select id="objetivo">
-            <option value="Emagrecimento">Emagrecimento</option>
-            <option value="Hipertrofia">Hipertrofia</option>
-            <option value="Definição">Definição</option>
-        </select>
-        <div id="categorias-container"></div>
-        <div class="secao-especial">
-            <h4>🍳 MODOS DE PREPARO</h4>
-            <div id="preparos-unificados-container" class="grid-alimentos"></div>
-        </div>
-        <label style="display: flex; align-items: center; font-weight: normal; font-size: 12px; text-transform: none;">
-            <input type="checkbox" id="aceite-clausula" style="width: 20px; margin-right: 10px;"> Declaro que estou ciente de que não tenho problemas de saúde, alergias ou restrições alimentares que me impeçam de seguir este plano. Entendo que este programa é uma ferramenta de apoio e não substitui uma consulta personalizada com médico ou nutricionista.
-        </label>
-        <div id="status-topo">PROCESSANDO SEU PLANO...</div>
-        <button id="btn-gerar" onclick="verificarAcessoEPagar()">GERAR PLANO AGORA →</button>
-    </div>
-
-    <div id="step-3" class="step-section">
-        <h2>📊 Seu Plano Alimentar</h2>
-        <div id="resultado"></div>
-        <button id="btn-download-pos-geracao" style="display:none;">📥 BAIXAR PDF COMPLETO</button>
-        <button onclick="window.location.reload()" style="background:none; border:none; color:#666; width:100%; margin-top:30px; cursor:pointer; font-family: 'Montserrat'; font-size: 12px; text-transform: uppercase;">← Refazer cálculos</button>
-    </div>
-</div>
-
-<script>
-    const S_URL = 'https://xyqqngskrjzhxbsackul.supabase.co';
-    const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cXFuZ3Nrcmp6aHhic2Fja3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NTI3NzksImV4cCI6MjA4NTUyODc3OX0.B90q1Jv-vodVIV_dLFUCOekyshrv3HekVpPugpPaHRI'; 
-    const _supabase = supabase.createClient(S_URL, S_KEY);
-
-    const estruturaAlimentos = {
-        "CARBOIDRATOS": {
-            "Arroz": ["Branco", "Integral", "Parboilizado", "Jasmine", "Basmati", "7 Grãos"],
-            "Feijão": ["Carioca", "Preto", "Branco", "Fradinho", "Vermelho"],
-            "Macarrão": ["Comum (Sêmola)", "Integral", "De arroz", "Sem glúten"],
-            "Cuscuz": ["De milho", "Nordestino", "Marroquino", "Integral"],
-            "Batata Inglesa": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Chips forno/airfryer", "Frita na airfryer"],
-            "Batata Doce": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Frita na airfryer"],
-            "Mandioca": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Frita na airfryer"],
-            "Pão": ["Francês", "Forma branco", "Forma integral", "Integral com grãos", "Sírio", "De aveia"],
-            "Tapioca": ["Tradicional", "Hidratada", "Integral"],
-            "Aveia": ["Em flocos finos", "Em flocos", "Farinha", "Farelo"],
-            "Flocão de Milho": ["Tradicional", "Integral"]
-        },
-        "PROTEÍNAS": {
-            "Frango": ["Filé de peito", "Coxa e sobrecoxa (sem pele)"],
-            "Boi": ["Patinho", "Coxão mole", "Coxão duro", "Lagarto", "Músculo", "Alcatra limpa"],
-            "Porco": ["Lombo suíno", "Filé mignon suíno"],
-            "Ovos": ["Mexidos", "Cozidos", "Omelete", "Pochê", "Frito na água", "Frito com azeite"]
-        },
-        "PEIXES": { "Peixes": ["Filé de tilápia", "Filé de merluza", "Filé de linguado", "Filé de atum fresco"] },
-        "GORDURAS": { "Gorduras Boas": ["Abacate", "Azeite de oliva extra virgem", "Castanha-do-pará", "Castanha de caju", "Amêndoas", "Nozes", "Amendoim", "Pasta de amendoim"] },
-        "LEGUMES": { "Legumes": ["Cenoura", "Brócolis", "Couve-flor", "Abobrinha", "Abóbora", "Berinjela", "Espinafre", "Chuchu", "Quiabo", "Vagem", "Pepino", "Beterraba", "Pimentão", "Couve"] },
-        "FRUTAS": { "Frutas": ["Banana", "Maçã", "Mamão", "Laranja", "Abacaxi", "Melancia", "Melão", "Manga", "Morango", "Uva", "Goiaba", "Pêra", "Kiwi", "Caju", "Limão", "Acerola", "Tangerina"] },
-        "SEMENTES": { "Sementes": ["Chia", "Linhaça", "Semente de abóbora", "Semente de girassol", "Gergelim", "Quinoa"] },
-        "OUTROS": { "Outros": ["Peito de peru", "Iogurte Natural", "Leite Integral", "Leite Desnatado", "Leite s/Lactose", "Leite De Amendoas", "Leite de soja", "Ricota", "Queijo Minas", "Queijo Muçarela", "Whey Protein", "Mel"] }
-    };
-
-    const preparosUnificados = ["Cozido", "Assado", "Grelhado", "Refogado", "Na Airfryer", "Na frigideira", "Moído", "Desfiado", "Cozido no vapor", "Ensopado"];
-
-    function mudarPasso(passo) {
-        document.querySelectorAll('.step-section').forEach(s => s.classList.remove('step-active'));
-        document.getElementById('step-' + passo).classList.add('step-active');
-        window.scrollTo({top: 0, behavior: 'smooth'});
-    }
-
-    function calculateTMB() {
-        const gender = document.getElementById('calc-gender').value;
-        const age = parseFloat(document.getElementById('calc-age').value);
-        const weight = parseFloat(document.getElementById('calc-weight').value);
-        const height = parseFloat(document.getElementById('calc-height').value);
-        const activity = parseFloat(document.getElementById('calc-activity').value);
-        const goalValue = document.getElementById('calc-goal').value;
-        if (!age || !weight || !height) return alert("Preencha todos os campos.");
-        
-        let bmr = (gender === 'male') ? 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age) : 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
-        const tdee = bmr * activity;
-        let finalCalories = (goalValue === 'Emagrecimento') ? tdee * 0.8 : (goalValue === 'Hipertrofia') ? tdee * 1.15 : tdee;
-        const caloriesResult = Math.round(finalCalories);
-        
-        document.getElementById('goalResult').innerText = caloriesResult + " kcal";
-        document.getElementById('tmb-msg-v2').innerHTML = `
-            Seu corpo precisa de <span class="highlight-text">${caloriesResult} calorias</span> por dia para ${goalValue.toLowerCase()}.<br> 
-            Deseja transformar esses números em um plano alimentar<br>
- <span class="destaque-amarelo">somente com os alimentos que você gosta de comer?</span><br> 
-            É só clicar no botão abaixo ↓
-        `;
-        
-        document.getElementById('resultContainer').style.display = 'block';
-        document.getElementById('resultContainer').scrollIntoView({ behavior: 'smooth' });
-        
-        localStorage.setItem('tmb_weight', weight);
-        localStorage.setItem('tmb_calories', caloriesResult);
-        localStorage.setItem('tmb_goal', goalValue);
-    }
-
-    function irParaDieta() {
-        mudarPasso(2);
-        document.getElementById('peso').value = localStorage.getItem('tmb_weight');
-        document.getElementById('calorias').value = localStorage.getItem('tmb_calories');
-        document.getElementById('objetivo').value = localStorage.getItem('tmb_goal');
-    }
-
-    async function inicializarTudo() {
-        renderInterface(); 
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('pago') === 'true') {
-            const rascunho = localStorage.getItem('rascunho_dieta');
-            if (rascunho) { mudarPasso(2); gerarDieta(JSON.parse(rascunho), true); window.history.replaceState({}, document.title, "/"); }
-        }
-    }
-
-    function renderInterface() {
-        const container = document.getElementById('categorias-container');
-        container.innerHTML = '';
-        for (let cat in estruturaAlimentos) {
-            let html = `<div class="categoria-pai">${cat}</div>`;
-            for (let sub in estruturaAlimentos[cat]) {
-                html += `<details><summary>${sub}</summary><div class="grid-alimentos">`;
-                estruturaAlimentos[cat][sub].forEach(item => { html += `<label class="item-alimento"><input type="checkbox" name="alimento" value="${sub}: ${item}"> ${item}</label>`; });
-                html += `</div></details>`;
-            }
-            container.innerHTML += html;
-        }
-        const pCont = document.getElementById('preparos-unificados-container');
-        pCont.innerHTML = '';
-        preparosUnificados.forEach(p => { pCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-geral" value="${p}"> ${p}</label>`; });
-    }
-
-function prepararInstrucoesPrompt(d) {
-    const peso = parseFloat(d.peso);
-    const caloriasMeta = parseFloat(d.calorias);
-    
-    // 1. Mantendo sua lógica de Proteína baseada nos 3 Objetivos
-    let fatorProt;
-    if (d.objetivo === 'Emagrecimento') {
-        fatorProt = 2.0; 
-    } else if (d.objetivo === 'Hipertrofia') {
-        fatorProt = 1.8; 
-    } else {
-        fatorProt = 1.6; 
-    }
-
-    const totalProt = Math.round(peso * fatorProt);
-    const totalGord = Math.round(peso * 0.9);
-
-    // 2. LÓGICA DE OURO: Cálculo do Carboidrato Restante (O Java calcula, a IA não inventa)
-    const calProtGord = (totalProt * 4) + (totalGord * 9);
-    const totalCarbo = Math.round((caloriasMeta - calProtGord) / 4);
-    
-    // 3. NOVAS LINHAS: Divisão exata por refeição para guiar a IA
-    const protPorRef = Math.round(totalProt / d.refeicoes);
-    const carboPorRef = Math.round(totalCarbo / d.refeicoes); // Adicionado
-    const gordPorRef = Math.round(totalGord / d.refeicoes);   // Adicionado
-    
-   let matchPreparos = "";
-d.alimentos.forEach(item => {
-    // Pega o nome do alimento (ex: "Filé de tilápia")
-    const nomeAlimento = item.split(': ')[1].toLowerCase();
-    
-    // Busca os macros na sua TABELA_ALIMENTOS (tabela-taco.js)
-    const dadosNutricionais = TABELA_ALIMENTOS[nomeAlimento] || { p: 0, c: 0, g: 0 };
-
-    // Busca o preparo
-    const chaveMatch = Object.keys(CONFIG_PREPAROS).find(k => nomeAlimento.includes(k));
-    let infoPreparo = "";
-    if (chaveMatch) {
-        const listaSugeridos = CONFIG_PREPAROS[chaveMatch].preparos_sugeridos;
-        const escolhido = d.preparos.find(p => listaSugeridos.includes(p)) || listaSugeridos[0];
-        infoPreparo = `(Preparo: ${escolhido})`;
-    }
-
-    // Monta a linha que a IA vai ler
-    matchPreparos += `- ${item.toUpperCase()}: ${infoPreparo} | Ref: 100g tem ${dadosNutricionais.p}g Prot, ${dadosNutricionais.c}g Carb, ${dadosNutricionais.g}g Gord.\n`;
-});
-
-    // Retornando tudo, inclusive as novas variáveis de divisão
-    return { 
-        totalProt, 
-        totalGord, 
-        totalCarbo, 
-        protPorRef, 
-        carboPorRef, 
-        gordPorRef, 
-        matchPreparos 
-    };
-}
-
-    async function gerarDieta(d, pagoConfirmado = false) {
-        const divRes = document.getElementById('resultado');
-        const status = document.getElementById('status-topo');
-        const info = prepararInstrucoesPrompt(d);
-
-        status.style.display = 'block';
-        status.scrollIntoView({ behavior: 'smooth' });
-
-        const mensagens = [
-            "🔐 VERIFICANDO ACESSO...",
-            "✅ PAGAMENTO CONFIRMADO!",
-            "📊 CALCULANDO MACRONUTRIENTES...",
-            "🍳 SELECIONANDO OS MELHORES PREPAROS...",
-            "⚡ ORGANIZANDO O CARDÁPIO...",
-            "⏳ QUASE PRONTO...",
-             "⏳ QUASE PRONTO... AGUARDE..."
-        ];
-
-        let msgIndex = pagoConfirmado ? 1 : 0;
-        const interval = setInterval(() => { if (msgIndex < mensagens.length) { status.innerText = mensagens[msgIndex]; msgIndex++; } }, 1800);
-
-    const promptFinal = `
-Atue como um Assistente Técnico em Nutrição focado em ORGANIZAÇÃO de cardápios reais do cotidiano brasileiro. 
-
-IMPORTANTE: Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou.". 
-
-DIRETRIZES DE MONTAGEM (GAVETAS LÓGICAS):
-Para que o cardápio seja apetitoso e real, siga RIGOROSAMENTE estas categorias:
-
-1. CAFÉ DA MANHÃ E TARDE (ESTILO LANCHE): 
-   - Combine: Pães, Queijos, Ovos, Iogurte, Aveia, Frutas, Leite ou Chia. 
-   - Sugestões: Sanduíches, Bowls de Fruta, Shakes ou Omeletes.
-
-2. ALMOÇO E JANTAR (PRATO PRINCIPAL): 
-   - Estrutura OBRIGATÓRIA: 1 fonte de Carboidrato (Arroz/Mandioca/Batata) + 1 fonte de Proteína (Frango/Boi) + Legumes (Cenoura/Brócolis).
-   - Adicione sempre: "Salada de folhas verdes à vontade" como cortesia.
-
-3. CEIA (LEVE): 
-   - Priorize: Frutas, Shakes, Whey ou alimentos de fácil digestão.
-
-METAS DO SISTEMA (ALVOS):
-- Carboidratos: ~${info.totalCarbo}g | Proteínas: ~${info.totalProt}g | Gorduras: ~${info.totalGord}g
-- LISTA TÉCNICA (ALIMENTOS E MACROS REAIS):
-${info.matchPreparos}
-
-DIRETRIZES DE MONTAGEM (GAVETAS LÓGICAS):
-1. CAFÉ DA MANHÃ E LANCHES: Use Pães, Queijos, Ovos, Iogurte, Aveia, Frutas, Leite, Chia ou Whey.
-2. ALMOÇO E JANTAR: Estrutura obrigatória de Carboidrato (Arroz/Batata) + Proteína Principal (Frango/Boi/Peixe) + Legumes.
-3. CEIA: Alimentos leves como Frutas, Leite, Whey ou Iogurte.
-
-REGRAS SUPREMAS:
-- TODA REFEIÇÃO deve conter uma fonte de proteína (use os Ovos, Whey, Queijos e Carnes selecionados).
-- CÁLCULO SILENCIOSO: Use os valores de "Ref" fornecidos acima para definir as gramagens. 
-- PROIBIDO: Não exiba macros por linha. Exiba apenas o nome do alimento e a quantidade em gramas.
-- PROTEÍNA VEGETAL: A proteína do arroz/aveia conta. Se o total passar de ${info.totalProt}g, mantenha as porções de carne e aceite o excedente.
-
-PLANEJAMENTO ALIMENTAR ESTRUTURADO
-
-BLOCO 1: OPÇÕES A (PADRÃO)
-Priorize arroz e feijão no almoço e jantar. Para cada uma das ${d.refeicoes} refeições, liste APENAS:
-- Nome do Alimento (Quantidade em gramas)
-- Modo de Preparo sugerido
-
-
-RESUMO DE MACROS (OPÇÕES A)
-Apresente a soma real baseada nos alimentos listados:
-Proteína Total: ~${info.totalProt}g | Carboidrato Total: ~${info.totalCarbo}g
-
----
-
-BLOCO 2: OPÇÕES B (VARIAÇÃO SEM ARROZ/FEIJÃO)
-Gere variações das mesmas refeições. PROIBIDO Arroz e Feijão no Almoço e Jantar aqui.
-Para cada uma das ${d.refeicoes} refeições, liste APENAS:
-- Nome do Alimento (Quantidade em gramas)
-- Modo de Preparo sugerido
-
-
-RESUMO DE MACROS (OPÇÕES B)
-Proteína Total: ~${info.totalProt}g | Carboidrato Total: ~${info.totalCarbo}g
-
----
-
-ITENS COMPLEMENTARES:
-1. HIDRATAÇÃO: Informe a recomendação de ${(parseFloat(d.peso) * 0.035).toFixed(1)}L de água por dia.
-2. DATA: ${new Date().toLocaleString()}.
-
-ACRESCENTE UM RODAPÉ ESCRITO: "Este plano alimentar foi gerado para fins educativos. Não substitui avaliação ou acompanhamento médico e nutricional profissional. Os valores nutricionais são estimativas baseadas em tabelas de referência padrão."`;
-  
-        try {
-            const res = await fetch('/api/gerar-dieta', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: promptFinal, email: d.email })
-            });
-            const data = await res.json();
-            clearInterval(interval);
-            mudarPasso(3);
-            divRes.innerText = data.dieta;
-            divRes.style.display = 'block';
-            document.getElementById('btn-download-pos-geracao').style.display = 'block';
-            document.getElementById('btn-download-pos-geracao').onclick = () => window.open(data.pdf_url, '_blank');
-        } catch (e) { 
-            clearInterval(interval);
-            alert("Erro ao gerar plano."); 
-        } finally { 
-            status.style.display = 'none'; 
-        }
-    }
-
-   async function verificarAcessoEPagar() {
-        // 1. Validações Iniciais (Segurança e UI)
-        const aceitouTermos = document.getElementById('aceite-clausula').checked;
-        if (!aceitouTermos) {
-            return alert("Por favor, aceite a declaração de ciência antes de gerar seu plano.");
-        }
-
-        const alimentos = Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value);
-        if (alimentos.length < 5) {
-            return alert("Selecione pelo menos 5 alimentos para garantir a variedade do plano.");
-        }
-
-        const email = prompt("Seu e-mail para acesso:");
-        if (!email) return;
-
-        // 2. Montagem do Rascunho
-        const rascunho = {
-            peso: document.getElementById('peso').value,
-            calorias: document.getElementById('calorias').value,
-            refeicoes: document.getElementById('num-refeicoes').value,
-            objetivo: document.getElementById('objetivo').value,
-            alimentos: alimentos,
-            preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value),
-            email: email.toLowerCase().trim()
-        };
-
-        // Salva no LocalStorage para recuperar após o checkout do Stripe
-        localStorage.setItem('rascunho_dieta', JSON.stringify(rascunho));
-
-        try {
-            // 3. Consulta ao Supabase
-            const { data: user, error } = await _supabase
-                .from('Usuarios_Dieta')
-                .select('*')
-                .eq('email', rascunho.email)
-                .maybeSingle();
-
-            if (error) throw error;
-
-            // 4. Decisão de Fluxo: Gerar ou Pagar
-            if (!user || !user.pago) {
-                document.getElementById('payment-overlay').style.display = 'flex';
-            } else {
-                gerarDieta(rascunho);
-            }
-        } catch (err) {
-            console.error("Erro ao verificar acesso:", err);
-            alert("Erro ao conectar com o banco de dados. Tente novamente.");
-        }
-    }
-
-    async function iniciarCheckout(priceId) {
-        const rascunho = JSON.parse(localStorage.getItem('rascunho_dieta'));
-        if (!rascunho || !rascunho.email) return alert("Erro ao recuperar seus dados. Reinicie o processo.");
-
-        try {
-            const response = await fetch('/api/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    priceId, 
-                    email: rascunho.email, 
-                    tipoPlano: priceId.includes('TAhib') ? 'anual' : 'unica' 
-                }),
-            });
-
-            const data = await response.json();
-            if (data.url) {
-                window.location.href = data.url;
-            } else {
-                throw new Error("URL de checkout não encontrada.");
-            }
-        } catch (err) {
-            console.error("Erro no checkout:", err);
-            alert("Ocorreu um erro ao iniciar o pagamento. Tente novamente.");
-        }
-    }
-
-    function fecharModal() { 
-        document.getElementById('payment-overlay').style.display = 'none'; 
-    }
-</script>
-</body>
-</html>
+const FATOR_PREPARO = {
+    // PROTEÍNAS - Fator de Cocção (Peso Cru para Peso Pronto)
+    "Grelhado": 0.75,       
+    "Assado": 0.70,         
+    "Na Airfryer": 0.65,    
+    "Na frigideira": 0.72,  
+    "Moído": 0.80,          
+    "Desfiado": 0.70,       
+    "Cozido": 0.85,         
+    "Cozido no vapor": 0.90, 
+    "Ensopado": 1.0,        
+    "Refogado": 0.82        
+};
