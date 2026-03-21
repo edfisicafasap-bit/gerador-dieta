@@ -301,24 +301,27 @@ function prepararInstrucoesPrompt(d) {
     const peso = parseFloat(d.peso);
     const caloriasMeta = parseFloat(d.calorias);
     
-    // 1. Definição de Proteína baseada nos 3 Objetivos (Ajustada)
+    // 1. Mantendo sua lógica de Proteína baseada nos 3 Objetivos
     let fatorProt;
     if (d.objetivo === 'Emagrecimento') {
-        fatorProt = 2.0; // Protege massa magra no déficit
+        fatorProt = 2.0; 
     } else if (d.objetivo === 'Hipertrofia') {
-        fatorProt = 1.8; // Foco em superávit de carbo para treino
+        fatorProt = 1.8; 
     } else {
-        fatorProt = 1.6; // Manutenção / Definição: Equilíbrio total
+        fatorProt = 1.6; 
     }
 
     const totalProt = Math.round(peso * fatorProt);
-    const totalGord = Math.round(peso * 0.9); // Saúde hormonal e saciedade
+    const totalGord = Math.round(peso * 0.9);
 
-    // 2. LÓGICA DE OURO: Cálculo do Carboidrato Restante
+    // 2. LÓGICA DE OURO: Cálculo do Carboidrato Restante (O Java calcula, a IA não inventa)
     const calProtGord = (totalProt * 4) + (totalGord * 9);
     const totalCarbo = Math.round((caloriasMeta - calProtGord) / 4);
     
+    // 3. NOVAS LINHAS: Divisão exata por refeição para guiar a IA
     const protPorRef = Math.round(totalProt / d.refeicoes);
+    const carboPorRef = Math.round(totalCarbo / d.refeicoes); // Adicionado
+    const gordPorRef = Math.round(totalGord / d.refeicoes);   // Adicionado
     
     let matchPreparos = "";
     d.alimentos.forEach(item => {
@@ -332,7 +335,16 @@ function prepararInstrucoesPrompt(d) {
         }
     });
 
-    return { totalProt, totalGord, totalCarbo, protPorRef, matchPreparos };
+    // Retornando tudo, inclusive as novas variáveis de divisão
+    return { 
+        totalProt, 
+        totalGord, 
+        totalCarbo, 
+        protPorRef, 
+        carboPorRef, 
+        gordPorRef, 
+        matchPreparos 
+    };
 }
 
     async function gerarDieta(d, pagoConfirmado = false) {
@@ -357,7 +369,9 @@ function prepararInstrucoesPrompt(d) {
         const interval = setInterval(() => { if (msgIndex < mensagens.length) { status.innerText = mensagens[msgIndex]; msgIndex++; } }, 1800);
 
         const promptFinal = `
-            Atue como um Nutricionista Prático. Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou.". Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis.
+            Atue como um Assistente Técnico em Nutrição para a ORGANIZAÇÃO do cardápio. 
+IMPORTANTE: OS CÁLCULOS ABAIXO SÃO SOBERANOS E FORAM GERADOS PELO SISTEMA. NÃO RECALCULE E NÃO ALTERE OS NÚMEROS.
+Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou.". Seu objetivo é converter listas de alimentos e macros em um cardápio culinário real, focado em "comida de verdade" e preparações reconhecíveis.
             Metas Calculadas: ${info.totalProt}g de Proteína e ${info.totalGord}g de Gordura e  ${info.totalCarbo}g de Carboidratos
             ALIMENTOS SELECIONADOS: ${d.alimentos.join(', ')}
             DETALHES DE PREPARO:
@@ -371,14 +385,20 @@ Voce deve gerar EXATAMENTE ${d.refeicoes} refeicoes.
 - Se ${d.refeicoes} for 5: Use (1. Cafe da Manha, 2. Almoco, 3. Cafe da Tarde, 4. Jantar, 5. Ceia).
 - Se ${d.refeicoes} for 6: Use (1. Desjejum, 2. Cafe da Manha, 3. Almoco, 4. Cafe da Tarde, 5. Jantar, 6. Ceia).
 
-DICA: Nunca pule o Cafe da Tarde entre o Almoco e o Jantar.
+METAS TOTAIS DIÁRIAS (OBRIGATÓRIAS):
+- Proteína Total: ${info.totalProt}g
+- Gordura Total: ${info.totalGord}g
+- Carboidrato Total: ${info.totalCarbo}g (ALVO PRINCIPAL)
 
-            
-            REGRAS CRÍTICAS DE PRESCRIÇÃO:
-            1. Divida em ${d.refeicoes} refeições. Cada uma com aprox. ${info.protPorRef}g de proteína.
-            2. PESO DOS ALIMENTOS: Para carnes e peixes, informe SEMPRE o peso do alimento JÁ PRONTO (após preparo).
-            3. Use o "Fator de correção" fornecido em cada item para ajustar o peso final. Ex: Se o aluno precisa de 100g de proteína crua e o fator é 0.75, prescreva aprox. 75g do alimento pronto no plano.
-            4. Use apenas os alimentos e preparos listados acima.
+DISTRIBUIÇÃO SUGERIDA POR REFEIÇÃO:
+Cada uma das ${d.refeicoes} refeições deve ter aproximadamente:
+- ${info.protPorRef}g de Proteína | ${info.carboPorRef}g de Carboidrato | ${info.gordPorRef}g de Gordura.
+
+REGRAS DE OURO:
+1. Converta as metas acima em quantidades reais de alimentos (ex: 150g de Arroz, 100g de Frango).
+2. A soma final de todos os alimentos no cardápio DEVE bater exatamente ${info.totalCarbo}g de carboidratos.
+3. Use apenas "comida de verdade" e os preparos indicados.
+4. Para carnes e peixes, informe o peso do alimento JÁ PRONTO.
 
 PLANEJAMENTO ALIMENTAR ESTRUTURADO
 
@@ -388,7 +408,7 @@ Para cada uma das ${d.refeicoes} refeições, liste:
 - Ingredientes (com quantidades)
 
 RESUMO DE MACROS (OPÇÕES A)
-Proteinas Totais: [Soma Real]g | Carboidratos Totais: [Soma Real]g | Gorduras Totais: [Soma Real]g
+Proteinas Totais: [Soma Real dos alimentos listados acima]g | Carboidratos Totais: [Soma Real dos alimentos listados acima]g | Gorduras Totais: [Soma Real dos alimentos listados acima]g
 
 BLOCO 2: OPÇÕES B (VARIAÇÃO)
 Nesta seção, gere as mesmas ${d.refeicoes} refeições com macros equivalentes ao Bloco 1. No almoço e jantar, é proibido o uso de arroz e feijão.
@@ -396,10 +416,10 @@ Para cada uma das ${d.refeicoes} refeições, liste:
 - Ingredientes (com quantidades)
 
 RESUMO DE MACROS (OPÇÕES B)
-Proteinas Totais: [Soma Real]g | Carboidratos Totais: [Soma Real]g | Gorduras Totais: [Soma Real]g
+Proteinas Totais: [Soma Real dos alimentos listados acima]g | Carboidratos Totais: [Soma Real dos alimentos listados acima]g | Gorduras Totais: [Soma Real dos alimentos listados acima]g
 
 PROTOCOLO DE VALIDAÇÃO
-Antes de exibir, valide: "A Opção B de almoço/jantar está sem arroz e feijão? Os macros estão equilibrados? O prato parece algo que se come no Brasil? só prossiga caso seja refeições reais, caso contrário, refaça!"
+Antes de exibir, valide: "A Opção B de almoço/jantar está sem arroz e feijão? Os macros estão equilibrados? O prato parece algo que se come no Brasil? só prossiga caso seja refeições reais,  os macros estão batendo ou proximo as ${d.calorias} kcal ? caso contrário, refaça!"
 IMPORTANTE: Valide internamente, mas não escreva esta validação ou protocolo no resultado final.
 
 ITENS COMPLEMENTARES:
