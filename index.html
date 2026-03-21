@@ -323,17 +323,26 @@ function prepararInstrucoesPrompt(d) {
     const carboPorRef = Math.round(totalCarbo / d.refeicoes); // Adicionado
     const gordPorRef = Math.round(totalGord / d.refeicoes);   // Adicionado
     
-    let matchPreparos = "";
-    d.alimentos.forEach(item => {
-        const nomeAlimento = item.split(': ')[1].toLowerCase();
-        const chaveMatch = Object.keys(CONFIG_PREPAROS).find(k => nomeAlimento.includes(k));
-        if (chaveMatch) {
-            const listaDePreparosSugeridos = CONFIG_PREPAROS[chaveMatch].preparos_sugeridos;
-            const preparoEscolhido = d.preparos.find(p => listaDePreparosSugeridos.includes(p)) || listaDePreparosSugeridos[0];
-            const fator = FATOR_PREPARO[preparoEscolhido] || 1.0;
-            matchPreparos += `- ${item.toUpperCase()}: Preparar como ${preparoEscolhido.toUpperCase()} (Fator: ${fator}).\n`;
-        }
-    });
+   let matchPreparos = "";
+d.alimentos.forEach(item => {
+    // Pega o nome do alimento (ex: "Filé de tilápia")
+    const nomeAlimento = item.split(': ')[1].toLowerCase();
+    
+    // Busca os macros na sua TABELA_ALIMENTOS (tabela-taco.js)
+    const dadosNutricionais = TABELA_ALIMENTOS[nomeAlimento] || { p: 0, c: 0, g: 0 };
+
+    // Busca o preparo
+    const chaveMatch = Object.keys(CONFIG_PREPAROS).find(k => nomeAlimento.includes(k));
+    let infoPreparo = "";
+    if (chaveMatch) {
+        const listaSugeridos = CONFIG_PREPAROS[chaveMatch].preparos_sugeridos;
+        const escolhido = d.preparos.find(p => listaSugeridos.includes(p)) || listaSugeridos[0];
+        infoPreparo = `(Preparo: ${escolhido})`;
+    }
+
+    // Monta a linha que a IA vai ler
+    matchPreparos += `- ${item.toUpperCase()}: ${infoPreparo} | Ref: 100g tem ${dadosNutricionais.p}g Prot, ${dadosNutricionais.c}g Carb, ${dadosNutricionais.g}g Gord.\n`;
+});
 
     // Retornando tudo, inclusive as novas variáveis de divisão
     return { 
@@ -369,21 +378,39 @@ function prepararInstrucoesPrompt(d) {
         const interval = setInterval(() => { if (msgIndex < mensagens.length) { status.innerText = mensagens[msgIndex]; msgIndex++; } }, 1800);
 
     const promptFinal = `
-Atue como um Assistente Técnico em Nutrição focado em ORGANIZAÇÃO de cardápio. 
+Atue como um Assistente Técnico em Nutrição focado em ORGANIZAÇÃO de cardápios reais do cotidiano brasileiro. 
 
 IMPORTANTE: Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou.". 
 
-METAS ALVO (REFERÊNCIA DO SISTEMA):
-- Carboidratos: ~${info.totalCarbo}g (Prioridade Máxima)
-- Proteínas: ~${info.totalProt}g
-- Gorduras: ~${info.totalGord}g
-- ALIMENTOS SELECIONADOS: ${d.alimentos.join(', ')}
-- DETALHES DE PREPARO: ${info.matchPreparos}
+DIRETRIZES DE MONTAGEM (GAVETAS LÓGICAS):
+Para que o cardápio seja apetitoso e real, siga RIGOROSAMENTE estas categorias:
 
-DIRETRIZES DE EXECUÇÃO (SILENCIOSAS):
-1. Use as metas acima como ALVOS aproximados. Não tente ser matematicamente exato se isso resultar em gramagens irreais. Uma variação de 5% para mais ou para menos é aceitável e desejada para manter a naturalidade.
-2. Contabilize a proteína de TODOS os alimentos (incluindo arroz, feijão e aveia). Se o total de proteína ultrapassar levemente o alvo por causa disso, MANTENHA as porções de carne/ovo e aceite o excedente.
-3. Use apenas "comida de verdade" e os preparos indicados. Para proteínas, informe o peso JÁ PRONTO.
+1. CAFÉ DA MANHÃ E TARDE (ESTILO LANCHE): 
+   - Combine: Pães, Queijos, Ovos, Iogurte, Aveia, Frutas, Leite ou Chia. 
+   - Sugestões: Sanduíches, Bowls de Fruta, Shakes ou Omeletes.
+
+2. ALMOÇO E JANTAR (PRATO PRINCIPAL): 
+   - Estrutura OBRIGATÓRIA: 1 fonte de Carboidrato (Arroz/Mandioca/Batata) + 1 fonte de Proteína (Frango/Boi) + Legumes (Cenoura/Brócolis).
+   - Adicione sempre: "Salada de folhas verdes à vontade" como cortesia.
+
+3. CEIA (LEVE): 
+   - Priorize: Frutas, Shakes, Whey ou alimentos de fácil digestão.
+
+METAS DO SISTEMA (ALVOS):
+- Carboidratos: ~${info.totalCarbo}g | Proteínas: ~${info.totalProt}g | Gorduras: ~${info.totalGord}g
+- LISTA TÉCNICA (ALIMENTOS E MACROS REAIS):
+${info.matchPreparos}
+
+DIRETRIZES DE MONTAGEM (GAVETAS LÓGICAS):
+1. CAFÉ DA MANHÃ E LANCHES: Use Pães, Queijos, Ovos, Iogurte, Aveia, Frutas, Leite, Chia ou Whey.
+2. ALMOÇO E JANTAR: Estrutura obrigatória de Carboidrato (Arroz/Batata) + Proteína Principal (Frango/Boi/Peixe) + Legumes.
+3. CEIA: Alimentos leves como Frutas, Leite, Whey ou Iogurte.
+
+REGRAS SUPREMAS:
+- TODA REFEIÇÃO deve conter uma fonte de proteína (use os Ovos, Whey, Queijos e Carnes selecionados).
+- CÁLCULO SILENCIOSO: Use os valores de "Ref" fornecidos acima para definir as gramagens. 
+- PROIBIDO: Não exiba macros por linha. Exiba apenas o nome do alimento e a quantidade em gramas.
+- PROTEÍNA VEGETAL: A proteína do arroz/aveia conta. Se o total passar de ${info.totalProt}g, mantenha as porções de carne e aceite o excedente.
 
 PLANEJAMENTO ALIMENTAR ESTRUTURADO
 
@@ -395,11 +422,11 @@ Priorize arroz e feijão no almoço e jantar. Para cada uma das ${d.refeicoes} r
 
 RESUMO DE MACROS (OPÇÕES A)
 Apresente a soma real baseada nos alimentos listados:
-Proteína Total: ~[Soma]g | Carboidrato Total: ~[Soma]g | Gordura Total: ~[Soma]g
+Proteína Total: ~${info.totalProt}g | Carboidrato Total: ~${info.totalCarbo}g
 
 ---
 
-BLOCO 2: OPÇÕES B (VARIAÇÃO)
+BLOCO 2: OPÇÕES B (VARIAÇÃO SEM ARROZ/FEIJÃO)
 Gere variações das mesmas refeições. PROIBIDO Arroz e Feijão no Almoço e Jantar aqui.
 Para cada uma das ${d.refeicoes} refeições, liste APENAS:
 - Nome do Alimento (Quantidade em gramas)
@@ -407,7 +434,7 @@ Para cada uma das ${d.refeicoes} refeições, liste APENAS:
 
 
 RESUMO DE MACROS (OPÇÕES B)
-Proteína Total: ~[Soma]g | Carboidrato Total: ~[Soma]g | Gordura Total: ~[Soma]g
+Proteína Total: ~${info.totalProt}g | Carboidrato Total: ~${info.totalCarbo}g
 
 ---
 
