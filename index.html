@@ -379,13 +379,13 @@ d.alimentos.forEach(item => {
         const interval = setInterval(() => { if (msgIndex < mensagens.length) { status.innerText = mensagens[msgIndex]; msgIndex++; } }, 1800);
 
     const promptFinal = `
-Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTICA dos macros.
+Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTICA dos macros UTILIZANDO AS INFORMAÇÕES PRESCRITAS. Você deve montar refeições para bater as metas diarias com VALORES APROXIMADOS DA META.
 
 OBJETIVO DO PLANO: ${d.calorias} kcal para ${d.objetivo}.
 METAS TÉCNICAS TOTAIS: P: ${info.totalProt}g | C: ${info.totalCarbo}g | G: ${info.totalGord}g.
 METAS POR REFEIÇÃO (ALVO): ~${info.alvoCaloricoRef} kcal | ~${info.protPorRef}g Prot.
 
-LISTA DE ALIMENTOS DISPONÍVEIS E SEUS MACROS (USE PARA CALCULAR):
+LISTA DE ALIMENTOS DISPONÍVEIS E SEUS MACROS (USE PARA ORGANIZAR):
 ${info.matchPreparos}
 
 REGRAS DE OURO (NÃO IGNORE):
@@ -393,12 +393,23 @@ REGRAS DE OURO (NÃO IGNORE):
 2. SOMA VERDADEIRA: O resumo no final deve ser a soma REAL das gramagens que você escreveu. Não repita apenas os números que eu te enviei se a comida que você listou não somar aquilo.
 3. GAVETAS: Café/Lanches (Pães, Frutas, Ovos, Iogurte, Whey). Almoço/Jantar (Carbo + Proteína + Legume).
 
+REGRAS DE OURO DE DISTRIBUIÇÃO PROTEICA:
+1. NÃO SE LIMITE A 150G: Se a meta de ${info.totalProt}g for alta, não tenha medo de subir as porções, mas faça de forma inteligente.
+2. DIVERSIFIQUE AS FONTES: Para não sobrecarregar apenas o Almoço/Jantar com carnes, AUMENTE a densidade proteica das outras refeições:
+   - CAFÉ/LANCHES: Se necessário, use 3 a 4 ovos em vez de 2, ou combine Ovos + Queijo (Ricota/Minas) + Iogurte + Whey na mesma refeição.
+   - ALMOÇO/JANTAR: Combine a carne principal com outras fontes (ex: Feijão, Lentilha ou Queijo ralado por cima) para ajudar a bater o total.
+3. PRIORIDADE MATEMÁTICA: O resumo final deve ser a SOMA REAL de todos os macros (incluindo a proteína dos carboidratos como arroz, feijão e aveia). Se a conta não fechar ${info.totalProt}g, ajuste as gramagens para cima até bater o valor exato.
+4. EQUILÍBRIO: Prefira pratos volumosos e variados em vez de uma única porção gigante de proteína animal isolada.
+
+REGRAS OBRIGATÓRIAS FONTES DE GORDURA:
+DIVIDA AS FONTES DE GORDURA  AO LONGO DO DIA, NÃO COLOQUE TODAS EM APENAS UMA REFEIÇÃO
+
 ESTRUTURA DO CARDÁPIO (${d.refeicoes} refeições):
 
 BLOCO 1: OPÇÕES A
 Para cada refeição liste:
-- Alimento (Gramagem exata para bater a meta)
-SUGESTÃO DE PREPARO: (Como preparar os itens acima).
+- Alimento (Gramagem APROXIMADA E REAL para bater a meta)
+SUGESTÃO DE PREPARO: (Como preparar os itens acima ).
 
 RESUMO DE MACROS (OPÇÕES A)
 (Calcule a soma real de tudo que você listou acima):
