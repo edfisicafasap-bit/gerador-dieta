@@ -408,7 +408,7 @@ Proteína Total: ~[Soma]g | Carboidrato Total: ~[Soma]g | Gordura Total: ~[Soma]
 BLOCO 2: OPÇÕES B (VARIAÇÃO SEM ARROZ E FEIJÃO)
 (Mesmo formato, trocando arroz/feijão por outras fontes de carbo da lista técnica).
 
-MENSAGEM DE AJUSTE: ${info.totalProt > 160 ? "Se os alimentos selecionados não tiverem proteína suficiente (ex: faltou carne/ovo), avise ao usuário para selecionar mais fontes proteicas.
+MENSAGEM DE AJUSTE: ${info.totalProt > 160 ? "Se os alimentos selecionados não tiverem proteína suficiente (ex: faltou carne/ovo), avise ao usuário para selecionar mais fontes proteicas." : ""}
 ITENS COMPLEMENTARES:
 1. HIDRATAÇÃO: Informe a recomendação de ${(parseFloat(d.peso) * 0.035).toFixed(1)}L de água por dia.
 2. DATA: ${new Date().toLocaleString()}.
