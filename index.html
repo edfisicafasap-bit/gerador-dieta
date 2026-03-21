@@ -420,7 +420,7 @@ BLOCO 1: OPÇÕES A (PADRÃO)
 Priorize arroz e feijão no almoço e jantar. Para cada uma das ${d.refeicoes} refeições, liste APENAS:
 - [Nome do Alimento] ([Quantidade]g)
 - [Nome do Alimento] ([Quantidade]g)
-SUGESTÃO DE PREPARO: [Escreva aqui como combinar os itens de forma resumida].
+SUGESTÃO DE PREPARO DE CADA REFEIÇÃO: [Escreva aqui como combinar os itens de forma resumida].
 
 RESUMO DE MACROS (OPÇÕES A)
 Apresente a soma real baseada nos alimentos listados:
@@ -433,11 +433,15 @@ Gere variações das mesmas refeições. PROIBIDO Arroz e Feijão no Almoço e J
 Para cada uma das ${d.refeicoes} refeições, liste APENAS:
 - [Nome do Alimento] ([Quantidade]g)
 - [Nome do Alimento] ([Quantidade]g)
-SUGESTÃO DE PREPARO: [Escreva aqui como combinar os itens de forma resumida].
+SUGESTÃO DE PREPARO DE CADA REFEIÇÃO: [Escreva aqui como combinar os itens de forma resumida].
 
 
 RESUMO DE MACROS (OPÇÕES B)
 Proteína Total: ~${info.totalProt}g | Carboidrato Total: ~${info.totalCarbo}g | Gordura Total: ~${info.totalGord}g
+
+CONFERÊNCIA MATEMÁTICA OBRIGATÓRIA: Antes de finalizar, some mentalmente os macros de cada porção sugerida. Se o Arroz e o Pão somados já passam de 100g de Carboidrato, não diga que o total é 118g. AJUSTE AS GRAMAGENS (ex: diminua o arroz ou aumente a carne) para que a soma real dos alimentos listados seja VERDADEIRA em relação ao resumo final. CASO NÃO ESTEJA SENDO POSSIVEL FAZER A SOMA COM OS ALIMENTOS SELECIONADOS. COLOQUE UMA MENSAGEM PARA A PESSOA. EX: SE A PROTEINA ESTIVER LONGE AINDA, COLOQUE UMA MENSAGEM AVISANDO SOBRE ISSO, PARA ELA COMER MAIS FONTES DE PROTEINAS, NAO INVENTE NADA, APENAS DIRECIONE A PESSOA SE NAO FOR POSSIVEL ORGANIZAR A DIETA.
+
+ALERTA DE INCONSISTÊNCIA: Se após os ajustes de gramagem o total real de Proteína, Carbo ou Gordura ainda estiver com uma diferença maior que 15% da META DO SISTEMA, adicione uma nota em negrito antes do Resumo de Macros: '⚠️ NOTA: Com os alimentos selecionados, não foi possível atingir sua meta exata de [Nutriente]. Sugerimos selecionar mais opções de [Sugestão de Categoria] para um plano mais equilibrado'.
 
 ---
 
