@@ -353,6 +353,7 @@ d.alimentos.forEach(item => {
         carboPorRef, 
         gordPorRef, 
         matchPreparos 
+        alvoCaloricoRef: Math.round(caloriasMeta / d.refeicoes)
     };
 }
 
@@ -378,73 +379,36 @@ d.alimentos.forEach(item => {
         const interval = setInterval(() => { if (msgIndex < mensagens.length) { status.innerText = mensagens[msgIndex]; msgIndex++; } }, 1800);
 
     const promptFinal = `
-Atue como um Assistente Técnico em Nutrição focado em ORGANIZAÇÃO de cardápios reais do cotidiano brasileiro. 
+Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTICA dos macros.
 
-IMPORTANTE: Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou.". 
+OBJETIVO DO PLANO: ${d.calorias} kcal para ${d.objetivo}.
+METAS TÉCNICAS TOTAIS: P: ${info.totalProt}g | C: ${info.totalCarbo}g | G: ${info.totalGord}g.
+METAS POR REFEIÇÃO (ALVO): ~${info.alvoCaloricoRef} kcal | ~${info.protPorRef}g Prot.
 
-DIRETRIZES DE MONTAGEM (GAVETAS LÓGICAS):
-Para que o cardápio seja apetitoso e real, siga RIGOROSAMENTE estas categorias:
-
-1. CAFÉ DA MANHÃ E TARDE (ESTILO LANCHE): 
-   - Combine: Pães, Queijos, Ovos, Iogurte, Aveia, Frutas, Leite ou Chia. 
-   - Sugestões: Sanduíches, Bowls de Fruta, Shakes ou Omeletes.
-
-2. ALMOÇO E JANTAR (PRATO PRINCIPAL): 
-   - Estrutura OBRIGATÓRIA: 1 fonte de Carboidrato (Arroz/Mandioca/Batata) + 1 fonte de Proteína (Frango/Boi) + Legumes (Cenoura/Brócolis).
-   - Adicione sempre: "Salada de folhas verdes à vontade" como cortesia.
-
-3. CEIA (LEVE): 
-   - Priorize: Frutas, Shakes, Whey ou alimentos de fácil digestão.
-
-METAS DO SISTEMA (ALVOS):
-- Carboidratos: ~${info.totalCarbo}g | Proteínas: ~${info.totalProt}g | Gorduras: ~${info.totalGord}g
-- LISTA TÉCNICA (ALIMENTOS E MACROS REAIS):
+LISTA DE ALIMENTOS DISPONÍVEIS E SEUS MACROS (USE PARA CALCULAR):
 ${info.matchPreparos}
 
-DIRETRIZES DE MONTAGEM (GAVETAS LÓGICAS):
-1. CAFÉ DA MANHÃ E LANCHES: Use Pães, Queijos, Ovos, Iogurte, Aveia, Frutas, Leite, Chia ou Whey.
-2. ALMOÇO E JANTAR: Estrutura obrigatória de Carboidrato (Arroz/Batata) + Proteína Principal (Frango/Boi/Peixe) + Legumes.
-3. CEIA: Alimentos leves como Frutas, Leite, Whey ou Iogurte.
+REGRAS DE OURO (NÃO IGNORE):
+1. AJUSTE DE PORÇÃO: Se para bater ${info.totalProt}g de proteína você precisar sugerir 260g de frango, FAÇA ISSO. Não fique preso a porções de 100g ou 150g.
+2. SOMA VERDADEIRA: O resumo no final deve ser a soma REAL das gramagens que você escreveu. Não repita apenas os números que eu te enviei se a comida que você listou não somar aquilo.
+3. GAVETAS: Café/Lanches (Pães, Frutas, Ovos, Iogurte, Whey). Almoço/Jantar (Carbo + Proteína + Legume).
 
-REGRAS SUPREMAS:
-- TODA REFEIÇÃO deve conter uma fonte de proteína (use os Ovos, Whey, Queijos e Carnes selecionados).
-- CÁLCULO SILENCIOSO: Use os valores de "Ref" fornecidos acima para definir as gramagens. 
-- PROIBIDO: Não exiba macros por linha. Exiba apenas o nome do alimento e a quantidade em gramas.
-- PROTEÍNA VEGETAL: A proteína do arroz/aveia conta. Se o total passar de ${info.totalProt}g, mantenha as porções de carne e aceite o excedente.
+ESTRUTURA DO CARDÁPIO (${d.refeicoes} refeições):
 
-AJUSTE DINÂMICO DE PESO: Você TEM PERMISSÃO para aumentar ou diminuir as gramagens dos alimentos (ex: de 150g para 230g) para que a soma real chegue o mais próximo possível das METAS DO SISTEMA enviadas (${info.totalProt}g P e ${info.totalCarbo}g C).
-
-PLANEJAMENTO ALIMENTAR ESTRUTURADO
-
-BLOCO 1: OPÇÕES A (PADRÃO)
-Priorize arroz e feijão no almoço e jantar. Para cada uma das ${d.refeicoes} refeições, liste APENAS:
-- [Nome do Alimento] ([Quantidade]g)
-- [Nome do Alimento] ([Quantidade]g)
-SUGESTÃO DE PREPARO DE CADA REFEIÇÃO: [Escreva aqui como combinar os itens de forma resumida].
+BLOCO 1: OPÇÕES A
+Para cada refeição liste:
+- Alimento (Gramagem exata para bater a meta)
+SUGESTÃO DE PREPARO: (Como preparar os itens acima).
 
 RESUMO DE MACROS (OPÇÕES A)
-Apresente a soma real baseada nos alimentos listados:
-Proteína Total: ~${info.totalProt}g | Carboidrato Total: ~${info.totalCarbo}g | Gordura Total: ~${info.totalGord}g
+(Calcule a soma real de tudo que você listou acima):
+Proteína Total: ~[Soma]g | Carboidrato Total: ~[Soma]g | Gordura Total: ~[Soma]g
 
 ---
+BLOCO 2: OPÇÕES B (VARIAÇÃO SEM ARROZ E FEIJÃO)
+(Mesmo formato, trocando arroz/feijão por outras fontes de carbo da lista técnica).
 
-BLOCO 2: OPÇÕES B (VARIAÇÃO SEM ARROZ/FEIJÃO)
-Gere variações das mesmas refeições. PROIBIDO Arroz e Feijão no Almoço e Jantar aqui.
-Para cada uma das ${d.refeicoes} refeições, liste APENAS:
-- [Nome do Alimento] ([Quantidade]g)
-- [Nome do Alimento] ([Quantidade]g)
-SUGESTÃO DE PREPARO DE CADA REFEIÇÃO: [Escreva aqui como combinar os itens de forma resumida].
-
-
-RESUMO DE MACROS (OPÇÕES B)
-Proteína Total: ~${info.totalProt}g | Carboidrato Total: ~${info.totalCarbo}g | Gordura Total: ~${info.totalGord}g
-
-CONFERÊNCIA MATEMÁTICA OBRIGATÓRIA: Antes de finalizar, some mentalmente os macros de cada porção sugerida. Se o Arroz e o Pão somados já passam de 100g de Carboidrato, não diga que o total é 118g. AJUSTE AS GRAMAGENS (ex: diminua o arroz ou aumente a carne) para que a soma real dos alimentos listados seja VERDADEIRA em relação ao resumo final. CASO NÃO ESTEJA SENDO POSSIVEL FAZER A SOMA COM OS ALIMENTOS SELECIONADOS. COLOQUE UMA MENSAGEM PARA A PESSOA. EX: SE A PROTEINA ESTIVER LONGE AINDA, COLOQUE UMA MENSAGEM AVISANDO SOBRE ISSO, PARA ELA COMER MAIS FONTES DE PROTEINAS, NAO INVENTE NADA, APENAS DIRECIONE A PESSOA SE NAO FOR POSSIVEL ORGANIZAR A DIETA.
-
-ALERTA DE INCONSISTÊNCIA: Se após os ajustes de gramagem o total real de Proteína, Carbo ou Gordura ainda estiver com uma diferença maior que 15% da META DO SISTEMA, adicione uma nota em negrito antes do Resumo de Macros: '⚠️ NOTA: Com os alimentos selecionados, não foi possível atingir sua meta exata de [Nutriente]. Sugerimos selecionar mais opções de [Sugestão de Categoria] para um plano mais equilibrado'.
-
----
-
+MENSAGEM DE AJUSTE: ${info.totalProt > 160 ? "Se os alimentos selecionados não tiverem proteína suficiente (ex: faltou carne/ovo), avise ao usuário para selecionar mais fontes proteicas.
 ITENS COMPLEMENTARES:
 1. HIDRATAÇÃO: Informe a recomendação de ${(parseFloat(d.peso) * 0.035).toFixed(1)}L de água por dia.
 2. DATA: ${new Date().toLocaleString()}.
