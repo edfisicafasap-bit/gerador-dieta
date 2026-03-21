@@ -403,24 +403,31 @@ REGRAS DE OURO:
 PLANEJAMENTO ALIMENTAR ESTRUTURADO
 
 BLOCO 1: OPÇÕES A (PADRÃO)
-Nesta seção, gere as ${d.refeicoes} refeições seguindo os nomes definidos nas "DIRETRIZES SUPREMAS". Priorize arroz e feijão no almoço e jantar.
-Para cada uma das ${d.refeicoes} refeições, liste:
-- Ingredientes (com quantidades)
+Priorize arroz e feijão no almoço e jantar.
+Para cada refeição, liste os ingredientes seguindo este formato EXATO:
+- Nome do Alimento (Quantidade em gramas) - [Macros Individuais: P: Xg, C: Xg, G: Xg]
 
 RESUMO DE MACROS (OPÇÕES A)
-Proteinas Totais: [Soma Real dos alimentos listados acima]g | Carboidratos Totais: [Soma Real dos alimentos listados acima]g | Gorduras Totais: [Soma Real dos alimentos listados acima]g
+(Some os valores exatos listados acima e apresente o total):
+- Proteína Total: [Soma]g | Carboidratos Totais: [Soma]g | Gorduras Totais: [Soma]g
+
+---
 
 BLOCO 2: OPÇÕES B (VARIAÇÃO)
-Nesta seção, gere as mesmas ${d.refeicoes} refeições com macros equivalentes ao Bloco 1. No almoço e jantar, é proibido o uso de arroz e feijão.
-Para cada uma das ${d.refeicoes} refeições, liste:
-- Ingredientes (com quantidades)
+Gere uma variação completa das mesmas refeições. PROIBIDO Arroz e Feijão no Almoço e Jantar aqui. Use outras fontes de carboidrato dos selecionados.
+Para cada refeição, liste os ingredientes seguindo este formato EXATO:
+- Nome do Alimento (Quantidade em gramas) - [Macros Individuais: P: Xg, C: Xg, G: Xg]
 
 RESUMO DE MACROS (OPÇÕES B)
-Proteinas Totais: [Soma Real dos alimentos listados acima]g | Carboidratos Totais: [Soma Real dos alimentos listados acima]g | Gorduras Totais: [Soma Real dos alimentos listados acima]g
+(Some os valores exatos listados acima e apresente o total):
+- Proteína Total: [Soma]g | Carboidratos Totais: [Soma]g | Gorduras Totais: [Soma]g
 
-PROTOCOLO DE VALIDAÇÃO
-Antes de exibir, valide: "A Opção B de almoço/jantar está sem arroz e feijão? Os macros estão equilibrados? O prato parece algo que se come no Brasil? só prossiga caso seja refeições reais,  os macros estão batendo ou proximo as ${d.calorias} kcal ? caso contrário, refaça!"
-IMPORTANTE: Valide internamente, mas não escreva esta validação ou protocolo no resultado final.
+---
+
+PROTOCOLO DE VERIFICAÇÃO TÉCNICA (Obrigatório antes de responder):
+1. Verifique se a Proteína do Arroz, Feijão, Aveia e Pães foi somada ao total de proteínas.
+2. Se a soma das proteínas ultrapassar a meta inicial de ${info.totalProt}g devido aos acompanhamentos vegetais, NÃO reduza a porção de carne/ovo. Mantenha a proteína de alto valor biológico e aceite o excedente.
+3. A prioridade máxima é que a soma dos CARBOHIDRATOS de todas as refeições resulte exatamente em ${info.totalCarbo}g. Ajuste as gramagens dos alimentos para que esse número bata.
 
 ITENS COMPLEMENTARES:
 1. HIDRATAÇÃO: Informe a recomendação de ${(parseFloat(d.peso) * 0.035).toFixed(1)}L de água por dia.
