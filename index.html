@@ -346,35 +346,38 @@
     }
 
     function renderInterface() {
-        const container = document.getElementById('categorias-container');
-        container.innerHTML = '';
-        for (let cat in estruturaAlimentos) {
-            let html = `<div class="categoria-pai">${cat}</div>`;
-            for (let sub in estruturaAlimentos[cat]) {
-                html += `<details><summary>${sub}</summary><div class="grid-alimentos">`;
-                estruturaAlimentos[cat][sub].forEach(item => { 
-    // Mudança: o value agora é apenas ${item}
-    html += `<label class="item-alimento"><input type="checkbox" name="alimento" value="${item}"> ${item}</label>`; 
-});
-                html += `</div></details>`;
-            }
-            container.innerHTML += html;
+    const container = document.getElementById('categorias-container');
+    container.innerHTML = '';
+    for (let cat in estruturaAlimentos) {
+        let html = `<div class="categoria-pai">${cat}</div>`;
+        for (let sub in estruturaAlimentos[cat]) {
+            html += `<details><summary>${sub}</summary><div class="grid-alimentos">`;
+            estruturaAlimentos[cat][sub].forEach(item => { 
+                // CORRETO: O value agora leva a subcategoria para o split(':') funcionar
+                html += `<label class="item-alimento">
+                            <input type="checkbox" name="alimento" value="${sub}: ${item}"> ${item}
+                         </label>`; 
+            });
+            html += `</div></details>`;
         }
-        const pCont = document.getElementById('preparos-unificados-container');
-        pCont.innerHTML = '';
-        preparosUnificados.forEach(p => { pCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-geral" value="${p}"> ${p}</label>`; });
+        container.innerHTML += html;
     }
+    const pCont = document.getElementById('preparos-unificados-container');
+    pCont.innerHTML = '';
+    preparosUnificados.forEach(p => { 
+        pCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-geral" value="${p}"> ${p}</label>`; 
+    });
+}
 
 function prepararInstrucoesPrompt(d) {
-    // Função para limpar TUDO: acentos, espaços extras e deixar minúsculo
     const normalizar = (str) => {
         return str ? str.normalize("NFD")
                      .replace(/[\u0300-\u036f]/g, "")
                      .toLowerCase()
-                     .replace(/[^a-z0-9 ]/g, "") // Remove parênteses e caracteres especiais
+                     .replace(/[^a-z0-9 ]/g, "")
                      .trim() : "";
     };
-    
+
     let matchPreparos = "";
     const caloriasMeta = parseFloat(d.calorias) || 2000;
     const pesoUser = parseFloat(d.peso) || 70;
@@ -383,37 +386,29 @@ function prepararInstrucoesPrompt(d) {
     const totalGord = Math.round(pesoUser * 1);
     const totalCarbo = Math.round((caloriasMeta - (totalProt * 4) - (totalGord * 9)) / 4);
 
-d.alimentos.forEach(item => {
+    d.alimentos.forEach(item => {
         const partes = item.split(':');
-        const categoria = partes[0] ? partes[0].trim().toUpperCase() : "";
+        // subcategoria (ex: Arroz)
+        const subcategoria = partes[0] ? partes[0].trim().toUpperCase() : "";
+        // nome do alimento (ex: Arroz Branco Cozido)
         let nomeRaw = partes[1] ? partes[1].trim() : item.trim();
 
-        // --- FUNÇÃO DE BUSCA INTELIGENTE ---
         const localizarNaTabela = (termo) => {
             const termoNorm = normalizar(termo);
             const chave = Object.keys(TABELA_ALIMENTOS).find(k => normalizar(k) === termoNorm);
             return chave ? TABELA_ALIMENTOS[chave] : null;
         };
 
-        // 💡 O PULO DO GATO: Se for desses grupos, a gente força o nome completo
-        let nomeParaBusca = nomeRaw;
-        
-        if (categoria.includes("ARROZ")) nomeParaBusca = `arroz ${nomeRaw} cozido`;
-        if (categoria.includes("FEIJAO")) nomeParaBusca = `feijao ${nomeRaw} cozido`;
-        if (categoria.includes("MACARRAO")) nomeParaBusca = `macarrao ${nomeRaw} cozido`;
-        if (categoria.includes("FLOCAO")) nomeParaBusca = `flocao de milho ${nomeRaw}`;
+        // Como o 'item' agora já vem completo (ex: "Arroz Branco Cozido"), 
+        // a busca direta pelo nomeRaw deve ser prioridade.
+        let dados = localizarNaTabela(nomeRaw) || localizarNaTabela(item);
 
-        // Tenta buscar: 
-        // 1. Com o prefixo que montamos agora
-        // 2. Só o nome que veio (caso ele já venha completo)
-        // 3. O item inteiro
-        let dados = localizarNaTabela(nomeParaBusca) || 
-                    localizarNaTabela(nomeRaw) || 
-                    localizarNaTabela(item);
-
-        // Fallback para Proteínas (Boi, Frango, etc) se ainda estiver nulo
-        if (!dados && ["BOI", "FRANGO", "PORCO", "PEIXES"].includes(categoria)) {
-             // Aqui entra sua lógica de CONFIG_PREPAROS
+        // Se não achou e for dos grupos básicos, tentamos reconstruir o nome
+        if (!dados) {
+            let nomeTentativa = nomeRaw;
+            if (subcategoria.includes("ARROZ")) nomeTentativa = `arroz ${nomeRaw}`;
+            if (subcategoria.includes("FEIJAO")) nomeTentativa = `feijao ${nomeRaw}`;
+            dados = localizarNaTabela(nomeTentativa);
         }
 
         const p = dados ? (dados.proteina || 0) : 0;
