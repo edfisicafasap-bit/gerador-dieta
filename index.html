@@ -297,12 +297,10 @@
         preparosUnificados.forEach(p => { pCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-geral" value="${p}"> ${p}</label>`; });
     }
 
- function prepararInstrucoesPrompt(d) {
+function prepararInstrucoesPrompt(d) {
     const peso = parseFloat(d.peso);
     const caloriasMeta = parseFloat(d.calorias);
-    
-    // Função interna para remover acentos e deixar em minúsculo
-    const normalizar = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const normalizar = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
     let fatorProt = d.objetivo === 'Emagrecimento' ? 2.0 : (d.objetivo === 'Hipertrofia' ? 1.8 : 1.6);
     const totalProt = Math.round(peso * fatorProt);
@@ -312,31 +310,36 @@
     let matchPreparos = "";
 
     d.alimentos.forEach(item => {
-        // Ex: De "PÃO: FRANCÊS" pegamos "frances"
+        // Separa a categoria do nome (ex: "CARBOIDRATOS: Arroz" -> "Arroz")
         const partes = item.split(':');
-        const subTipoOriginal = partes[1]?.trim() || partes[0]?.trim();
-        const subTipoBusca = normalizar(subTipoOriginal);
+        const nomeAlimentoOriginal = partes[1] ? partes[1].trim() : partes[0].trim();
+        const nomeAlimentoBusca = normalizar(nomeAlimentoOriginal);
 
-        // Busca na TABELA_ALIMENTOS normalizando as chaves também
-        const chaveEncontrada = Object.keys(TABELA_ALIMENTOS).find(chave => {
-            const chaveNormal = normalizar(chave);
-            return chaveNormal.includes(subTipoBusca) || subTipoBusca.includes(chaveNormal);
-        });
+        // 1. TENTA BUSCA EXATA (Prioridade Máxima)
+        let chaveEncontrada = Object.keys(TABELA_ALIMENTOS).find(chave => normalizar(chave) === nomeAlimentoBusca);
+
+        // 2. SE NÃO ACHOU EXATO, TENTA BUSCA PARCIAL (Segunda opção)
+        if (!chaveEncontrada) {
+            chaveEncontrada = Object.keys(TABELA_ALIMENTOS).find(chave => {
+                const chaveNormal = normalizar(chave);
+                return chaveNormal === nomeAlimentoBusca; // Força igualdade
+            });
+        }
 
         const dados = chaveEncontrada ? TABELA_ALIMENTOS[chaveEncontrada] : null;
-
-        // Se dados.p não existir, tenta dados.proteina (ajuste conforme sua tabela-taco.js)
         const p = dados ? (dados.p || dados.proteina || 0) : 0;
         const c = dados ? (dados.c || dados.carbo || 0) : 0;
         const g = dados ? (dados.g || dados.gordura || 0) : 0;
 
-        // Identifica Preparo
-        const chavePreparo = Object.keys(CONFIG_PREPAROS).find(k => normalizar(subTipoOriginal).includes(normalizar(k)));
+        // LÓGICA DE PREPARO: Crucial para o resultado final
+        const chaveConfigPreparo = Object.keys(CONFIG_PREPAROS).find(k => nomeAlimentoBusca.includes(normalizar(k)));
         let infoPreparo = "";
-        if (chavePreparo) {
-            const sugeridos = CONFIG_PREPAROS[chavePreparo].preparos_sugeridos;
-            const escolhido = d.preparos.find(prep => sugeridos.includes(prep)) || sugeridos[0];
-            infoPreparo = `(Preparo: ${escolhido})`;
+        
+        if (chaveConfigPreparo) {
+            const sugeridos = CONFIG_PREPAROS[chaveConfigPreparo].preparos_sugeridos;
+            // Busca se o usuário marcou algum preparo que faz sentido para esse alimento
+            const selecionadoValido = d.preparos.find(pUser => sugeridos.map(s => normalizar(s)).includes(normalizar(pUser)));
+            infoPreparo = `(Preparo: ${selecionadoValido || sugeridos[0]})`;
         }
 
         matchPreparos += `- ${item.toUpperCase()}: ${infoPreparo} | Ref: 100g tem ${p}g Prot, ${c}g Carb, ${g}g Gord.\n`;
