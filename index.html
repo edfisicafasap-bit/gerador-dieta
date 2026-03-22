@@ -352,7 +352,10 @@
             let html = `<div class="categoria-pai">${cat}</div>`;
             for (let sub in estruturaAlimentos[cat]) {
                 html += `<details><summary>${sub}</summary><div class="grid-alimentos">`;
-                estruturaAlimentos[cat][sub].forEach(item => { html += `<label class="item-alimento"><input type="checkbox" name="alimento" value="${sub}: ${item}"> ${item}</label>`; });
+                estruturaAlimentos[cat][sub].forEach(item => { 
+    // Mudança: o value agora é apenas ${item}
+    html += `<label class="item-alimento"><input type="checkbox" name="alimento" value="${item}"> ${item}</label>`; 
+});
                 html += `</div></details>`;
             }
             container.innerHTML += html;
