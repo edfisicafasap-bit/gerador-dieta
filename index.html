@@ -299,31 +299,37 @@
 
 function prepararInstrucoesPrompt(d) {
     const normalizar = (str) => str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() : "";
+    
     let matchPreparos = "";
+    let totalProt = 0;
+    let totalCarbo = 0;
+    let totalGord = 0;
+
+    // Pegamos a meta de calorias do input
+    const caloriasMeta = parseFloat(d.calorias) || 2000;
+    const pesoUser = parseFloat(d.peso) || 70;
+
+    // Cálculo sugerido de macros totais para o nutricionista IA se basear
+    // (Aproximadamente 2g/kg prot, 1g/kg gord, resto carbo)
+    totalProt = Math.round(pesoUser * 2);
+    totalGord = Math.round(pesoUser * 1);
+    totalCarbo = Math.round((caloriasMeta - (totalProt * 4) - (totalGord * 9)) / 4);
 
     d.alimentos.forEach(item => {
-        // Ex: "CARBOIDRATOS: Arroz: Branco" ou "PROTEÍNAS: Boi: Patinho"
+        // Divide o valor do checkbox: "Subcategoria: Nome"
         const partes = item.split(':');
-        const categoria = partes[0] ? partes[0].trim().toUpperCase() : "";
-        const subCategoria = partes[1] ? partes[1].trim().toUpperCase() : "";
-        const nomeAlimento = partes[2] ? partes[2].trim() : (partes[1] ? partes[1].trim() : partes[0].trim());
+        const subCategoria = partes[0] ? partes[0].trim().toUpperCase() : "";
+        const nomeAlimento = partes[1] ? partes[1].trim() : partes[0].trim();
 
         let nomeParaBusca = "";
         let infoPreparoExibicao = "";
 
-        // ============================================================
-        // GRUPO 1: OS COZIDOS (Arroz, Feijão, Macarrão, Cuscuz)
-        // ============================================================
+        // GRUPO 1: OS COZIDOS
         const gruposCozidos = ["ARROZ", "FEIJAO", "MACARRAO", "CUSCUZ"];
-        if (gruposCozidos.includes(subCategoria) || gruposCozidos.includes(categoria)) {
-            // Se for cuscuz, ele monta "Cuscuz De Milho Cozido"
-            // Se for arroz, ele monta "Arroz Branco Cozido"
+        if (gruposCozidos.includes(subCategoria)) {
             nomeParaBusca = `${subCategoria} ${nomeAlimento} Cozido`;
         }
-
-        // ============================================================
-        // GRUPO 2: CARNES (Boi, Frango, Porco, Peixes) + MODO PREPARO
-        // ============================================================
+        // GRUPO 2: CARNES + MODO PREPARO
         else if (["BOI", "FRANGO", "PORCO", "PEIXES"].includes(subCategoria)) {
             const nomeBase = normalizar(nomeAlimento);
             const chaveConfig = Object.keys(CONFIG_PREPAROS).find(k => nomeBase.includes(normalizar(k)));
@@ -334,30 +340,22 @@ function prepararInstrucoesPrompt(d) {
                     sugeridos.map(s => normalizar(s)).includes(normalizar(pUser))
                 );
                 const preparoFinal = selecionado || sugeridos[0];
-                
-                nomeParaBusca = `${nomeAlimento} ${preparoFinal}`; // Ex: "Patinho Grelhado"
+                nomeParaBusca = `${nomeAlimento} ${preparoFinal}`;
                 infoPreparoExibicao = `(Preparo: ${preparoFinal})`;
             } else {
                 nomeParaBusca = nomeAlimento;
             }
         }
-
-        // ============================================================
-        // GRUPO 3 e 4: NOME EXATO / GERAL (Batatas, Frutas, Outros...)
-        // ============================================================
+        // GRUPO 3 e 4: NOME EXATO / GERAL
         else {
-            // Se for Batata Inglesa: Cozida -> busca exatamente "Batata Inglesa Cozida"
-            // Se for Iogurte Natural -> busca exatamente "Iogurte Natural"
-            nomeParaBusca = subCategoria !== categoria ? `${subCategoria} ${nomeAlimento}` : nomeAlimento;
+            // Se for Batata, Mandioca, etc, tenta combinar sub + nome ou só nome
+            nomeParaBusca = subCategoria.length > 3 && !subCategoria.includes("GORDURAS") ? `${subCategoria} ${nomeAlimento}` : nomeAlimento;
         }
 
-        // --- BUSCA FINAL NA TABELA ---
         const buscaFinal = normalizar(nomeParaBusca);
         const chaveEncontrada = Object.keys(TABELA_ALIMENTOS).find(k => normalizar(k) === buscaFinal);
-        
         const dados = chaveEncontrada ? TABELA_ALIMENTOS[chaveEncontrada] : null;
         
-        // Suporte para os dois nomes de chaves (p/proteina, etc)
         const p = dados ? (dados.proteina || dados.p || 0) : 0;
         const c = dados ? (dados.carbo || dados.c || 0) : 0;
         const g = dados ? (dados.gordura || dados.g || 0) : 0;
@@ -365,12 +363,11 @@ function prepararInstrucoesPrompt(d) {
         matchPreparos += `- ${nomeAlimento.toUpperCase()} ${infoPreparoExibicao}: | Ref: 100g tem ${p}g Prot, ${c}g Carb, ${g}g Gord.\n`;
     });
 
-    // ... restante do código (cálculo de metas e return)
-    return { matchPreparos, ... }; 
-}
-
-    return { 
-        totalProt, totalGord, totalCarbo, 
+    // Retorno único e organizado para a função gerarDieta
+    return {
+        totalProt, 
+        totalGord, 
+        totalCarbo, 
         protPorRef: Math.round(totalProt / d.refeicoes),
         carboPorRef: Math.round(totalCarbo / d.refeicoes),
         gordPorRef: Math.round(totalGord / d.refeicoes),
