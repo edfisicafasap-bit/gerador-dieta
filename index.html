@@ -301,18 +301,52 @@ function prepararInstrucoesPrompt(d) {
     const peso = parseFloat(d.peso);
     const caloriasMeta = parseFloat(d.calorias);
     
-    // 1. Mantendo sua lógica de Proteína baseada nos 3 Objetivos
-    let fatorProt;
-    if (d.objetivo === 'Emagrecimento') {
-        fatorProt = 2.0; 
-    } else if (d.objetivo === 'Hipertrofia') {
-        fatorProt = 1.8; 
-    } else {
-        fatorProt = 1.6; 
-    }
-
+    // Cálculos de Macros (Padrão Jean Oliveira Trainer)
+    let fatorProt = d.objetivo === 'Emagrecimento' ? 2.0 : (d.objetivo === 'Hipertrofia' ? 1.8 : 1.6);
     const totalProt = Math.round(peso * fatorProt);
     const totalGord = Math.round(peso * 0.9);
+    const totalCarbo = Math.round((caloriasMeta - ((totalProt * 4) + (totalGord * 9))) / 4);
+    
+    let matchPreparos = "";
+
+    d.alimentos.forEach(item => {
+        // 1. Transforma "ARROZ: INTEGRAL" em "arroz integral"
+        const partes = item.toLowerCase().split(':');
+        const categoria = partes[0]?.trim() || "";
+        const subTipo = partes[1]?.trim() || "";
+        const nomeBuscaSimples = `${categoria} ${subTipo}`.trim();
+
+        // 2. Busca inteligente na TABELA_ALIMENTOS
+        // Tenta achar "arroz integral" dentro de "arroz integral cozido"
+        const chaveEncontrada = Object.keys(TABELA_ALIMENTOS).find(chave => 
+            chave.includes(nomeBuscaSimples) || nomeBuscaSimples.includes(chave)
+        );
+
+        const dados = chaveEncontrada ? TABELA_ALIMENTOS[chaveEncontrada] : null;
+
+        // 3. Mapeia as propriedades da sua tabela (proteina, carbo, gordura)
+        const p = dados ? (dados.proteina || 0) : 0;
+        const c = dados ? (dados.carbo || 0) : 0;
+        const g = dados ? (dados.gordura || 0) : 0;
+
+        // 4. Identifica Preparo
+        const chavePreparo = Object.keys(CONFIG_PREPAROS).find(k => nomeBuscaSimples.includes(k.toLowerCase()));
+        let infoPreparo = "";
+        if (chavePreparo) {
+            const sugeridos = CONFIG_PREPAROS[chavePreparo].preparos_sugeridos;
+            const escolhido = d.preparos.find(p => sugeridos.includes(p)) || sugeridos[0];
+            infoPreparo = `(Preparo: ${escolhido})`;
+        }
+
+        matchPreparos += `- ${item.toUpperCase()}: ${infoPreparo} | Ref: 100g tem ${p}g Prot, ${c}g Carb, ${g}g Gord.\n`;
+    });
+
+    return { 
+        totalProt, totalGord, totalCarbo, 
+        matchPreparos, 
+        alvoCaloricoRef: Math.round(caloriasMeta / d.refeicoes)
+    };
+}
 
     // 2. LÓGICA DE OURO: Cálculo do Carboidrato Restante (O Java calcula, a IA não inventa)
     const calProtGord = (totalProt * 4) + (totalGord * 9);
