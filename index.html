@@ -298,52 +298,76 @@
     }
 
 function prepararInstrucoesPrompt(d) {
-    const peso = parseFloat(d.peso);
-    const caloriasMeta = parseFloat(d.calorias);
-    const normalizar = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-
-    let fatorProt = d.objetivo === 'Emagrecimento' ? 2.0 : (d.objetivo === 'Hipertrofia' ? 1.8 : 1.6);
-    const totalProt = Math.round(peso * fatorProt);
-    const totalGord = Math.round(peso * 0.9);
-    const totalCarbo = Math.round((caloriasMeta - ((totalProt * 4) + (totalGord * 9))) / 4);
-    
+    const normalizar = (str) => str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() : "";
     let matchPreparos = "";
 
     d.alimentos.forEach(item => {
-        // Separa a categoria do nome (ex: "CARBOIDRATOS: Arroz" -> "Arroz")
+        // Ex: "CARBOIDRATOS: Arroz: Branco" ou "PROTEÍNAS: Boi: Patinho"
         const partes = item.split(':');
-        const nomeAlimentoOriginal = partes[1] ? partes[1].trim() : partes[0].trim();
-        const nomeAlimentoBusca = normalizar(nomeAlimentoOriginal);
+        const categoria = partes[0] ? partes[0].trim().toUpperCase() : "";
+        const subCategoria = partes[1] ? partes[1].trim().toUpperCase() : "";
+        const nomeAlimento = partes[2] ? partes[2].trim() : (partes[1] ? partes[1].trim() : partes[0].trim());
 
-        // 1. TENTA BUSCA EXATA (Prioridade Máxima)
-        let chaveEncontrada = Object.keys(TABELA_ALIMENTOS).find(chave => normalizar(chave) === nomeAlimentoBusca);
+        let nomeParaBusca = "";
+        let infoPreparoExibicao = "";
 
-        // 2. SE NÃO ACHOU EXATO, TENTA BUSCA PARCIAL (Segunda opção)
-        if (!chaveEncontrada) {
-            chaveEncontrada = Object.keys(TABELA_ALIMENTOS).find(chave => {
-                const chaveNormal = normalizar(chave);
-                return chaveNormal === nomeAlimentoBusca; // Força igualdade
-            });
+        // ============================================================
+        // GRUPO 1: OS COZIDOS (Arroz, Feijão, Macarrão, Cuscuz)
+        // ============================================================
+        const gruposCozidos = ["ARROZ", "FEIJAO", "MACARRAO", "CUSCUZ"];
+        if (gruposCozidos.includes(subCategoria) || gruposCozidos.includes(categoria)) {
+            // Se for cuscuz, ele monta "Cuscuz De Milho Cozido"
+            // Se for arroz, ele monta "Arroz Branco Cozido"
+            nomeParaBusca = `${subCategoria} ${nomeAlimento} Cozido`;
         }
 
-        const dados = chaveEncontrada ? TABELA_ALIMENTOS[chaveEncontrada] : null;
-        const p = dados ? (dados.p || dados.proteina || 0) : 0;
-        const c = dados ? (dados.c || dados.carbo || 0) : 0;
-        const g = dados ? (dados.g || dados.gordura || 0) : 0;
+        // ============================================================
+        // GRUPO 2: CARNES (Boi, Frango, Porco, Peixes) + MODO PREPARO
+        // ============================================================
+        else if (["BOI", "FRANGO", "PORCO", "PEIXES"].includes(subCategoria)) {
+            const nomeBase = normalizar(nomeAlimento);
+            const chaveConfig = Object.keys(CONFIG_PREPAROS).find(k => nomeBase.includes(normalizar(k)));
+            
+            if (chaveConfig) {
+                const sugeridos = CONFIG_PREPAROS[chaveConfig].preparos_sugeridos;
+                const selecionado = d.preparos.find(pUser => 
+                    sugeridos.map(s => normalizar(s)).includes(normalizar(pUser))
+                );
+                const preparoFinal = selecionado || sugeridos[0];
+                
+                nomeParaBusca = `${nomeAlimento} ${preparoFinal}`; // Ex: "Patinho Grelhado"
+                infoPreparoExibicao = `(Preparo: ${preparoFinal})`;
+            } else {
+                nomeParaBusca = nomeAlimento;
+            }
+        }
 
-        // LÓGICA DE PREPARO: Crucial para o resultado final
-        const chaveConfigPreparo = Object.keys(CONFIG_PREPAROS).find(k => nomeAlimentoBusca.includes(normalizar(k)));
-        let infoPreparo = "";
+        // ============================================================
+        // GRUPO 3 e 4: NOME EXATO / GERAL (Batatas, Frutas, Outros...)
+        // ============================================================
+        else {
+            // Se for Batata Inglesa: Cozida -> busca exatamente "Batata Inglesa Cozida"
+            // Se for Iogurte Natural -> busca exatamente "Iogurte Natural"
+            nomeParaBusca = subCategoria !== categoria ? `${subCategoria} ${nomeAlimento}` : nomeAlimento;
+        }
+
+        // --- BUSCA FINAL NA TABELA ---
+        const buscaFinal = normalizar(nomeParaBusca);
+        const chaveEncontrada = Object.keys(TABELA_ALIMENTOS).find(k => normalizar(k) === buscaFinal);
         
-        if (chaveConfigPreparo) {
-            const sugeridos = CONFIG_PREPAROS[chaveConfigPreparo].preparos_sugeridos;
-            // Busca se o usuário marcou algum preparo que faz sentido para esse alimento
-            const selecionadoValido = d.preparos.find(pUser => sugeridos.map(s => normalizar(s)).includes(normalizar(pUser)));
-            infoPreparo = `(Preparo: ${selecionadoValido || sugeridos[0]})`;
-        }
+        const dados = chaveEncontrada ? TABELA_ALIMENTOS[chaveEncontrada] : null;
+        
+        // Suporte para os dois nomes de chaves (p/proteina, etc)
+        const p = dados ? (dados.proteina || dados.p || 0) : 0;
+        const c = dados ? (dados.carbo || dados.c || 0) : 0;
+        const g = dados ? (dados.gordura || dados.g || 0) : 0;
 
-        matchPreparos += `- ${item.toUpperCase()}: ${infoPreparo} | Ref: 100g tem ${p}g Prot, ${c}g Carb, ${g}g Gord.\n`;
+        matchPreparos += `- ${nomeAlimento.toUpperCase()} ${infoPreparoExibicao}: | Ref: 100g tem ${p}g Prot, ${c}g Carb, ${g}g Gord.\n`;
     });
+
+    // ... restante do código (cálculo de metas e return)
+    return { matchPreparos, ... }; 
+}
 
     return { 
         totalProt, totalGord, totalCarbo, 
@@ -354,7 +378,6 @@ function prepararInstrucoesPrompt(d) {
         alvoCaloricoRef: Math.round(caloriasMeta / d.refeicoes)
     };
 }
-
     async function gerarDieta(d, pagoConfirmado = false) {
         const status = document.getElementById('status-topo');
         const info = prepararInstrucoesPrompt(d);
@@ -495,3 +518,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "ESTE PLANO ALIMENTAR FOI GERADO COM BASE EM ESTI
 </script>
 </body>
 </html>
+
+
+
+
