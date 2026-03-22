@@ -379,9 +379,9 @@ d.alimentos.forEach(item => {
         const interval = setInterval(() => { if (msgIndex < mensagens.length) { status.innerText = mensagens[msgIndex]; msgIndex++; } }, 1800);
 
     const promptFinal = `
-Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTICA dos macros UTILIZANDO AS INFORMAÇÕES PRESCRITAS. Você deve montar refeições para bater as metas diarias com VALORES APROXIMADOS DA META.
+Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTICA dos macros UTILIZANDO AS INFORMAÇÕES PRESCRITAS. Você deve montar refeições para bater as metas diarias com VALORES APROXIMADOS DA META. CRIE REFEIÇÕES REAIS DA CULINÁRIA BRASILEIRA. Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou."
 
-REGRAS DE FORMATAÇÃO: Responda apenas em TEXTO PLANO (Plain Text). É PROIBIDO o uso de qualquer sintaxe Markdown, como asteriscos ( ou ), cerquilhas (#) ou sublinhados (_). Use apenas letras maiúsculas para títulos e hífens (-) para listas."
+REGRAS DE FORMATAÇÃO: Responda apenas em TEXTO PLANO (Plain Text). É PROIBIDO o uso de qualquer sintaxe Markdown.
 
 OBJETIVO DO PLANO: ${d.calorias} kcal para ${d.objetivo}.
 METAS TÉCNICAS TOTAIS: P: ${info.totalProt}g | C: ${info.totalCarbo}g | G: ${info.totalGord}g.
@@ -393,7 +393,14 @@ ${info.matchPreparos}
 REGRAS DE OURO (NÃO IGNORE):
 1. AJUSTE DE PORÇÃO: Se para bater ${info.totalProt}g de proteína você precisar sugerir 260g de frango, FAÇA ISSO. Não fique preso a porções de 100g ou 150g.
 2. SOMA VERDADEIRA: O resumo no final deve ser a soma REAL das gramagens que você escreveu. Não repita apenas os números que eu te enviei se a comida que você listou não somar aquilo.
-3. GAVETAS: Café/Lanches (Pães, Frutas, Ovos, Iogurte, Whey). Almoço/Jantar (Carbo + Proteína + Legume).
+
+REGRAS POR HORÁRIO
+CAFÉ DA MANHÃ: Transformar em: Bowl, Shake, Vitamina, Sanduíche ou Omelete. 
+LANCHES, DESJEJUM E CAFÉ DA TARDE: Foco em portabilidade e simplicidade.
+ALMOÇO/JANTAR: Estrutura [Base de Carboidrato] + [Proteína] + [Legumes] e [Salada à vontade]
+Jantar pode ser mais leve, mas deve manter a estrutura de refeição completa.
+CEIA: REFEIÇÕES SUPER LEVES, COMO UMA FRUTA, OU FRUTA + WHEY, OU IOGURTE...
+REGRA IMPORTANTE: INCLUIR AO MENOS UMA FONTE DE PROTEINA EM TODAS AS REFEIÇÕES.
 
 REGRAS DE OURO DE DISTRIBUIÇÃO PROTEICA:
 1. NÃO SE LIMITE A 150G: Se a meta de ${info.totalProt}g for alta, não tenha medo de subir as porções, mas faça de forma inteligente.
