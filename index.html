@@ -297,53 +297,55 @@
         preparosUnificados.forEach(p => { pCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-geral" value="${p}"> ${p}</label>`; });
     }
 
-    function prepararInstrucoesPrompt(d) {
-        const peso = parseFloat(d.peso);
-        const caloriasMeta = parseFloat(d.calorias);
-        
-        let fatorProt = d.objetivo === 'Emagrecimento' ? 2.0 : (d.objetivo === 'Hipertrofia' ? 1.8 : 1.6);
-        const totalProt = Math.round(peso * fatorProt);
-        const totalGord = Math.round(peso * 0.9);
-        const totalCarbo = Math.round((caloriasMeta - ((totalProt * 4) + (totalGord * 9))) / 4);
-        
-        let matchPreparos = "";
+   function prepararInstrucoesPrompt(d) {
+    const peso = parseFloat(d.peso);
+    const caloriasMeta = parseFloat(d.calorias);
+    
+    let fatorProt = d.objetivo === 'Emagrecimento' ? 2.0 : (d.objetivo === 'Hipertrofia' ? 1.8 : 1.6);
+    const totalProt = Math.round(peso * fatorProt);
+    const totalGord = Math.round(peso * 0.9);
+    const totalCarbo = Math.round((caloriasMeta - ((totalProt * 4) + (totalGord * 9))) / 4);
+    
+    let matchPreparos = "";
 
-        d.alimentos.forEach(item => {
-            const partes = item.toLowerCase().split(':');
-            const categoria = partes[0]?.trim() || "";
-            const subTipo = partes[1]?.trim() || "";
-            const nomeBuscaSimples = `${categoria} ${subTipo}`.trim();
+    d.alimentos.forEach(item => {
+        // Ex: transforma "FRANGO: FILÉ DE PEITO" em "filé de peito"
+        const partes = item.toLowerCase().split(':');
+        const subTipo = partes[1]?.trim() || partes[0]?.trim();
 
-            const chaveEncontrada = Object.keys(TABELA_ALIMENTOS).find(chave => 
-                chave.includes(nomeBuscaSimples) || nomeBuscaSimples.includes(chave)
-            );
+        // BUSCA MELHORADA: Procura qualquer chave na TABELA que contenha o nome (ex: "filé de peito")
+        const chaveEncontrada = Object.keys(TABELA_ALIMENTOS).find(chave => 
+            chave.toLowerCase().includes(subTipo) || subTipo.includes(chave.toLowerCase())
+        );
 
-            const dados = chaveEncontrada ? TABELA_ALIMENTOS[chaveEncontrada] : null;
+        const dados = chaveEncontrada ? TABELA_ALIMENTOS[chaveEncontrada] : null;
 
-            const p = dados ? (dados.proteina || 0) : 0;
-            const c = dados ? (dados.carbo || 0) : 0;
-            const g = dados ? (dados.gordura || 0) : 0;
+        // Pega os valores (proteina, carbo, gordura) ou 0 se não achar
+        const p = dados ? (dados.proteina || 0) : 0;
+        const c = dados ? (dados.carbo || 0) : 0;
+        const g = dados ? (dados.gordura || 0) : 0;
 
-            const chavePreparo = Object.keys(CONFIG_PREPAROS).find(k => nomeBuscaSimples.includes(k.toLowerCase()));
-            let infoPreparo = "";
-            if (chavePreparo) {
-                const sugeridos = CONFIG_PREPAROS[chavePreparo].preparos_sugeridos;
-                const escolhido = d.preparos.find(prep => sugeridos.includes(prep)) || sugeridos[0];
-                infoPreparo = `(Preparo: ${escolhido})`;
-            }
+        // Lógica do Preparo (continua igual)
+        const chavePreparo = Object.keys(CONFIG_PREPAROS).find(k => subTipo.includes(k.toLowerCase()));
+        let infoPreparo = "";
+        if (chavePreparo) {
+            const sugeridos = CONFIG_PREPAROS[chavePreparo].preparos_sugeridos;
+            const escolhido = d.preparos.find(prep => sugeridos.includes(prep)) || sugeridos[0];
+            infoPreparo = `(Preparo: ${escolhido})`;
+        }
 
-            matchPreparos += `- ${item.toUpperCase()}: ${infoPreparo} | Ref: 100g tem ${p}g Prot, ${c}g Carb, ${g}g Gord.\n`;
-        });
+        matchPreparos += `- ${item.toUpperCase()}: ${infoPreparo} | Ref: 100g tem ${p}g Prot, ${c}g Carb, ${g}g Gord.\n`;
+    });
 
-        return { 
-            totalProt, totalGord, totalCarbo, 
-            protPorRef: Math.round(totalProt / d.refeicoes),
-            carboPorRef: Math.round(totalCarbo / d.refeicoes),
-            gordPorRef: Math.round(totalGord / d.refeicoes),
-            matchPreparos, 
-            alvoCaloricoRef: Math.round(caloriasMeta / d.refeicoes)
-        };
-    }
+    return { 
+        totalProt, totalGord, totalCarbo, 
+        protPorRef: Math.round(totalProt / d.refeicoes),
+        carboPorRef: Math.round(totalCarbo / d.refeicoes),
+        gordPorRef: Math.round(totalGord / d.refeicoes),
+        matchPreparos, 
+        alvoCaloricoRef: Math.round(caloriasMeta / d.refeicoes)
+    };
+}
 
     async function gerarDieta(d, pagoConfirmado = false) {
         const status = document.getElementById('status-topo');
