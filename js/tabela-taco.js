@@ -2,37 +2,29 @@ const TABELA_ALIMENTOS = {
   // =====================
   // 🍚 CARBOIDRATOS
   // =====================
-  "arroz branco": { proteina: 2.7, gordura: 0.3, carbo: 28 },
   "arroz branco cozido": { proteina: 2.7, gordura: 0.3, carbo: 28 },
-  "arroz integral": { proteina: 2.5, gordura: 0.8, carbo: 23 },
   "arroz integral cozido": { proteina: 2.5, gordura: 0.8, carbo: 23 },
   "arroz parboilizado cozido": { proteina: 2.6, gordura: 0.3, carbo: 28 },
   "arroz jasmine cozido": { proteina: 2.7, gordura: 0.3, carbo: 28 },
   "arroz basmati cozido": { proteina: 2.6, gordura: 0.3, carbo: 28 },
   "arroz 7 graos cozido": { proteina: 3.0, gordura: 1.0, carbo: 22 },
 
-  "feijao carioca": { proteina: 5.0, gordura: 0.5, carbo: 14 },
   "feijao carioca cozido": { proteina: 5.0, gordura: 0.5, carbo: 14 },
-  "feijao preto": { proteina: 4.5, gordura: 0.5, carbo: 13 },
   "feijao preto cozido": { proteina: 4.5, gordura: 0.5, carbo: 13 },
   "feijao branco cozido": { proteina: 4.8, gordura: 0.5, carbo: 14 },
   "feijao fradinho cozido": { proteina: 5.0, gordura: 0.5, carbo: 13 },
   "feijao vermelho cozido": { proteina: 4.7, gordura: 0.5, carbo: 14 },
 
-  "macarrao comum (semola)": { proteina: 5.0, gordura: 1.0, carbo: 25 },
+  "macarrao comum (semola) cozido": { proteina: 5.0, gordura: 1.0, carbo: 25 },
   "macarrao comum cozido": { proteina: 5.0, gordura: 1.0, carbo: 25 },
-  "macarrao integral": { proteina: 6.0, gordura: 1.2, carbo: 23 },
   "macarrao integral cozido": { proteina: 6.0, gordura: 1.2, carbo: 23 },
-  "macarrao de arroz": { proteina: 4.0, gordura: 0.5, carbo: 28 },
   "macarrao arroz cozido": { proteina: 4.0, gordura: 0.5, carbo: 28 },
-  "macarrao sem gluten": { proteina: 5.0, gordura: 1.0, carbo: 24 },
   "macarrao sem gluten cozido": { proteina: 5.0, gordura: 1.0, carbo: 24 },
 
-  "cuscuz de milho": { proteina: 3.0, gordura: 0.5, carbo: 27 },
   "cuscuz milho cozido": { proteina: 3.0, gordura: 0.5, carbo: 27 },
-  "cuscuz nordestino": { proteina: 3.0, gordura: 0.5, carbo: 28 },
-  "cuscuz marroquino": { proteina: 3.5, gordura: 0.3, carbo: 23 },
-  "cuscuz integral": { proteina: 4.0, gordura: 0.8, carbo: 22 },
+  "cuscuz nordestino cozido": { proteina: 3.0, gordura: 0.5, carbo: 28 },
+  "cuscuz marroquino cozido": { proteina: 3.5, gordura: 0.3, carbo: 23 },
+  "cuscuz integral cozido": { proteina: 4.0, gordura: 0.8, carbo: 22 },
 
   "batata inglesa cozida": { proteina: 2.0, gordura: 0.1, carbo: 17 },
   "batata inglesa assada": { proteina: 2.5, gordura: 0.1, carbo: 21 },
