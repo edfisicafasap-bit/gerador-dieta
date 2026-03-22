@@ -2,41 +2,72 @@ const TABELA_ALIMENTOS = {
   // =====================
   // 🍚 CARBOIDRATOS
   // =====================
+  "arroz branco": { proteina: 2.7, gordura: 0.3, carbo: 28 },
   "arroz branco cozido": { proteina: 2.7, gordura: 0.3, carbo: 28 },
+  "arroz integral": { proteina: 2.5, gordura: 0.8, carbo: 23 },
   "arroz integral cozido": { proteina: 2.5, gordura: 0.8, carbo: 23 },
   "arroz parboilizado cozido": { proteina: 2.6, gordura: 0.3, carbo: 28 },
   "arroz jasmine cozido": { proteina: 2.7, gordura: 0.3, carbo: 28 },
   "arroz basmati cozido": { proteina: 2.6, gordura: 0.3, carbo: 28 },
   "arroz 7 graos cozido": { proteina: 3.0, gordura: 1.0, carbo: 22 },
 
+  "feijao carioca": { proteina: 5.0, gordura: 0.5, carbo: 14 },
   "feijao carioca cozido": { proteina: 5.0, gordura: 0.5, carbo: 14 },
+  "feijao preto": { proteina: 4.5, gordura: 0.5, carbo: 13 },
   "feijao preto cozido": { proteina: 4.5, gordura: 0.5, carbo: 13 },
   "feijao branco cozido": { proteina: 4.8, gordura: 0.5, carbo: 14 },
   "feijao fradinho cozido": { proteina: 5.0, gordura: 0.5, carbo: 13 },
   "feijao vermelho cozido": { proteina: 4.7, gordura: 0.5, carbo: 14 },
 
+  "macarrao comum (semola)": { proteina: 5.0, gordura: 1.0, carbo: 25 },
   "macarrao comum cozido": { proteina: 5.0, gordura: 1.0, carbo: 25 },
+  "macarrao integral": { proteina: 6.0, gordura: 1.2, carbo: 23 },
   "macarrao integral cozido": { proteina: 6.0, gordura: 1.2, carbo: 23 },
+  "macarrao de arroz": { proteina: 4.0, gordura: 0.5, carbo: 28 },
   "macarrao arroz cozido": { proteina: 4.0, gordura: 0.5, carbo: 28 },
+  "macarrao sem gluten": { proteina: 5.0, gordura: 1.0, carbo: 24 },
   "macarrao sem gluten cozido": { proteina: 5.0, gordura: 1.0, carbo: 24 },
 
+  "cuscuz de milho": { proteina: 3.0, gordura: 0.5, carbo: 27 },
   "cuscuz milho cozido": { proteina: 3.0, gordura: 0.5, carbo: 27 },
-  "cuscuz nordestino cozido": { proteina: 3.0, gordura: 0.5, carbo: 28 },
-  "cuscuz marroquino cozido": { proteina: 3.5, gordura: 0.3, carbo: 23 },
-  "cuscuz integral cozido": { proteina: 4.0, gordura: 0.8, carbo: 22 },
+  "cuscuz nordestino": { proteina: 3.0, gordura: 0.5, carbo: 28 },
+  "cuscuz marroquino": { proteina: 3.5, gordura: 0.3, carbo: 23 },
+  "cuscuz integral": { proteina: 4.0, gordura: 0.8, carbo: 22 },
 
   "batata inglesa cozida": { proteina: 2.0, gordura: 0.1, carbo: 17 },
-  "batata doce cozida": { proteina: 1.6, gordura: 0.1, carbo: 20 },
+  "batata inglesa assada": { proteina: 2.5, gordura: 0.1, carbo: 21 },
+  "batata inglesa pure": { proteina: 2.0, gordura: 4.0, carbo: 15 },
+  "batata inglesa saute": { proteina: 2.0, gordura: 5.0, carbo: 17 },
+  "batata inglesa rustica forno/airfryer": { proteina: 2.5, gordura: 1.0, carbo: 21 },
+  "batata inglesa chips forno/airfryer": { proteina: 3.0, gordura: 2.0, carbo: 30 },
+  "batata inglesa frita na airfryer": { proteina: 2.5, gordura: 2.0, carbo: 25 },
+
+  "batata doces cozida": { proteina: 1.6, gordura: 0.1, carbo: 20 },
+  "batata doces assada": { proteina: 2.0, gordura: 0.1, carbo: 25 },
+  "batata doces pure": { proteina: 1.8, gordura: 3.0, carbo: 18 },
+  "batata doces saute": { proteina: 1.8, gordura: 4.0, carbo: 20 },
+  "batata doces rustica forno/airfryer": { proteina: 2.0, gordura: 1.0, carbo: 25 },
+  "batata doces frita na airfryer": { proteina: 2.0, gordura: 2.0, carbo: 28 },
+
   "mandioca cozida": { proteina: 1.4, gordura: 0.3, carbo: 38 },
+  "mandioca assada": { proteina: 1.5, gordura: 0.3, carbo: 40 },
+  "mandioca pure": { proteina: 1.5, gordura: 4.0, carbo: 35 },
+  "mandioca saute": { proteina: 1.5, gordura: 5.0, carbo: 38 },
+  "mandioca rustica forno/airfryer": { proteina: 1.5, gordura: 1.0, carbo: 40 },
+  "mandioca frita na airfryer": { proteina: 1.5, gordura: 2.0, carbo: 42 },
 
   "pao frances": { proteina: 9.0, gordura: 1.0, carbo: 50 },
-  "pao integral": { proteina: 9.0, gordura: 3.0, carbo: 45 },
   "pao forma branco": { proteina: 7.5, gordura: 3.0, carbo: 50 },
+  "pao forma integral": { proteina: 9.0, gordura: 3.5, carbo: 43 },
+  "pao integral com graos": { proteina: 10, gordura: 5.0, carbo: 40 },
+  "pao sirio": { proteina: 9.0, gordura: 1.0, carbo: 55 },
+  "pao de aveia": { proteina: 10, gordura: 4.0, carbo: 45 },
 
   "tapioca tradicional": { proteina: 0.5, gordura: 0, carbo: 28 },
+  "tapioca hidratada": { proteina: 0.5, gordura: 0, carbo: 28 },
   "tapioca integral": { proteina: 1.5, gordura: 0.2, carbo: 27 },
 
-  "aveia flocos finos": { proteina: 13, gordura: 7, carbo: 59 },
+  "aveia em flocos finos": { proteina: 13, gordura: 7, carbo: 59 },
   "aveia em flocos": { proteina: 13, gordura: 7, carbo: 60 },
   "aveia farinha": { proteina: 13, gordura: 7, carbo: 60 },
   "aveia farelo": { proteina: 17, gordura: 7, carbo: 66 },
@@ -47,10 +78,13 @@ const TABELA_ALIMENTOS = {
   // =====================
   // 🍗 PROTEÍNAS
   // =====================
+  "file de peito": { proteina: 31, gordura: 3.6, carbo: 0 },
   "peito de frango grelhado": { proteina: 31, gordura: 3.6, carbo: 0 },
+  "coxa e sobrecoxa (sem pele)": { proteina: 28, gordura: 4.0, carbo: 0 },
   "coxa sobrecoxa frango sem pele": { proteina: 28, gordura: 4.0, carbo: 0 },
 
   "patinho moido": { proteina: 28, gordura: 6, carbo: 0 },
+  "patinho": { proteina: 28, gordura: 6, carbo: 0 },
   "coxao mole": { proteina: 27, gordura: 5.5, carbo: 0 },
   "coxao duro": { proteina: 28, gordura: 5, carbo: 0 },
   "lagarto": { proteina: 29, gordura: 4, carbo: 0 },
@@ -60,26 +94,33 @@ const TABELA_ALIMENTOS = {
   "lombo suino": { proteina: 25, gordura: 3.5, carbo: 0 },
   "file mignon suino": { proteina: 26, gordura: 4, carbo: 0 },
 
+  "ovos mexidos": { proteina: 13, gordura: 10, carbo: 1 },
   "ovo mexido": { proteina: 13, gordura: 10, carbo: 1 },
+  "ovos cozidos": { proteina: 13, gordura: 10, carbo: 1 },
   "ovo cozido": { proteina: 13, gordura: 10, carbo: 1 },
+  "ovos omelete": { proteina: 13, gordura: 10, carbo: 1 },
   "omelete": { proteina: 13, gordura: 10, carbo: 1 },
+  "ovos poche": { proteina: 13, gordura: 10, carbo: 1 },
   "ovo poche": { proteina: 13, gordura: 10, carbo: 1 },
+  "ovos frito na agua": { proteina: 13, gordura: 10, carbo: 1 },
   "ovo frito agua": { proteina: 13, gordura: 10, carbo: 1 },
-  "ovo frito azeite": { proteina: 13, gordura: 11, carbo: 1 },
+  "ovos frito com azeite": { proteina: 13, gordura: 15, carbo: 1 },
+  "ovo frito azeite": { proteina: 13, gordura: 15, carbo: 1 },
 
   // =====================
   // 🐟 PEIXES
   // =====================
-  "filé de tilapia": { proteina: 26, gordura: 2, carbo: 0 },
-  "filé de merluza": { proteina: 24, gordura: 1, carbo: 0 },
-  "filé de linguado": { proteina: 22, gordura: 1, carbo: 0 },
-  "filé de atum fresco": { proteina: 23, gordura: 1, carbo: 0 },
+  "file de tilapia": { proteina: 26, gordura: 2, carbo: 0 },
+  "file de merluza": { proteina: 24, gordura: 1, carbo: 0 },
+  "file de linguado": { proteina: 22, gordura: 1, carbo: 0 },
+  "file de atum fresco": { proteina: 23, gordura: 1, carbo: 0 },
 
   // =====================
   // 🥑 GORDURAS
   // =====================
   "azeite de oliva extra virgem": { proteina: 0, gordura: 100, carbo: 0 },
   "abacate": { proteina: 2, gordura: 15, carbo: 9 },
+  "castanha-do-para": { proteina: 14, gordura: 66, carbo: 12 },
   "castanha do para": { proteina: 14, gordura: 66, carbo: 12 },
   "castanha de caju": { proteina: 18, gordura: 46, carbo: 30 },
   "amendoim": { proteina: 26, gordura: 49, carbo: 16 },
@@ -90,20 +131,22 @@ const TABELA_ALIMENTOS = {
   // =====================
   // 🥦 LEGUMES
   // =====================
-  "cenoura cozida": { proteina: 0.9, gordura: 0, carbo: 10 },
+  "cenoura": { proteina: 0.9, gordura: 0.1, carbo: 10 },
+  "cenoura cozida": { proteina: 0.9, gordura: 0.1, carbo: 10 },
+  "brocolis": { proteina: 2.8, gordura: 0.4, carbo: 7 },
   "brocolis cozido": { proteina: 2.8, gordura: 0.4, carbo: 7 },
-  "couve-flor cozida": { proteina: 2.0, gordura: 0.3, carbo: 5 },
-  "abobrinha cozida": { proteina: 1.2, gordura: 0.2, carbo: 3 },
-  "abobora cozida": { proteina: 1.1, gordura: 0.1, carbo: 7 },
-  "berinjela cozida": { proteina: 1.0, gordura: 0.2, carbo: 6 },
-  "espinafre cozido": { proteina: 2.9, gordura: 0.4, carbo: 3.6 },
-  "chuchu cozido": { proteina: 0.8, gordura: 0.1, carbo: 4 },
-  "quiabo cozido": { proteina: 1.9, gordura: 0.1, carbo: 7 },
-  "vagem cozida": { proteina: 2.0, gordura: 0.1, carbo: 7 },
-  "pepino cru": { proteina: 0.6, gordura: 0.1, carbo: 3.6 },
-  "beterraba cozida": { proteina: 1.6, gordura: 0.2, carbo: 10 },
-  "pimentao cru": { proteina: 1.0, gordura: 0.1, carbo: 6 },
-  "couve cozida": { proteina: 3.0, gordura: 0.2, carbo: 6 },
+  "couve-flor": { proteina: 2.0, gordura: 0.3, carbo: 5 },
+  "abobrinha": { proteina: 1.2, gordura: 0.2, carbo: 3 },
+  "abobora": { proteina: 1.1, gordura: 0.1, carbo: 7 },
+  "berinjela": { proteina: 1.0, gordura: 0.2, carbo: 6 },
+  "espinafre": { proteina: 2.9, gordura: 0.4, carbo: 3.6 },
+  "chuchu": { proteina: 0.8, gordura: 0.1, carbo: 4 },
+  "quiabo": { proteina: 1.9, gordura: 0.1, carbo: 7 },
+  "vagem": { proteina: 2.0, gordura: 0.1, carbo: 7 },
+  "pepino": { proteina: 0.6, gordura: 0.1, carbo: 3.6 },
+  "beterraba": { proteina: 1.6, gordura: 0.2, carbo: 10 },
+  "pimentao": { proteina: 1.0, gordura: 0.1, carbo: 6 },
+  "couve": { proteina: 3.0, gordura: 0.2, carbo: 6 },
 
   // =====================
   // 🍎 FRUTAS
@@ -143,6 +186,7 @@ const TABELA_ALIMENTOS = {
   "iogurte natural": { proteina: 3.5, gordura: 3.5, carbo: 4 },
   "leite integral": { proteina: 3.3, gordura: 3.5, carbo: 4.8 },
   "leite desnatado": { proteina: 3.4, gordura: 0.1, carbo: 5 },
+  "leite s/lactose": { proteina: 3.3, gordura: 3.5, carbo: 4.8 },
   "leite sem lactose": { proteina: 3.3, gordura: 3.5, carbo: 4.8 },
   "leite de amendoas": { proteina: 0.5, gordura: 2.5, carbo: 0.5 },
   "leite de soja": { proteina: 3.6, gordura: 1.5, carbo: 3.5 },
