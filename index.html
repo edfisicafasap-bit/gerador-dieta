@@ -383,7 +383,7 @@ Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTIC
 
 REGRAS DE FORMATAÇÃO: Responda apenas em TEXTO PLANO (Plain Text). É PROIBIDO o uso de qualquer sintaxe Markdown.
 
-OBJETIVO DO PLANO: ${d.calorias} kcal para ${d.objetivo}.
+O PLANO DEVE TER O TOTAL APROXIMADO DE ${d.calorias} kcal para ${d.objetivo}.
 METAS TÉCNICAS TOTAIS: P: ${info.totalProt}g | C: ${info.totalCarbo}g | G: ${info.totalGord}g.
 METAS POR REFEIÇÃO (ALVO): ~${info.alvoCaloricoRef} kcal | ~${info.protPorRef}g Prot.
 
@@ -391,8 +391,8 @@ LISTA DE ALIMENTOS DISPONÍVEIS E SEUS MACROS (USE PARA ORGANIZAR):
 ${info.matchPreparos}
 
 REGRAS DE OURO (NÃO IGNORE):
-1. AJUSTE DE PORÇÃO: Se para bater ${info.totalProt}g de proteína você precisar sugerir 260g de frango, FAÇA ISSO. Não fique preso a porções de 100g ou 150g.
-2. SOMA VERDADEIRA: O resumo no final deve ser a soma REAL das gramagens que você escreveu. Não repita apenas os números que eu te enviei se a comida que você listou não somar aquilo.
+1. AJUSTE DE PORÇÃO: Se para bater ${info.totalProt}g de proteína você precisar sugerir 260g de frango, FAÇA ISSO. Não fique preso a porções de 100g ou 150g. MAS SE TIVER MUITAS PROTEINAS SELECIONADAS, VARIE ELAS. EX: CAFE DA MANHA COM OVOS E QUEIJO, OU COM OVOS E WHEY... OU SEJA, COLOQUE MAIS DE UMA OPÇÃO DE PROTEINA.
+2. SOMA VERDADEIRA: O resumo no final deve ser a soma REAL das gramagens de acordo com os alimentos, OBRIGATÓRIO POR O NUMERO REAL, NÃO PRECISA INVENTAR PARA BATER A META, CASO NÃO BATA  A META DEIXE SEM BATER ELA, MAS NÃO MINTA NOS NUMEROS. Não repita apenas os números que eu te enviei se a comida que você listou não somar aquilo.
 
 REGRAS POR HORÁRIO
 CAFÉ DA MANHÃ: Transformar em: Bowl, Shake, Vitamina, Sanduíche ou Omelete. 
@@ -402,8 +402,14 @@ Jantar pode ser mais leve, mas deve manter a estrutura de refeição completa.
 CEIA: REFEIÇÕES SUPER LEVES, COMO UMA FRUTA, OU FRUTA + WHEY, OU IOGURTE...
 REGRA IMPORTANTE: INCLUIR AO MENOS UMA FONTE DE PROTEINA EM TODAS AS REFEIÇÕES.
 
+DETERMINAÇÃO DE REFEIÇÕES:
+Voce deve gerar EXATAMENTE ${d.refeicoes} refeicoes.
+- Se ${d.refeicoes} for 4: Use (1. Cafe da Manha, 2. Almoco, 3. Cafe da Tarde, 4. Jantar).
+- Se ${d.refeicoes} for 5: Use (1. Cafe da Manha, 2. Almoco, 3. Cafe da Tarde, 4. Jantar, 5. Ceia).
+- Se ${d.refeicoes} for 6: Use (1. Desjejum, 2. Cafe da Manha, 3. Almoco, 4. Cafe da Tarde, 5. Jantar, 6. Ceia).
+
 REGRAS DE OURO DE DISTRIBUIÇÃO PROTEICA:
-1. NÃO SE LIMITE A 150G: Se a meta de ${info.totalProt}g for alta, não tenha medo de subir as porções, mas faça de forma inteligente.
+1. NÃO SE LIMITE A GRAMATURAS DE PORÇÃO PADRÃO EM: CARBOIDRATOS E PROTEINAS NO ALMOÇO E JANTA,  Se a meta de ${info.totalProt}g E ${info.totalCarbo} for alta, não tenha medo de subir as porções, mas faça de forma inteligente para ficar algo real e possivel de comer.
 2. DIVERSIFIQUE AS FONTES: Para não sobrecarregar apenas o Almoço/Jantar com carnes, AUMENTE a densidade proteica das outras refeições:
    - CAFÉ/LANCHES: Se necessário, use 3 a 4 ovos em vez de 2, ou combine Ovos + Queijo (Ricota/Minas) + Iogurte + Whey na mesma refeição.
    - ALMOÇO/JANTAR: Combine a carne principal com outras fontes (ex: Feijão, Lentilha ou Queijo ralado por cima) para ajudar a bater o total.
@@ -417,7 +423,7 @@ ESTRUTURA DO CARDÁPIO (${d.refeicoes} refeições):
 
 BLOCO 1: OPÇÕES A
    Para cada refeição liste APENAS:
-   - Nome do Alimento (Peso em gramas (ou unidades para pães, banana, maça, etc...)
+   - Nome do Alimento (Peso em gramas (ou unidades para pães, banana, ovos, maça, etc...)
    SUGESTÃO DE PREPARO: (Instruções simples).
 
 ---
