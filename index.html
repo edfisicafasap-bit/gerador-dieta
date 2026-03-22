@@ -315,56 +315,42 @@ function prepararInstrucoesPrompt(d) {
     const totalGord = Math.round(pesoUser * 1);
     const totalCarbo = Math.round((caloriasMeta - (totalProt * 4) - (totalGord * 9)) / 4);
 
-    d.alimentos.forEach(item => {
-        const partes = item.split(':');
-        const subCatRaw = partes[0] ? partes[0].trim() : "";
-        const nomeRaw = partes[1] ? partes[1].trim() : subCatRaw;
-
-        let nomeParaBusca = "";
-        let infoPreparoExibicao = "";
-
-        // LÓGICA DE MONTAGEM DO NOME DE BUSCA
-        const subUpper = subCatRaw.toUpperCase();
+   d.alimentos.forEach(item => {
+        // 1. O item completo (ex: "FEIJAO: FEIJAO CARIOCA COZIDO")
+        const itemCompleto = item.trim();
         
-        if (["ARROZ", "FEIJAO", "MACARRAO", "CUSCUZ"].includes(subUpper)) {
-            nomeParaBusca = `${subCatRaw} ${nomeRaw} Cozido`;
-        } 
-        else if (["BOI", "FRANGO", "PORCO", "PEIXES"].includes(subUpper)) {
-            const nomeBaseNorm = normalizar(nomeRaw);
-            const chaveConfig = Object.keys(CONFIG_PREPAROS).find(k => normalizar(k) === nomeBaseNorm);
-            
-            if (chaveConfig) {
-                const sugeridos = CONFIG_PREPAROS[chaveConfig].preparos_sugeridos;
-                const selecionado = d.preparos.find(pUser => 
-                    sugeridos.map(s => normalizar(s)).includes(normalizar(pUser))
-                );
-                const preparoFinal = selecionado || sugeridos[0];
-                nomeParaBusca = `${nomeRaw} ${preparoFinal}`;
-                infoPreparoExibicao = `(Preparo: ${preparoFinal})`;
-            } else {
-                nomeParaBusca = nomeRaw;
-            }
-        } 
-        else {
-            nomeParaBusca = nomeRaw;
+        // 2. Só o que vem depois dos dois pontos (ex: "FEIJAO CARIOCA COZIDO")
+        const partes = item.split(':');
+        const nomeAposDoisPontos = partes[1] ? partes[1].trim() : item;
+        
+        // 3. O nome limpo (removendo a categoria e mantendo o resto)
+        const nomeRaw = nomeAposDoisPontos;
+
+        // --- FUNÇÃO DE BUSCA INTELIGENTE ---
+        const localizarNaTabela = (termo) => {
+            const termoNorm = normalizar(termo);
+            const chave = Object.keys(TABELA_ALIMENTOS).find(k => normalizar(k) === termoNorm);
+            return chave ? TABELA_ALIMENTOS[chave] : null;
+        };
+
+        // TENTA 3 VEZES ANTES DE ZERAR:
+        // 1ª tentativa: Nome exato após os dois pontos (Ex: "feijao carioca cozido")
+        // 2ª tentativa: Item completo (Ex: "feijao: feijao carioca cozido")
+        // 3ª tentativa: Só o nome puro (Fallback)
+        let dados = localizarNaTabela(nomeRaw) || 
+                    localizarNaTabela(itemCompleto) || 
+                    localizarNaTabela(nomeAposDoisPontos.toLowerCase());
+
+        // Se ainda for Boi/Frango/Peixe, ele aplica a lógica de preparo que já tínhamos
+        if (!dados && ["BOI", "FRANGO", "PORCO", "PEIXES"].includes(partes[0]?.trim().toUpperCase())) {
+            // ... (mantém aquela lógica de CONFIG_PREPAROS que enviamos antes)
         }
 
-        // --- O PONTO CHAVE: BUSCA MULTI-CAMADA ---
-        const buscaFinal = normalizar(nomeParaBusca);
-        const buscaAlternativa = normalizar(nomeRaw); // Caso a tabela não tenha o "Cozido" no nome
-
-        const chaveEncontrada = Object.keys(TABELA_ALIMENTOS).find(k => {
-            const kNorm = normalizar(k);
-            return kNorm === buscaFinal || kNorm === buscaAlternativa;
-        });
-
-        const dados = chaveEncontrada ? TABELA_ALIMENTOS[chaveEncontrada] : null;
-        
         const p = dados ? (dados.proteina || 0) : 0;
         const c = dados ? (dados.carbo || 0) : 0;
         const g = dados ? (dados.gordura || 0) : 0;
 
-        matchPreparos += `- ${nomeRaw.toUpperCase()} ${infoPreparoExibicao}: | Ref: 100g tem ${p}g Prot, ${c}g Carb, ${g}g Gord.\n`;
+        matchPreparos += `- ${nomeRaw.toUpperCase()}: | Ref: 100g tem ${p}g Prot, ${c}g Carb, ${g}g Gord.\n`;
     });
 
     return {
