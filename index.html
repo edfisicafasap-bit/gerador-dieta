@@ -442,125 +442,131 @@ ITENS COMPLEMENTARES:
 
 ACRESCENTE UM RODAPÉ ESCRITO: "ESTE PLANO ALIMENTAR FOI GERADO COM BASE EM ESTIMATIVAS NUTRICIONAIS PADRÃO. Os valores de macros e calorias são aproximados para fins de orientação. Se notar qualquer inconsistência ou precisar de ajuda para organizar suas porções, clique no botão de SUPORTE para falar conosco via WhatsApp. Este programa não substitui consulta médica ou nutricional personalizada."`;
   
-      try {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    // Configuração de fonte para o Debug
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.text("DEBUG: PROMPT ENVIADO PARA A IA", 10, 20);
-    
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    
-    // Quebra o texto para não sair da folha
-    const larguraPagina = 180;
-    const textoFormatado = doc.splitTextToSize(promptFinal, larguraPagina);
-    
-    // Adiciona o texto (se for muito longo, ele pode cortar, mas você verá o início)
-    doc.text(textoFormatado, 10, 30);
-    
-    // Salva o PDF com o nome de DEBUG
-    doc.save("TESTE_DE_PROMPT.pdf");
-    
-    clearInterval(interval);
-    status.innerText = "PDF DE TESTE GERADO COM SUCESSO!";
-    status.style.color = "#FFD400";
-    
-    console.log("PROMPT PARA CONFERÊNCIA:", promptFinal);
-    
-} catch (e) { 
-    clearInterval(interval);
-    console.error("Erro no Debug:", e);
-    alert("Erro ao gerar PDF de teste."); 
-} finally { 
-    // Mantemos o status visível para você ler a mensagem de sucesso
-    setTimeout(() => { status.style.display = 'none'; }, 5000); 
-}
-}
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        const larguraPagina = 180;
+        const margemEsquerda = 15;
+        const limiteVertical = 275; 
+        let y = 20; 
 
-   async function verificarAcessoEPagar() {
-        // 1. Validações Iniciais (Segurança e UI)
-        const aceitouTermos = document.getElementById('aceite-clausula').checked;
-        if (!aceitouTermos) {
-            return alert("Por favor, aceite a declaração de ciência antes de gerar seu plano.");
-        }
-
-        const alimentos = Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value);
-        if (alimentos.length < 5) {
-            return alert("Selecione pelo menos 5 alimentos para garantir a variedade do plano.");
-        }
-
-        const email = prompt("Seu e-mail para acesso:");
-        if (!email) return;
-
-        // 2. Montagem do Rascunho
-        const rascunho = {
-            peso: document.getElementById('peso').value,
-            calorias: document.getElementById('calorias').value,
-            refeicoes: document.getElementById('num-refeicoes').value,
-            objetivo: document.getElementById('objetivo').value,
-            alimentos: alimentos,
-            preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value),
-            email: email.toLowerCase().trim()
-        };
-
-        // Salva no LocalStorage para recuperar após o checkout do Stripe
-        localStorage.setItem('rascunho_dieta', JSON.stringify(rascunho));
-
-        try {
-            // 3. Consulta ao Supabase
-            const { data: user, error } = await _supabase
-                .from('Usuarios_Dieta')
-                .select('*')
-                .eq('email', rascunho.email)
-                .maybeSingle();
-
-            if (error) throw error;
-
-            // 4. Decisão de Fluxo: Gerar ou Pagar
-            if (!user || !user.pago) {
-                document.getElementById('payment-overlay').style.display = 'flex';
-            } else {
-                gerarDieta(rascunho);
+        // Cabeçalho do Debug
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.text("DEBUG: PROMPT COMPLETO PARA A IA", margemEsquerda, y);
+        y += 10;
+        
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        
+        // Quebra o texto gigante em linhas que cabem na largura da folha
+        const linhas = doc.splitTextToSize(promptFinal, larguraPagina);
+        
+        // Loop de Impressão com Auto-Paginação
+        linhas.forEach(linha => {
+            if (y > limiteVertical) {
+                doc.addPage();
+                y = 20; 
             }
-        } catch (err) {
-            console.error("Erro ao verificar acesso:", err);
-            alert("Erro ao conectar com o banco de dados. Tente novamente.");
+            doc.text(linha, margemEsquerda, y);
+            y += 6; 
+        });
+        
+        // Salva o PDF para conferência total
+        doc.save("DEBUG_PROMPT_COMPLETO.pdf");
+        
+        clearInterval(interval);
+        status.innerText = "PDF COMPLETO GERADO COM SUCESSO!";
+        status.style.color = "#FFD400";
+        
+        console.log("PROMPT PARA CONFERÊNCIA:", promptFinal);
+        
+    } catch (e) { 
+        clearInterval(interval);
+        console.error("Erro no Debug:", e);
+        alert("Erro ao gerar PDF de teste."); 
+    } finally { 
+        setTimeout(() => { status.style.display = 'none'; }, 5000); 
+    }
+}
+
+async function verificarAcessoEPagar() {
+    const aceitouTermos = document.getElementById('aceite-clausula').checked;
+    if (!aceitouTermos) {
+        return alert("Por favor, aceite a declaração de ciência antes de gerar seu plano.");
+    }
+
+    const alimentos = Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value);
+    if (alimentos.length < 5) {
+        return alert("Selecione pelo menos 5 alimentos para garantir a variedade do plano.");
+    }
+
+    const email = prompt("Seu e-mail para acesso:");
+    if (!email) return;
+
+    const rascunho = {
+        peso: document.getElementById('peso').value,
+        calorias: document.getElementById('calorias').value,
+        refeicoes: document.getElementById('num-refeicoes').value,
+        objetivo: document.getElementById('objetivo').value,
+        alimentos: alimentos,
+        preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value),
+        email: email.toLowerCase().trim()
+    };
+
+    localStorage.setItem('rascunho_dieta', JSON.stringify(rascunho));
+
+    try {
+        const { data: user, error } = await _supabase
+            .from('Usuarios_Dieta')
+            .select('*')
+            .eq('email', rascunho.email)
+            .maybeSingle();
+
+        if (error) throw error;
+
+        if (!user || !user.pago) {
+            document.getElementById('payment-overlay').style.display = 'flex';
+        } else {
+            gerarDieta(rascunho);
         }
+    } catch (err) {
+        console.error("Erro ao verificar acesso:", err);
+        alert("Erro ao conectar com o banco de dados.");
     }
+}
 
-    async function iniciarCheckout(priceId) {
-        const rascunho = JSON.parse(localStorage.getItem('rascunho_dieta'));
-        if (!rascunho || !rascunho.email) return alert("Erro ao recuperar seus dados. Reinicie o processo.");
+async function iniciarCheckout(priceId) {
+    const rascunho = JSON.parse(localStorage.getItem('rascunho_dieta'));
+    if (!rascunho || !rascunho.email) return alert("Erro ao recuperar seus dados.");
 
-        try {
-            const response = await fetch('/api/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    priceId, 
-                    email: rascunho.email, 
-                    tipoPlano: priceId.includes('TAhib') ? 'anual' : 'unica' 
-                }),
-            });
+    try {
+        const response = await fetch('/api/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                priceId, 
+                email: rascunho.email, 
+                tipoPlano: priceId.includes('TAhib') ? 'anual' : 'unica' 
+            }),
+        });
 
-            const data = await response.json();
-            if (data.url) {
-                window.location.href = data.url;
-            } else {
-                throw new Error("URL de checkout não encontrada.");
-            }
-        } catch (err) {
-            console.error("Erro no checkout:", err);
-            alert("Ocorreu um erro ao iniciar o pagamento. Tente novamente.");
+        const data = await response.json();
+        if (data.url) {
+            window.location.href = data.url;
+        } else {
+            throw new Error("URL de checkout não encontrada.");
         }
+    } catch (err) {
+        console.error("Erro no checkout:", err);
+        alert("Erro ao iniciar o pagamento.");
     }
+}
 
-    function fecharModal() { 
-        document.getElementById('payment-overlay').style.display = 'none'; 
-    }
+function fecharModal() { 
+    document.getElementById('payment-overlay').style.display = 'none'; 
+}
 </script>
 </body>
 </html>
