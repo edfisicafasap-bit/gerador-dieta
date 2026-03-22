@@ -357,26 +357,31 @@ d.alimentos.forEach(item => {
     };
 }
 
-    async function gerarDieta(d, pagoConfirmado = false) {
-        const divRes = document.getElementById('resultado');
-        const status = document.getElementById('status-topo');
-        const info = prepararInstrucoesPrompt(d);
+  async function gerarDieta(d, pagoConfirmado = false) { // Adicionado async aqui
+    const divRes = document.getElementById('resultado');
+    const status = document.getElementById('status-topo');
+    const info = prepararInstrucoesPrompt(d);
 
-        status.style.display = 'block';
-        status.scrollIntoView({ behavior: 'smooth' });
+    status.style.display = 'block';
+    status.scrollIntoView({ behavior: 'smooth' });
 
-        const mensagens = [
-            "🔐 VERIFICANDO ACESSO...",
-            "✅ PAGAMENTO CONFIRMADO!",
-            "📊 CALCULANDO MACRONUTRIENTES...",
-            "🍳 SELECIONANDO OS MELHORES PREPAROS...",
-            "⚡ ORGANIZANDO O CARDÁPIO...",
-            "⏳ QUASE PRONTO...",
-             "⏳ QUASE PRONTO... AGUARDE..."
-        ];
+    const mensagens = [
+        "🔐 VERIFICANDO ACESSO...",
+        "✅ PAGAMENTO CONFIRMADO!",
+        "📊 CALCULANDO MACRONUTRIENTES...",
+        "🍳 SELECIONANDO OS MELHORES PREPAROS...",
+        "⚡ ORGANIZANDO O CARDÁPIO...",
+        "⏳ QUASE PRONTO...",
+        "⏳ QUASE PRONTO... AGUARDE..."
+    ];
 
-        let msgIndex = pagoConfirmado ? 1 : 0;
-        const interval = setInterval(() => { if (msgIndex < mensagens.length) { status.innerText = mensagens[msgIndex]; msgIndex++; } }, 1800);
+    let msgIndex = pagoConfirmado ? 1 : 0;
+    const interval = setInterval(() => { 
+        if (msgIndex < mensagens.length) { 
+            status.innerText = mensagens[msgIndex]; 
+            msgIndex++; 
+        } 
+    }, 1800);
 
     const promptFinal = `
 Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTICA dos macros UTILIZANDO AS INFORMAÇÕES PRESCRITAS. Você deve montar refeições para bater as metas diarias com VALORES APROXIMADOS DA META. CRIE REFEIÇÕES REAIS DA CULINÁRIA BRASILEIRA. Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou."
@@ -437,26 +442,43 @@ ITENS COMPLEMENTARES:
 
 ACRESCENTE UM RODAPÉ ESCRITO: "ESTE PLANO ALIMENTAR FOI GERADO COM BASE EM ESTIMATIVAS NUTRICIONAIS PADRÃO. Os valores de macros e calorias são aproximados para fins de orientação. Se notar qualquer inconsistência ou precisar de ajuda para organizar suas porções, clique no botão de SUPORTE para falar conosco via WhatsApp. Este programa não substitui consulta médica ou nutricional personalizada."`;
   
-        try {
-            const res = await fetch('/api/gerar-dieta', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: promptFinal, email: d.email })
-            });
-            const data = await res.json();
-            clearInterval(interval);
-            mudarPasso(3);
-            divRes.innerText = data.dieta;
-            divRes.style.display = 'block';
-            document.getElementById('btn-download-pos-geracao').style.display = 'block';
-            document.getElementById('btn-download-pos-geracao').onclick = () => window.open(data.pdf_url, '_blank');
-        } catch (e) { 
-            clearInterval(interval);
-            alert("Erro ao gerar plano."); 
-        } finally { 
-            status.style.display = 'none'; 
-        }
-    }
+      try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Configuração de fonte para o Debug
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("DEBUG: PROMPT ENVIADO PARA A IA", 10, 20);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    
+    // Quebra o texto para não sair da folha
+    const larguraPagina = 180;
+    const textoFormatado = doc.splitTextToSize(promptFinal, larguraPagina);
+    
+    // Adiciona o texto (se for muito longo, ele pode cortar, mas você verá o início)
+    doc.text(textoFormatado, 10, 30);
+    
+    // Salva o PDF com o nome de DEBUG
+    doc.save("TESTE_DE_PROMPT.pdf");
+    
+    clearInterval(interval);
+    status.innerText = "PDF DE TESTE GERADO COM SUCESSO!";
+    status.style.color = "#FFD400";
+    
+    console.log("PROMPT PARA CONFERÊNCIA:", promptFinal);
+    
+} catch (e) { 
+    clearInterval(interval);
+    console.error("Erro no Debug:", e);
+    alert("Erro ao gerar PDF de teste."); 
+} finally { 
+    // Mantemos o status visível para você ler a mensagem de sucesso
+    setTimeout(() => { status.style.display = 'none'; }, 5000); 
+}
+}
 
    async function verificarAcessoEPagar() {
         // 1. Validações Iniciais (Segurança e UI)
