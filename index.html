@@ -205,7 +205,7 @@
             "Macarrão": ["Comum (Sêmola)", "Integral", "De arroz", "Sem glúten"],
             "Cuscuz": ["De milho", "Nordestino", "Marroquino", "Integral"],
             "Batata Inglesa": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Chips forno/airfryer", "Frita na airfryer"],
-            "Batata Doce": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Frita na airfryer"],
+            "Batata Doces": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Frita na airfryer"],
             "Mandioca": ["Cozida", "Assada", "Purê", "Sauté", "Rústica forno/airfryer", "Frita na airfryer"],
             "Pão": ["Francês", "Forma branco", "Forma integral", "Integral com grãos", "Sírio", "De aveia"],
             "Tapioca": ["Tradicional", "Hidratada", "Integral"],
@@ -297,125 +297,66 @@
         preparosUnificados.forEach(p => { pCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-geral" value="${p}"> ${p}</label>`; });
     }
 
-function prepararInstrucoesPrompt(d) {
-    const peso = parseFloat(d.peso);
-    const caloriasMeta = parseFloat(d.calorias);
-    
-    // Cálculos de Macros (Padrão Jean Oliveira Trainer)
-    let fatorProt = d.objetivo === 'Emagrecimento' ? 2.0 : (d.objetivo === 'Hipertrofia' ? 1.8 : 1.6);
-    const totalProt = Math.round(peso * fatorProt);
-    const totalGord = Math.round(peso * 0.9);
-    const totalCarbo = Math.round((caloriasMeta - ((totalProt * 4) + (totalGord * 9))) / 4);
-    
-    let matchPreparos = "";
+    function prepararInstrucoesPrompt(d) {
+        const peso = parseFloat(d.peso);
+        const caloriasMeta = parseFloat(d.calorias);
+        
+        let fatorProt = d.objetivo === 'Emagrecimento' ? 2.0 : (d.objetivo === 'Hipertrofia' ? 1.8 : 1.6);
+        const totalProt = Math.round(peso * fatorProt);
+        const totalGord = Math.round(peso * 0.9);
+        const totalCarbo = Math.round((caloriasMeta - ((totalProt * 4) + (totalGord * 9))) / 4);
+        
+        let matchPreparos = "";
 
-    d.alimentos.forEach(item => {
-        // 1. Transforma "ARROZ: INTEGRAL" em "arroz integral"
-        const partes = item.toLowerCase().split(':');
-        const categoria = partes[0]?.trim() || "";
-        const subTipo = partes[1]?.trim() || "";
-        const nomeBuscaSimples = `${categoria} ${subTipo}`.trim();
+        d.alimentos.forEach(item => {
+            const partes = item.toLowerCase().split(':');
+            const categoria = partes[0]?.trim() || "";
+            const subTipo = partes[1]?.trim() || "";
+            const nomeBuscaSimples = `${categoria} ${subTipo}`.trim();
 
-        // 2. Busca inteligente na TABELA_ALIMENTOS
-        // Tenta achar "arroz integral" dentro de "arroz integral cozido"
-        const chaveEncontrada = Object.keys(TABELA_ALIMENTOS).find(chave => 
-            chave.includes(nomeBuscaSimples) || nomeBuscaSimples.includes(chave)
-        );
+            const chaveEncontrada = Object.keys(TABELA_ALIMENTOS).find(chave => 
+                chave.includes(nomeBuscaSimples) || nomeBuscaSimples.includes(chave)
+            );
 
-        const dados = chaveEncontrada ? TABELA_ALIMENTOS[chaveEncontrada] : null;
+            const dados = chaveEncontrada ? TABELA_ALIMENTOS[chaveEncontrada] : null;
 
-        // 3. Mapeia as propriedades da sua tabela (proteina, carbo, gordura)
-        const p = dados ? (dados.proteina || 0) : 0;
-        const c = dados ? (dados.carbo || 0) : 0;
-        const g = dados ? (dados.gordura || 0) : 0;
+            const p = dados ? (dados.proteina || 0) : 0;
+            const c = dados ? (dados.carbo || 0) : 0;
+            const g = dados ? (dados.gordura || 0) : 0;
 
-        // 4. Identifica Preparo
-        const chavePreparo = Object.keys(CONFIG_PREPAROS).find(k => nomeBuscaSimples.includes(k.toLowerCase()));
-        let infoPreparo = "";
-        if (chavePreparo) {
-            const sugeridos = CONFIG_PREPAROS[chavePreparo].preparos_sugeridos;
-            const escolhido = d.preparos.find(p => sugeridos.includes(p)) || sugeridos[0];
-            infoPreparo = `(Preparo: ${escolhido})`;
-        }
+            const chavePreparo = Object.keys(CONFIG_PREPAROS).find(k => nomeBuscaSimples.includes(k.toLowerCase()));
+            let infoPreparo = "";
+            if (chavePreparo) {
+                const sugeridos = CONFIG_PREPAROS[chavePreparo].preparos_sugeridos;
+                const escolhido = d.preparos.find(prep => sugeridos.includes(prep)) || sugeridos[0];
+                infoPreparo = `(Preparo: ${escolhido})`;
+            }
 
-        matchPreparos += `- ${item.toUpperCase()}: ${infoPreparo} | Ref: 100g tem ${p}g Prot, ${c}g Carb, ${g}g Gord.\n`;
-    });
+            matchPreparos += `- ${item.toUpperCase()}: ${infoPreparo} | Ref: 100g tem ${p}g Prot, ${c}g Carb, ${g}g Gord.\n`;
+        });
 
-    return { 
-        totalProt, totalGord, totalCarbo, 
-        matchPreparos, 
-        alvoCaloricoRef: Math.round(caloriasMeta / d.refeicoes)
-    };
-}
-
-    // 2. LÓGICA DE OURO: Cálculo do Carboidrato Restante (O Java calcula, a IA não inventa)
-    const calProtGord = (totalProt * 4) + (totalGord * 9);
-    const totalCarbo = Math.round((caloriasMeta - calProtGord) / 4);
-    
-    // 3. NOVAS LINHAS: Divisão exata por refeição para guiar a IA
-    const protPorRef = Math.round(totalProt / d.refeicoes);
-    const carboPorRef = Math.round(totalCarbo / d.refeicoes); // Adicionado
-    const gordPorRef = Math.round(totalGord / d.refeicoes);   // Adicionado
-    
-   let matchPreparos = "";
-d.alimentos.forEach(item => {
-    // Pega o nome do alimento (ex: "Filé de tilápia")
-    const nomeAlimento = item.split(': ')[1].toLowerCase();
-    
-    // Busca os macros na sua TABELA_ALIMENTOS (tabela-taco.js)
-    const dadosNutricionais = TABELA_ALIMENTOS[nomeAlimento] || { p: 0, c: 0, g: 0 };
-
-    // Busca o preparo
-    const chaveMatch = Object.keys(CONFIG_PREPAROS).find(k => nomeAlimento.includes(k));
-    let infoPreparo = "";
-    if (chaveMatch) {
-        const listaSugeridos = CONFIG_PREPAROS[chaveMatch].preparos_sugeridos;
-        const escolhido = d.preparos.find(p => listaSugeridos.includes(p)) || listaSugeridos[0];
-        infoPreparo = `(Preparo: ${escolhido})`;
+        return { 
+            totalProt, totalGord, totalCarbo, 
+            protPorRef: Math.round(totalProt / d.refeicoes),
+            carboPorRef: Math.round(totalCarbo / d.refeicoes),
+            gordPorRef: Math.round(totalGord / d.refeicoes),
+            matchPreparos, 
+            alvoCaloricoRef: Math.round(caloriasMeta / d.refeicoes)
+        };
     }
 
-    // Monta a linha que a IA vai ler
-    matchPreparos += `- ${item.toUpperCase()}: ${infoPreparo} | Ref: 100g tem ${dadosNutricionais.p}g Prot, ${dadosNutricionais.c}g Carb, ${dadosNutricionais.g}g Gord.\n`;
-});
+    async function gerarDieta(d, pagoConfirmado = false) {
+        const status = document.getElementById('status-topo');
+        const info = prepararInstrucoesPrompt(d);
 
-    // Retornando tudo, inclusive as novas variáveis de divisão
-    return { 
-        totalProt, 
-        totalGord, 
-        totalCarbo, 
-        protPorRef, 
-        carboPorRef, 
-        gordPorRef, 
-        matchPreparos, 
-        alvoCaloricoRef: Math.round(caloriasMeta / d.refeicoes)
-    };
-}
+        status.style.display = 'block';
+        status.scrollIntoView({ behavior: 'smooth' });
 
-  async function gerarDieta(d, pagoConfirmado = false) { // Adicionado async aqui
-    const divRes = document.getElementById('resultado');
-    const status = document.getElementById('status-topo');
-    const info = prepararInstrucoesPrompt(d);
-
-    status.style.display = 'block';
-    status.scrollIntoView({ behavior: 'smooth' });
-
-    const mensagens = [
-        "🔐 VERIFICANDO ACESSO...",
-        "✅ PAGAMENTO CONFIRMADO!",
-        "📊 CALCULANDO MACRONUTRIENTES...",
-        "🍳 SELECIONANDO OS MELHORES PREPAROS...",
-        "⚡ ORGANIZANDO O CARDÁPIO...",
-        "⏳ QUASE PRONTO...",
-        "⏳ QUASE PRONTO... AGUARDE..."
-    ];
-
-    let msgIndex = pagoConfirmado ? 1 : 0;
-    const interval = setInterval(() => { 
-        if (msgIndex < mensagens.length) { 
-            status.innerText = mensagens[msgIndex]; 
-            msgIndex++; 
-        } 
-    }, 1800);
+        const mensagens = ["📊 CALCULANDO MACRONUTRIENTES...", "🍳 SELECIONANDO PREPAROS...", "⏳ GERANDO PDF DE DEBUG..."];
+        let msgIndex = 0;
+        const interval = setInterval(() => { 
+            if (msgIndex < mensagens.length) { status.innerText = mensagens[msgIndex]; msgIndex++; } 
+        }, 1500);
 
     const promptFinal = `
 Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTICA dos macros UTILIZANDO AS INFORMAÇÕES PRESCRITAS. Você deve montar refeições para bater as metas diarias com VALORES APROXIMADOS DA META. CRIE REFEIÇÕES REAIS DA CULINÁRIA BRASILEIRA. Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou."
@@ -477,130 +418,70 @@ ITENS COMPLEMENTARES:
 ACRESCENTE UM RODAPÉ ESCRITO: "ESTE PLANO ALIMENTAR FOI GERADO COM BASE EM ESTIMATIVAS NUTRICIONAIS PADRÃO. Os valores de macros e calorias são aproximados para fins de orientação. Se notar qualquer inconsistência ou precisar de ajuda para organizar suas porções, clique no botão de SUPORTE para falar conosco via WhatsApp. Este programa não substitui consulta médica ou nutricional personalizada."`;
   
     try {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        const larguraPagina = 180;
-        const margemEsquerda = 15;
-        const limiteVertical = 275; 
-        let y = 20; 
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const linhas = doc.splitTextToSize(promptFinal, 180);
+            let y = 20;
+            linhas.forEach(linha => {
+                if (y > 275) { doc.addPage(); y = 20; }
+                doc.text(linha, 15, y);
+                y += 6;
+            });
+            doc.save("DEBUG_PROMPT_COMPLETO.pdf");
+            clearInterval(interval);
+            status.innerText = "SUCESSO!";
+        } catch (e) {
+            clearInterval(interval);
+            console.error(e);
+        }
+    }
 
-        // Cabeçalho do Debug
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(14);
-        doc.text("DEBUG: PROMPT COMPLETO PARA A IA", margemEsquerda, y);
-        y += 10;
-        
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(10);
-        
-        // Quebra o texto gigante em linhas que cabem na largura da folha
-        const linhas = doc.splitTextToSize(promptFinal, larguraPagina);
-        
-        // Loop de Impressão com Auto-Paginação
-        linhas.forEach(linha => {
-            if (y > limiteVertical) {
-                doc.addPage();
-                y = 20; 
+    async function verificarAcessoEPagar() {
+        const aceitouTermos = document.getElementById('aceite-clausula').checked;
+        if (!aceitouTermos) return alert("Aceite os termos.");
+
+        const alimentos = Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value);
+        if (alimentos.length < 5) return alert("Selecione 5 alimentos.");
+
+        const email = prompt("Seu e-mail:");
+        if (!email) return;
+
+        const rascunho = {
+            peso: document.getElementById('peso').value,
+            calorias: document.getElementById('calorias').value,
+            refeicoes: document.getElementById('num-refeicoes').value,
+            objetivo: document.getElementById('objetivo').value,
+            alimentos: alimentos,
+            preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value),
+            email: email.toLowerCase().trim()
+        };
+
+        localStorage.setItem('rascunho_dieta', JSON.stringify(rascunho));
+
+        try {
+            const { data: user } = await _supabase.from('Usuarios_Dieta').select('*').eq('email', rascunho.email).maybeSingle();
+            if (!user || !user.pago) {
+                document.getElementById('payment-overlay').style.display = 'flex';
+            } else {
+                gerarDieta(rascunho);
             }
-            doc.text(linha, margemEsquerda, y);
-            y += 6; 
-        });
-        
-        // Salva o PDF para conferência total
-        doc.save("DEBUG_PROMPT_COMPLETO.pdf");
-        
-        clearInterval(interval);
-        status.innerText = "PDF COMPLETO GERADO COM SUCESSO!";
-        status.style.color = "#FFD400";
-        
-        console.log("PROMPT PARA CONFERÊNCIA:", promptFinal);
-        
-    } catch (e) { 
-        clearInterval(interval);
-        console.error("Erro no Debug:", e);
-        alert("Erro ao gerar PDF de teste."); 
-    } finally { 
-        setTimeout(() => { status.style.display = 'none'; }, 5000); 
-    }
-}
-
-async function verificarAcessoEPagar() {
-    const aceitouTermos = document.getElementById('aceite-clausula').checked;
-    if (!aceitouTermos) {
-        return alert("Por favor, aceite a declaração de ciência antes de gerar seu plano.");
+        } catch (err) { alert("Erro de conexão."); }
     }
 
-    const alimentos = Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value);
-    if (alimentos.length < 5) {
-        return alert("Selecione pelo menos 5 alimentos para garantir a variedade do plano.");
+    async function iniciarCheckout(priceId) {
+        const rascunho = JSON.parse(localStorage.getItem('rascunho_dieta'));
+        try {
+            const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ priceId, email: rascunho.email }),
+            });
+            const data = await response.json();
+            if (data.url) window.location.href = data.url;
+        } catch (err) { alert("Erro no checkout."); }
     }
 
-    const email = prompt("Seu e-mail para acesso:");
-    if (!email) return;
-
-    const rascunho = {
-        peso: document.getElementById('peso').value,
-        calorias: document.getElementById('calorias').value,
-        refeicoes: document.getElementById('num-refeicoes').value,
-        objetivo: document.getElementById('objetivo').value,
-        alimentos: alimentos,
-        preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value),
-        email: email.toLowerCase().trim()
-    };
-
-    localStorage.setItem('rascunho_dieta', JSON.stringify(rascunho));
-
-    try {
-        const { data: user, error } = await _supabase
-            .from('Usuarios_Dieta')
-            .select('*')
-            .eq('email', rascunho.email)
-            .maybeSingle();
-
-        if (error) throw error;
-
-        if (!user || !user.pago) {
-            document.getElementById('payment-overlay').style.display = 'flex';
-        } else {
-            gerarDieta(rascunho);
-        }
-    } catch (err) {
-        console.error("Erro ao verificar acesso:", err);
-        alert("Erro ao conectar com o banco de dados.");
-    }
-}
-
-async function iniciarCheckout(priceId) {
-    const rascunho = JSON.parse(localStorage.getItem('rascunho_dieta'));
-    if (!rascunho || !rascunho.email) return alert("Erro ao recuperar seus dados.");
-
-    try {
-        const response = await fetch('/api/checkout', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                priceId, 
-                email: rascunho.email, 
-                tipoPlano: priceId.includes('TAhib') ? 'anual' : 'unica' 
-            }),
-        });
-
-        const data = await response.json();
-        if (data.url) {
-            window.location.href = data.url;
-        } else {
-            throw new Error("URL de checkout não encontrada.");
-        }
-    } catch (err) {
-        console.error("Erro no checkout:", err);
-        alert("Erro ao iniciar o pagamento.");
-    }
-}
-
-function fecharModal() { 
-    document.getElementById('payment-overlay').style.display = 'none'; 
-}
+    function fecharModal() { document.getElementById('payment-overlay').style.display = 'none'; }
 </script>
 </body>
 </html>
