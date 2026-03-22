@@ -315,16 +315,10 @@ function prepararInstrucoesPrompt(d) {
     const totalGord = Math.round(pesoUser * 1);
     const totalCarbo = Math.round((caloriasMeta - (totalProt * 4) - (totalGord * 9)) / 4);
 
-   d.alimentos.forEach(item => {
-        // 1. O item completo (ex: "FEIJAO: FEIJAO CARIOCA COZIDO")
-        const itemCompleto = item.trim();
-        
-        // 2. Só o que vem depois dos dois pontos (ex: "FEIJAO CARIOCA COZIDO")
+d.alimentos.forEach(item => {
         const partes = item.split(':');
-        const nomeAposDoisPontos = partes[1] ? partes[1].trim() : item;
-        
-        // 3. O nome limpo (removendo a categoria e mantendo o resto)
-        const nomeRaw = nomeAposDoisPontos;
+        const categoria = partes[0] ? partes[0].trim().toUpperCase() : "";
+        let nomeRaw = partes[1] ? partes[1].trim() : item.trim();
 
         // --- FUNÇÃO DE BUSCA INTELIGENTE ---
         const localizarNaTabela = (termo) => {
@@ -333,17 +327,25 @@ function prepararInstrucoesPrompt(d) {
             return chave ? TABELA_ALIMENTOS[chave] : null;
         };
 
-        // TENTA 3 VEZES ANTES DE ZERAR:
-        // 1ª tentativa: Nome exato após os dois pontos (Ex: "feijao carioca cozido")
-        // 2ª tentativa: Item completo (Ex: "feijao: feijao carioca cozido")
-        // 3ª tentativa: Só o nome puro (Fallback)
-        let dados = localizarNaTabela(nomeRaw) || 
-                    localizarNaTabela(itemCompleto) || 
-                    localizarNaTabela(nomeAposDoisPontos.toLowerCase());
+        // 💡 O PULO DO GATO: Se for desses grupos, a gente força o nome completo
+        let nomeParaBusca = nomeRaw;
+        
+        if (categoria.includes("ARROZ")) nomeParaBusca = `arroz ${nomeRaw} cozido`;
+        if (categoria.includes("FEIJAO")) nomeParaBusca = `feijao ${nomeRaw} cozido`;
+        if (categoria.includes("MACARRAO")) nomeParaBusca = `macarrao ${nomeRaw} cozido`;
+        if (categoria.includes("FLOCAO")) nomeParaBusca = `flocao de milho ${nomeRaw}`;
 
-        // Se ainda for Boi/Frango/Peixe, ele aplica a lógica de preparo que já tínhamos
-        if (!dados && ["BOI", "FRANGO", "PORCO", "PEIXES"].includes(partes[0]?.trim().toUpperCase())) {
-            // ... (mantém aquela lógica de CONFIG_PREPAROS que enviamos antes)
+        // Tenta buscar: 
+        // 1. Com o prefixo que montamos agora
+        // 2. Só o nome que veio (caso ele já venha completo)
+        // 3. O item inteiro
+        let dados = localizarNaTabela(nomeParaBusca) || 
+                    localizarNaTabela(nomeRaw) || 
+                    localizarNaTabela(item);
+
+        // Fallback para Proteínas (Boi, Frango, etc) se ainda estiver nulo
+        if (!dados && ["BOI", "FRANGO", "PORCO", "PEIXES"].includes(categoria)) {
+             // Aqui entra sua lógica de CONFIG_PREPAROS
         }
 
         const p = dados ? (dados.proteina || 0) : 0;
