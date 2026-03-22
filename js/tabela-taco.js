@@ -1,6 +1,6 @@
 const TABELA_ALIMENTOS = {
   // =====================
-  // 🍚 CARBOIDRATOS
+  // 🍚 CARBOIDRATOS (Grupo: Sempre Cozidos)
   // =====================
   "arroz branco cozido": { proteina: 2.7, gordura: 0.3, carbo: 28 },
   "arroz integral cozido": { proteina: 2.5, gordura: 0.8, carbo: 23 },
@@ -16,16 +16,18 @@ const TABELA_ALIMENTOS = {
   "feijao vermelho cozido": { proteina: 4.7, gordura: 0.5, carbo: 14 },
 
   "macarrao comum (semola) cozido": { proteina: 5.0, gordura: 1.0, carbo: 25 },
-  "macarrao comum cozido": { proteina: 5.0, gordura: 1.0, carbo: 25 },
   "macarrao integral cozido": { proteina: 6.0, gordura: 1.2, carbo: 23 },
-  "macarrao arroz cozido": { proteina: 4.0, gordura: 0.5, carbo: 28 },
+  "macarrao de arroz cozido": { proteina: 4.0, gordura: 0.5, carbo: 28 },
   "macarrao sem gluten cozido": { proteina: 5.0, gordura: 1.0, carbo: 24 },
 
-  "cuscuz milho cozido": { proteina: 3.0, gordura: 0.5, carbo: 27 },
+  "cuscuz de milho cozido": { proteina: 3.0, gordura: 0.5, carbo: 27 },
   "cuscuz nordestino cozido": { proteina: 3.0, gordura: 0.5, carbo: 28 },
   "cuscuz marroquino cozido": { proteina: 3.5, gordura: 0.3, carbo: 23 },
   "cuscuz integral cozido": { proteina: 4.0, gordura: 0.8, carbo: 22 },
 
+  // =====================
+  // 🥔 BATATAS/MANDIOCA (Grupo: Nome Exato conforme App)
+  // =====================
   "batata inglesa cozida": { proteina: 2.0, gordura: 0.1, carbo: 17 },
   "batata inglesa assada": { proteina: 2.5, gordura: 0.1, carbo: 21 },
   "batata inglesa pure": { proteina: 2.0, gordura: 4.0, carbo: 15 },
@@ -48,6 +50,9 @@ const TABELA_ALIMENTOS = {
   "mandioca rustica forno/airfryer": { proteina: 1.5, gordura: 1.0, carbo: 40 },
   "mandioca frita na airfryer": { proteina: 1.5, gordura: 2.0, carbo: 42 },
 
+  // =====================
+  // 🍞 PÃES, TAPIOCA, AVEIA (Grupo: Nome Exato)
+  // =====================
   "pao frances": { proteina: 9.0, gordura: 1.0, carbo: 50 },
   "pao forma branco": { proteina: 7.5, gordura: 3.0, carbo: 50 },
   "pao forma integral": { proteina: 9.0, gordura: 3.5, carbo: 43 },
@@ -68,14 +73,11 @@ const TABELA_ALIMENTOS = {
   "flocao de milho integral": { proteina: 8, gordura: 2, carbo: 74 },
 
   // =====================
-  // 🍗 PROTEÍNAS
+  // 🍗 PROTEÍNAS (Busca por "Subtipo")
   // =====================
   "file de peito": { proteina: 31, gordura: 3.6, carbo: 0 },
-  "peito de frango grelhado": { proteina: 31, gordura: 3.6, carbo: 0 },
   "coxa e sobrecoxa (sem pele)": { proteina: 28, gordura: 4.0, carbo: 0 },
-  "coxa sobrecoxa frango sem pele": { proteina: 28, gordura: 4.0, carbo: 0 },
 
-  "patinho moido": { proteina: 28, gordura: 6, carbo: 0 },
   "patinho": { proteina: 28, gordura: 6, carbo: 0 },
   "coxao mole": { proteina: 27, gordura: 5.5, carbo: 0 },
   "coxao duro": { proteina: 28, gordura: 5, carbo: 0 },
@@ -86,21 +88,18 @@ const TABELA_ALIMENTOS = {
   "lombo suino": { proteina: 25, gordura: 3.5, carbo: 0 },
   "file mignon suino": { proteina: 26, gordura: 4, carbo: 0 },
 
+  // =====================
+  // 🍳 OVOS (Nome Exato do App)
+  // =====================
   "ovos mexidos": { proteina: 13, gordura: 10, carbo: 1 },
-  "ovo mexido": { proteina: 13, gordura: 10, carbo: 1 },
   "ovos cozidos": { proteina: 13, gordura: 10, carbo: 1 },
-  "ovo cozido": { proteina: 13, gordura: 10, carbo: 1 },
   "ovos omelete": { proteina: 13, gordura: 10, carbo: 1 },
-  "omelete": { proteina: 13, gordura: 10, carbo: 1 },
   "ovos poche": { proteina: 13, gordura: 10, carbo: 1 },
-  "ovo poche": { proteina: 13, gordura: 10, carbo: 1 },
   "ovos frito na agua": { proteina: 13, gordura: 10, carbo: 1 },
-  "ovo frito agua": { proteina: 13, gordura: 10, carbo: 1 },
   "ovos frito com azeite": { proteina: 13, gordura: 15, carbo: 1 },
-  "ovo frito azeite": { proteina: 13, gordura: 15, carbo: 1 },
 
   // =====================
-  // 🐟 PEIXES
+  // 🐟 PEIXES (Nome Exato do App)
   // =====================
   "file de tilapia": { proteina: 26, gordura: 2, carbo: 0 },
   "file de merluza": { proteina: 24, gordura: 1, carbo: 0 },
@@ -108,25 +107,19 @@ const TABELA_ALIMENTOS = {
   "file de atum fresco": { proteina: 23, gordura: 1, carbo: 0 },
 
   // =====================
-  // 🥑 GORDURAS
+  // 🥦 FRUTAS, LEGUMES, GORDURAS, SEMENTES (Nome Exato)
   // =====================
-  "azeite de oliva extra virgem": { proteina: 0, gordura: 100, carbo: 0 },
   "abacate": { proteina: 2, gordura: 15, carbo: 9 },
+  "azeite de oliva extra virgem": { proteina: 0, gordura: 100, carbo: 0 },
   "castanha-do-para": { proteina: 14, gordura: 66, carbo: 12 },
-  "castanha do para": { proteina: 14, gordura: 66, carbo: 12 },
   "castanha de caju": { proteina: 18, gordura: 46, carbo: 30 },
-  "amendoim": { proteina: 26, gordura: 49, carbo: 16 },
   "amendoas": { proteina: 21, gordura: 50, carbo: 22 },
   "nozes": { proteina: 15, gordura: 65, carbo: 14 },
+  "amendoim": { proteina: 26, gordura: 49, carbo: 16 },
   "pasta de amendoim": { proteina: 25, gordura: 50, carbo: 20 },
 
-  // =====================
-  // 🥦 LEGUMES
-  // =====================
   "cenoura": { proteina: 0.9, gordura: 0.1, carbo: 10 },
-  "cenoura cozida": { proteina: 0.9, gordura: 0.1, carbo: 10 },
   "brocolis": { proteina: 2.8, gordura: 0.4, carbo: 7 },
-  "brocolis cozido": { proteina: 2.8, gordura: 0.4, carbo: 7 },
   "couve-flor": { proteina: 2.0, gordura: 0.3, carbo: 5 },
   "abobrinha": { proteina: 1.2, gordura: 0.2, carbo: 3 },
   "abobora": { proteina: 1.1, gordura: 0.1, carbo: 7 },
@@ -140,12 +133,9 @@ const TABELA_ALIMENTOS = {
   "pimentao": { proteina: 1.0, gordura: 0.1, carbo: 6 },
   "couve": { proteina: 3.0, gordura: 0.2, carbo: 6 },
 
-  // =====================
-  // 🍎 FRUTAS
-  // =====================
   "banana": { proteina: 1.3, gordura: 0.3, carbo: 23 },
   "maca": { proteina: 0.3, gordura: 0.2, carbo: 14 },
-  "mamão": { proteina: 0.5, gordura: 0.1, carbo: 11 },
+  "mamao": { proteina: 0.5, gordura: 0.1, carbo: 11 },
   "laranja": { proteina: 0.9, gordura: 0.1, carbo: 12 },
   "abacaxi": { proteina: 0.5, gordura: 0.1, carbo: 13 },
   "melancia": { proteina: 0.6, gordura: 0.2, carbo: 8 },
@@ -161,9 +151,6 @@ const TABELA_ALIMENTOS = {
   "acerola": { proteina: 0.4, gordura: 0.1, carbo: 7 },
   "tangerina": { proteina: 0.7, gordura: 0.1, carbo: 13 },
 
-  // =====================
-  // 🌱 SEMENTES
-  // =====================
   "chia": { proteina: 17, gordura: 31, carbo: 42 },
   "linhaca": { proteina: 18, gordura: 42, carbo: 29 },
   "semente de abobora": { proteina: 30, gordura: 49, carbo: 10 },
@@ -172,14 +159,13 @@ const TABELA_ALIMENTOS = {
   "quinoa": { proteina: 14, gordura: 6, carbo: 64 },
 
   // =====================
-  // 🧃 OUTROS
+  // 🧃 OUTROS (Nome Exato do App)
   // =====================
   "peito de peru": { proteina: 29, gordura: 1, carbo: 0 },
   "iogurte natural": { proteina: 3.5, gordura: 3.5, carbo: 4 },
   "leite integral": { proteina: 3.3, gordura: 3.5, carbo: 4.8 },
   "leite desnatado": { proteina: 3.4, gordura: 0.1, carbo: 5 },
   "leite s/lactose": { proteina: 3.3, gordura: 3.5, carbo: 4.8 },
-  "leite sem lactose": { proteina: 3.3, gordura: 3.5, carbo: 4.8 },
   "leite de amendoas": { proteina: 0.5, gordura: 2.5, carbo: 0.5 },
   "leite de soja": { proteina: 3.6, gordura: 1.5, carbo: 3.5 },
   "ricota": { proteina: 11, gordura: 4, carbo: 3 },
