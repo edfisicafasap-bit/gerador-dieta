@@ -198,84 +198,19 @@
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cXFuZ3Nrcmp6aHhic2Fja3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NTI3NzksImV4cCI6MjA4NTUyODc3OX0.B90q1Jv-vodVIV_dLFUCOekyshrv3HekVpPugpPaHRI'; 
     const _supabase = supabase.createClient(S_URL, S_KEY);
 
-    const estruturaAlimentos = {
-       "CARBOIDRATOS": {
-    "Arroz": [
-        "Arroz Branco Cozido", 
-        "Arroz Integral Cozido", 
-        "Arroz Parboilizado Cozido", 
-        "Arroz Jasmine Cozido", 
-        "Arroz Basmati Cozido", 
-        "Arroz 7 Grãos Cozido"
-    ],
-    "Feijão": [
-        "Feijão Carioca Cozido", 
-        "Feijão Preto Cozido", 
-        "Feijão Branco Cozido", 
-        "Feijão Fradinho Cozido", 
-        "Feijão Vermelho Cozido"
-    ],
-    "Macarrão": [
-        "Macarrão Comum (Sêmola) Cozido", 
-        "Macarrão Integral Cozido", 
-        "Macarrão de Arroz Cozido", 
-        "Macarrão Sem Glúten Cozido"
-    ],
-    "Cuscuz": [
-        "Flocão de Milho Tradicional", 
-        "Flocão de Milho Nordestino", 
-        "Flocão de Milho Marroquino", 
-        "Flocão de Milho Integral"
-    ],
-    "Batata Inglesa": [
-        "Batata Inglesa Cozida", 
-        "Batata Inglesa Assada", 
-        "Batata Inglesa Purê", 
-        "Batata Inglesa Sauté", 
-        "Batata Inglesa Rústica Forno/Airfryer", 
-        "Batata Inglesa Chips Forno/Airfryer", 
-        "Batata Inglesa Frita na Airfryer"
-    ],
-    "Batata Doces": [
-        "Batata Doces Cozida", 
-        "Batata Doces Assada", 
-        "Batata Doces Purê", 
-        "Batata Doces Sauté", 
-        "Batata Doces Rústica Forno/Airfryer", 
-        "Batata Doces Frita na Airfryer"
-    ],
-    "Mandioca": [
-        "Mandioca Cozida", 
-        "Mandioca Assada", 
-        "Mandioca Purê", 
-        "Mandioca Sauté", 
-        "Mandioca Rústica Forno/Airfryer", 
-        "Mandioca Frita na Airfryer"
-    ],
-    "Pão": [
-        "Pão Francês", 
-        "Pão Forma Branco", 
-        "Pão Forma Integral", 
-        "Pão Integral com Grãos", 
-        "Pão Sírio", 
-        "Pão de Aveia"
-    ],
-    "Tapioca": [
-        "Tapioca Tradicional", 
-        "Tapioca Hidratada", 
-        "Tapioca Integral"
-    ],
-    "Aveia": [
-        "Aveia em Flocos Finos", 
-        "Aveia em Flocos", 
-        "Aveia Farinha", 
-        "Aveia Farelo"
-    ],
-    "Flocão de Milho": [
-        "Flocão de Milho Tradicional", 
-        "Flocão de Milho Integral"
-    ]
-}
+   const estruturaAlimentos = {
+        "CARBOIDRATOS": {
+            "Arroz": ["Arroz Branco Cozido", "Arroz Integral Cozido", "Arroz Parboilizado Cozido", "Arroz Jasmine Cozido", "Arroz Basmati Cozido", "Arroz 7 Grãos Cozido"],
+            "Feijão": ["Feijão Carioca Cozido", "Feijão Preto Cozido", "Feijão Branco Cozido", "Feijão Fradinho Cozido", "Feijão Vermelho Cozido"],
+            "Macarrão": ["Macarrão Comum (Sêmola) Cozido", "Macarrão Integral Cozido", "Macarrão de Arroz Cozido", "Macarrão Sem Glúten Cozido"],
+            "Cuscuz": ["Flocão de Milho Tradicional", "Flocão de Milho Nordestino", "Flocão de Milho Marroquino", "Flocão de Milho Integral"],
+            "Batata Inglesa": ["Batata Inglesa Cozida", "Batata Inglesa Assada", "Batata Inglesa Purê", "Batata Inglesa Sauté", "Batata Inglesa Rústica Forno/Airfryer", "Batata Inglesa Chips Forno/Airfryer", "Batata Inglesa Frita na Airfryer"],
+            "Batata Doces": ["Batata Doces Cozida", "Batata Doces Assada", "Batata Doces Purê", "Batata Doces Sauté", "Batata Doces Rústica Forno/Airfryer", "Batata Doces Frita na Airfryer"],
+            "Mandioca": ["Mandioca Cozida", "Mandioca Assada", "Mandioca Purê", "Mandioca Sauté", "Mandioca Rústica Forno/Airfryer", "Mandioca Frita na Airfryer"],
+            "Pão": ["Pão Francês", "Pão Forma Branco", "Pão Forma Integral", "Pão Integral com Grãos", "Pão Sírio", "Pão de Aveia"],
+            "Tapioca": ["Tapioca Tradicional", "Tapioca Hidratada", "Tapioca Integral"],
+            "Aveia": ["Aveia em Flocos Finos", "Aveia em Flocos", "Aveia Farinha", "Aveia Farelo"],
+            "Flocão de Milho": ["Flocão de Milho Tradicional", "Flocão de Milho Integral"]
         },
         "PROTEÍNAS": {
             "Frango": ["Filé de peito", "Coxa e sobrecoxa (sem pele)"],
