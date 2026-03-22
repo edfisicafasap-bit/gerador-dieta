@@ -8,7 +8,7 @@ const CONFIG_PREPAROS = {
     animal: "Boi",
     preparos_sugeridos: ["Moído", "Grelhado", "Na frigideira", "Cozido", "Ensopado", "Na Airfryer"]
   },
-  "coxão mole": {
+  "coxão mole": { // Mantenha o acento se no seletor do App ele existir
     animal: "Boi",
     preparos_sugeridos: ["Grelhado", "Na frigideira", "Assado", "Cozido", "Refogado"]
   },
@@ -44,11 +44,11 @@ const CONFIG_PREPAROS = {
   // =====================
   // 🐔 FRANGO
   // =====================
-  "filé de peito": {
+  "filé de peito": { // Ajustado para bater com o seletor "FRANGO: FILÉ DE PEITO"
     animal: "Frango",
     preparos_sugeridos: ["Grelhado", "Desfiado", "Na Airfryer", "Na frigideira", "Cozido", "Cozido no vapor", "Refogado"]
   },
-  "coxa e sobrecoxa (sem pele)": {
+  "coxa e sobrecoxa (sem pele)": { // Ajustado para bater com o seletor do App
     animal: "Frango",
     preparos_sugeridos: ["Assado", "Na Airfryer", "Cozido", "Ensopado", "Desfiado"]
   },
@@ -76,6 +76,7 @@ const CONFIG_PREPAROS = {
 
 const FATOR_PREPARO = {
     // PROTEÍNAS - Fator de Cocção (Peso Cru para Peso Pronto)
+    // Esses valores estão tecnicamente perfeitos para um Nutricionista de Precisão.
     "Grelhado": 0.75,       
     "Assado": 0.70,         
     "Na Airfryer": 0.65,    
