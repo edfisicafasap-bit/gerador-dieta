@@ -403,9 +403,14 @@ REGRAS DE OURO (NÃO IGNORE):
 2. DIVERSIFICAÇÃO: Não sobrecarregue apenas uma refeição. Distribua as proteínas e gorduras ao longo do dia de forma inteligente e real.
 3. ESTRUTURA POR HORÁRIO: 
    - CAFÉ: Bowl, Shake, Vitamina, Sanduíche ou Omelete.
-   - ALMOÇO/JANTAR: [Base de Carboidrato] + [Proteína] + [Legumes] + [Salada].
+   - ALMOÇO/JANTAR: [Base de Carboidrato] + [Proteína] + [Legumes] + [escreva "salada à vontade"].
    - CEIA: Refeição leve (Fruta, Iogurte ou Shake).
    - OBRIGATÓRIO: Pelo menos uma fonte de proteína em TODAS as refeições.
+
+ORDEM DE PRIORIDADE NA SOMA:
+1º PROTEÍNA: Se a soma total (incluindo a proteína vegetal de arroz/feijão/pão) ultrapassar a meta de ${info.totalProt}g, reduza a porção da proteína animal (carne/frango/ovo/porco) até equilibrar. 
+2º GORDURA: Mantenha estável conforme a meta. 
+3º CARBOIDRATOS: Use-os como variável de ajuste para fechar o total de calorias (${d.calorias} kcal)."
 
 DETERMINAÇÃO DE REFEIÇÕES:
 Gere EXATAMENTE ${d.refeicoes} refeições seguindo a ordem lógica (Café, Almoço, Lanche, Jantar, Ceia conforme a quantidade).
