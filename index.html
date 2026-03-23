@@ -198,7 +198,7 @@
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cXFuZ3Nrcmp6aHhic2Fja3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NTI3NzksImV4cCI6MjA4NTUyODc3OX0.B90q1Jv-vodVIV_dLFUCOekyshrv3HekVpPugpPaHRI'; 
     const _supabase = supabase.createClient(S_URL, S_KEY);
 
-   const estruturaAlimentos = {
+const estruturaAlimentos = {
         "CARBOIDRATOS": {
             "Arroz": ["Arroz Branco Cozido", "Arroz Integral Cozido", "Arroz Parboilizado Cozido", "Arroz Jasmine Cozido", "Arroz Basmati Cozido", "Arroz 7 Grãos Cozido"],
             "Feijão": ["Feijão Carioca Cozido", "Feijão Preto Cozido", "Feijão Branco Cozido", "Feijão Fradinho Cozido", "Feijão Vermelho Cozido"],
@@ -273,7 +273,7 @@
         document.getElementById('peso').value = localStorage.getItem('tmb_weight');
         document.getElementById('calorias').value = localStorage.getItem('tmb_calories');
         document.getElementById('objetivo').value = localStorage.getItem('tmb_goal');
-        renderInterface(); // Garante que renderiza conforme o objetivo carregado
+        renderInterface(); 
     }
 
     async function inicializarTudo() {
@@ -291,7 +291,6 @@
         container.innerHTML = '';
         
         for (let cat in estruturaAlimentos) {
-            // MOSTRAR CORINGAS APENAS PARA HIPERTROFIA
             if (cat === "CORINGAS CALÓRICOS" && objetivo !== "Hipertrofia") continue;
 
             let html = `<div class="categoria-pai">${cat}</div>`;
@@ -299,7 +298,7 @@
                 html += `<details><summary>${sub}</summary><div class="grid-alimentos">`;
                 estruturaAlimentos[cat][sub].forEach(item => { 
                     html += `<label class="item-alimento">
-                                <input type="checkbox" name="alimento" value="${sub}: ${item}"> ${item}
+                                 <input type="checkbox" name="alimento" value="${sub}: ${item}"> ${item}
                              </label>`; 
                 });
                 html += `</div></details>`;
@@ -325,10 +324,23 @@ function prepararInstrucoesPrompt(d) {
     let matchPreparos = "";
     const caloriasMeta = parseFloat(d.calorias) || 2000;
     const pesoUser = parseFloat(d.peso) || 70;
+    const objetivo = d.objetivo;
 
+    // LÓGICA DE MACROS POR G/KG
     const totalProt = Math.round(pesoUser * 2);
     const totalGord = Math.round(pesoUser * 1);
-    const totalCarbo = Math.round((caloriasMeta - (totalProt * 4) - (totalGord * 9)) / 4);
+    
+    let fatorCarbo;
+    if (objetivo === "Emagrecimento") fatorCarbo = 3; 
+    else if (objetivo === "Hipertrofia") fatorCarbo = 5.5; 
+    else fatorCarbo = 4;
+
+    let totalCarbo = Math.round(pesoUser * fatorCarbo);
+
+    const caloriasAtuais = (totalProt * 4) + (totalGord * 9) + (totalCarbo * 4);
+    if (caloriasAtuais < caloriasMeta) {
+        totalCarbo += Math.round((caloriasMeta - caloriasAtuais) / 4);
+    }
 
     d.alimentos.forEach(item => {
         const partes = item.split(':');
@@ -437,13 +449,12 @@ BLOCO 1: OPÇÕES A
    - Nome do Alimento (Peso em gramas (ou unidades para pães, banana, ovos, maça, etc...)
    SUGESTÃO DE PREPARO: (Instruções simples).
 
+SOMA REAL DOS MACROS (OPÇÃO A):
+Proteínas: [Soma Real]g | Carboidratos: [Soma Real]g | Gorduras: [Soma Real]g | Calorias: [Soma Real] kcal.
+
 ---
 BLOCO 2: OPÇÕES B (VARIAÇÃO SEM ARROZ E FEIJÃO)
 (Mesmo formato, trocando arroz/feijão por outras fontes de carbo da lista técnica).
-
-ACRESCENTE AO FINAL DE CADA OPÇÃO DE REFEIÇÕES:
-SOMA REAL DOS MACROS (OPÇÃO A):
-Proteínas: [Soma Real]g | Carboidratos: [Soma Real]g | Gorduras: [Soma Real]g | Calorias: [Soma Real] kcal.
 
 SOMA REAL DOS MACROS (OPÇÃO B):
 Proteínas: [Soma Real]g | Carboidratos: [Soma Real]g | Gorduras: [Soma Real]g | Calorias: [Soma Real] kcal.
