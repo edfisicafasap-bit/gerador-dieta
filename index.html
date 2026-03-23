@@ -381,54 +381,79 @@ function prepararInstrucoesPrompt(d) {
         }, 1500);
 
 const promptFinal = `
-Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTICA DOS MACROS CRUZADOS. Você deve utilizar as informações prescritas para bater as metas diárias. 
+Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTICA DOS MACROS CRUZADOS. Você deve utilizar as informações prescritas para bater as metas diárias utilizando a ESTRATÉGIA DE SUBTRAÇÃO. 
 
 REGRAS DE CÁLCULO OBRIGATÓRIAS (AUDITORIA TOTAL):
 1. MACROS SECUNDÁRIOS: Você deve obrigatoriamente contabilizar as proteínas e gorduras presentes nos carboidratos (ex: Arroz, Feijão, Aveia, Pão), as gorduras e carboidratos presentes nas proteínas (ex: Ovos, Carnes, Queijos, Iogurte) e as proteínas e carboidratos presentes nas fontes de gordura (ex: Pasta de Amendoim, Chia).
-2. SOMA ARITMÉTICA REAL: O resumo no final deve ser a soma REAL de cada grama de alimento listado. É PROIBIDO inventar ou arredondar números para "parecer" que bateu a meta. Se a soma real der diferente da meta, escreva o valor real encontrado.
-3. PRECISÃO DOS DADOS: Use apenas os valores de referência da LISTA DE ALIMENTOS abaixo.
-4. REGRA INVIOLÁVEL: PROTEINA NUNCA DEVE FICAR ABAIXO DE 1.5G POR KG E NUNCA  ACIMA DE 2.2 G POR KG; GORDURA NUNCA DEVE FICAR ABAIXO DE 0.7g POR KG E NUNCA ACIMA DE 1.1g POR KG. CHEGUE O MAIS PROXIMO POSSIVEL DA META SEM ESTOURAR ESSE LIMITE. SE COM OS ALIMENTOS QUE A PESSOA SELECIONOU NÃO FOI POSSIVEL FAZER UM CALCULO EXATO, NÃO MINTA, APENAS ALERTE!
+2. PROTEÍNA POR SUBTRAÇÃO: Primeiro, calcule toda a proteína proveniente das fontes de carboidrato e gordura (arroz, feijão, aveia, pão, leite, pasta de amendoim, etc.). Depois, adicione APENAS a quantidade necessária de proteína animal (frango, carne, ovo, peito de peru) para atingir o total de ${info.totalProt}g. Se os carboidratos já entregarem muita proteína, reduza a carne drasticamente.
+3. SOMA ARITMÉTICA REAL: O resumo no final deve ser a soma REAL de cada grama de alimento listado. É PROIBIDO inventar ou arredondar números para "parecer" que bateu a meta. Se a soma real der diferente da meta, escreva o valor real encontrado.
+4. PRECISÃO DOS DADOS: Use apenas os valores de referência da LISTA DE ALIMENTOS abaixo.
+5. REGRA INVIOLÁVEL: PROTEINA NUNCA DEVE FICAR ABAIXO DE 1.5G POR KG E NUNCA ACIMA DE 2.2 G POR KG; GORDURA NUNCA DEVE FICAR ABAIXO DE 0.7g POR KG E NUNCA ACIMA DE 1.1g POR KG. CHEGUE O MAIS PROXIMO POSSIVEL DA META SEM ESTOURAR ESSE LIMITE. SE COM OS ALIMENTOS QUE A PESSOA SELECIONOU NÃO FOI POSSIVEL FAZER UM CALCULO EXATO, NÃO MINTA, APENAS ALERTE!
 
 Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou."
 
 REGRAS DE FORMATAÇÃO: Responda apenas em TEXTO PLANO (Plain Text). É PROIBIDO o uso de qualquer sintaxe Markdown.
 
+O PLANO DEVE TER O TOTAL APROXIMADO DE ${d.calorias} kcal para ${d.objetivo}.
 METAS TÉCNICAS TOTAIS: P: ${info.totalProt}g | C: ${info.totalCarbo}g | G: ${info.totalGord}g.
 METAS POR REFEIÇÃO (ALVO): ~${info.alvoCaloricoRef} kcal | ~${info.protPorRef}g Prot.
 
-LISTA DE ALIMENTOS DISPONÍVEIS E SEUS MACROS:
+LISTA DE ALIMENTOS DISPONÍVEIS E SEUS MACROS (USE PARA ORGANIZAR):
 ${info.matchPreparos}
 
 REGRAS DE OURO (NÃO IGNORE):
-1. AJUSTE DE PORÇÃO: Se para bater ${info.totalProt}g de proteína você precisar sugerir 260g de frango, FAÇA ISSO. Não fique preso a porções de 100g. Se tiver muitas proteínas selecionadas, varie: ex: Ovos + Queijo no café, Carne + Feijão no almoço.
-2. DIVERSIFICAÇÃO: Não sobrecarregue apenas uma refeição. Distribua as proteínas e gorduras ao longo do dia de forma inteligente e real.
-3. ESTRUTURA POR HORÁRIO: 
-   - CAFÉ: Bowl, Shake, Vitamina, Sanduíche ou Omelete.
-   - ALMOÇO/JANTAR: [Base de Carboidrato] + [Proteína] + [Legumes] + Salada à vontade.
-   - CEIA: Refeição leve (Fruta, Iogurte ou Shake).
-   - OBRIGATÓRIO: Pelo menos uma fonte de proteína em TODAS as refeições.
+1. AJUSTE DE PORÇÃO: Se para bater ${info.totalProt}g de proteína você precisar sugerir 260g de frango, FAÇA ISSO. Não fique preso a porções de 100g ou 150g. MAS SE TIVER MUITAS PROTEINAS SELECIONADAS, VARIE ELAS. EX: CAFE DA MANHA COM OVOS E QUEIJO, OU COM OVOS E WHEY... OU SEJA, COLOQUE MAIS DE UMA OPÇÃO DE PROTEINA.
+2. SOMA VERDADEIRA: O resumo no final deve ser a soma REAL das gramagens de acordo com os alimentos, OBRIGATÓRIO POR O NUMERO REAL, NÃO PRECISA INVENTAR PARA BATER A META, CASO NÃO BATA  A META DEIXE SEM BATER ELA, MAS NÃO MINTA NOS NUMEROS. Não repita apenas os números que eu te enviei se a comida que você listou não somar aquilo.
+
+REGRAS POR HORÁRIO
+CAFÉ DA MANHÃ: Transformar em: Bowl, Shake, Vitamina, Sanduíche ou Omelete. 
+LANCHES, DESJEJUM E CAFÉ DA TARDE: Foco em portabilidade e simplicidade.
+ALMOÇO/JANTAR: Estrutura [Base de Carboidrato] + [Proteína] + [Legumes] e escreva na frente "SALADA À VONTADE".
+Jantar pode ser mais leve, mas deve manter a estrutura de refeição completa.
+CEIA: REFEIÇÕES SUPER LEVES, COMO UMA FRUTA, OU FRUTA + WHEY, OU IOGURTE...
+REGRA IMPORTANTE: INCLUIR AO MENOS UMA FONTE DE PROTEINA EM TODAS AS REFEIÇÕES.
 
 DETERMINAÇÃO DE REFEIÇÕES:
-Gere EXATAMENTE ${d.refeicoes} refeições seguindo a ordem lógica (Café, Almoço, Lanche, Jantar, Ceia conforme a quantidade).
+Voce deve gerar EXATAMENTE ${d.refeicoes} refeicoes.
+- Se ${d.refeicoes} for 4: Use (1. Cafe da Manha, 2. Almoco, 3. Cafe da Tarde, 4. Jantar).
+- Se ${d.refeicoes} for 5: Use (1. Cafe da Manha, 2. Almoco, 3. Cafe da Tarde, 4. Jantar, 5. Ceia).
+- Se ${d.refeicoes} for 6: Use (1. Desjejum, 2. Cafe da Manha, 3. Almoco, 4. Cafe da Tarde, 5. Jantar, 6. Ceia).
 
-ESTRUTURA DO CARDÁPIO:
+REGRAS DE OURO DE DISTRIBUIÇÃO PROTEICA:
+1. NÃO SE LIMITE A GRAMATURAS DE PORÇÃO PADRÃO EM: CARBOIDRATOS E PROTEINAS NO ALMOÇO E JANTA,  Se a meta de ${info.totalProt}g E ${info.totalCarbo} for alta, não tenha medo de subir as porções, mas faça de forma inteligente para ficar algo real e possivel de comer.
+2. DIVERSIFIQUE AS FONTES: Para não sobrecarregar apenas o Almoço/Jantar com carnes, AUMENTE a densidade proteica das outras refeições:
+   - CAFÉ/LANCHES: Se necessário, use 3 a 4 ovos em vez de 2, ou combine Ovos + Queijo (Ricota/Minas) + Iogurte + Whey na mesma refeição.
+   - ALMOÇO/JANTAR: Combine a carne principal com outras fontes (ex: Feijão, Lentilha ou Queijo ralado por cima) para ajudar a bater o total.
+3. PRIORIDADE MATEMÁTICA: O resumo final deve ser a SOMA REAL de todos os macros (incluindo a proteína dos carboidratos como arroz, feijão e aveia). Se a conta não fechar ${info.totalProt}g, ajuste as gramagens para cima até bater o valor exato.
+4. EQUILÍBRIO: Prefira pratos volumosos e variados em vez de uma única porção gigante de proteína animal isolada.
+
+REGRAS OBRIGATÓRIAS FONTES DE GORDURA:
+DIVIDA AS FONTES DE GORDURA  AO LONGO DO DIA, NÃO COLOQUE TODAS EM APENAS UMA REFEIÇÃO
+
+ESTRUTURA DO CARDÁPIO (${d.refeicoes} refeições):
+
 BLOCO 1: OPÇÕES A
-- Nome do Alimento (Peso/Unidade)
-SUGESTÃO DE PREPARO: (Instruções simples).
+   Para cada refeição liste APENAS:
+   - Nome do Alimento (Peso em gramas (ou unidades para pães, banana, ovos, maça, etc...)
+   SUGESTÃO DE PREPARO: (Instruções simples).
 
 ---
-BLOCO 2: OPÇÕES B (VARIAÇÃO)
-${d.objetivo === "Hipertrofia" ? "Mantenha a estrutura de refeições sólidas no Almoço e Jantar, trocando apenas as fontes de carbo/prot da lista." : "Variação prática, podendo incluir sanduíches ou shakes no jantar se couber nos macros."}
+BLOCO 2: OPÇÕES B (VARIAÇÃO SEM ARROZ E FEIJÃO)
+(Mesmo formato, trocando arroz/feijão por outras fontes de carbo da lista técnica).
 
+ACRESCENTE AO FINAL DE CADA OPÇÃO DE REFEIÇÕES:
 SOMA REAL DOS MACROS (OPÇÃO A):
 Proteínas: [Soma Real]g | Carboidratos: [Soma Real]g | Gorduras: [Soma Real]g | Calorias: [Soma Real] kcal.
 
-MENSAGEM DE AJUSTE: ${info.totalProt > 160 ? "Se os alimentos selecionados não tiverem proteína suficiente, avise ao usuário para selecionar mais fontes proteicas." : ""}
+SOMA REAL DOS MACROS (OPÇÃO B):
+Proteínas: [Soma Real]g | Carboidratos: [Soma Real]g | Gorduras: [Soma Real]g | Calorias: [Soma Real] kcal.
 
-HIDRATAÇÃO: ${(parseFloat(d.peso) * 0.035).toFixed(1)}L de água por dia.
-DATA: ${new Date().toLocaleString()}
+MENSAGEM DE AJUSTE: ${info.totalProt > 160 ? "Se os alimentos selecionados não tiverem proteína suficiente (ex: faltou carne/ovo), avise ao usuário para selecionar mais fontes proteicas." : ""}
+ITENS COMPLEMENTARES:
+1. HIDRATAÇÃO: Informe a recomendação de ${(parseFloat(d.peso) * 0.035).toFixed(1)}L de água por dia.
+2. DATA: ${new Date().toLocaleString()}.
 
-RODAPÉ: ESTE PLANO ALIMENTAR FOI GERADO COM BASE EM ESTIMATIVAS NUTRICIONAIS PADRÃO. Os valores de macros e calorias são aproximados para fins de orientação. Se notar qualquer inconsistência ou precisar de ajuda para organizar suas porções, clique no botão de SUPORTE para falar conosco via WhatsApp. Este programa não substitui consulta médica ou nutricional personalizada.`;
+ACRESCENTE UM RODAPÉ ESCRITO: "ESTE PLANO ALIMENTAR FOI GERADO COM BASE EM ESTIMATIVAS NUTRICIONAIS PADRÃO. Os valores de macros e calorias são aproximados para fins de orientação. Se notar qualquer inconsistência ou precisar de ajuda para organizar suas porções, clique no botão de SUPORTE para falar conosco via WhatsApp. Este programa não substitui consulta médica ou nutricional personalizada."`;
   
     try {
             const { jsPDF } = window.jspdf;
