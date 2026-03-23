@@ -484,6 +484,14 @@ REFAÇA A CONTA QUANTAS VEZES FOR NECESSÁRIO PARA ATINGIR O MAIS PRÓXIMO DE  $
 
 P: ${info.totalProt}g | C: ${info.totalCarbo}g | G: ${info.totalGord}g.
 
+DIRETRIZ DE FECHAMENTO MATEMÁTICO 
+1. TRAVA DE PROTEÍNA: Priorize bater os ${info.totalProt}g de proteína primeiro usando as fontes animais.
+2. TRAVA DE GORDURA: Ajuste o Azeite e as fontes de gordura para não passar de ${info.totalGord}g.
+3. AJUSTE INFINITO DE CARBOIDRATO: Se após os passos acima o Carboidrato ainda não atingiu ${info.totalCarbo}g:
+   - Você está AUTORIZADO a aumentar o Suco de Uva Integral, Suco de Laranja e Maltodextrina para volumes altos (ex: 800ml, 1L ou 1.2L por dia) até que a soma de carboidratos bataO MAIS PROXIMO POSSIVEL o valor de ${info.totalCarbo}g.
+4. AJUSTE INFINITO DE PROTEINA: Você esta AUTORIZADO a utilizar CLARA DE OVOS que contem a cada 100g  : 13.40 de proteinas, 0 carbo e 0.1 gordura ,MESMO QUE NÃO TENHA NA LISTA DE ALIMENTOS
+5. PROIBIÇÃO DE AVISO DE ERRO: É proibido dizer que "não foi possível". Use o Suco de Uva como variável de ajuste até que a conta feche.
+
 MENSAGEM DE AJUSTE: ${info.totalProt > 160 ? "Se os alimentos selecionados não tiverem proteína suficiente (ex: faltou carne/ovo), avise ao usuário para selecionar mais fontes proteicas." : ""}
 ITENS COMPLEMENTARES:
 1. HIDRATAÇÃO: Informe a recomendação de ${(parseFloat(d.peso) * 0.035).toFixed(1)}L de água por dia.
