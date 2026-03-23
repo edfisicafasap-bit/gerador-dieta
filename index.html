@@ -459,6 +459,31 @@ BLOCO 2: OPÇÕES B (VARIAÇÃO SEM ARROZ E FEIJÃO)
 SOMA REAL DOS MACROS (OPÇÃO B):
 Proteínas: [Soma Real]g | Carboidratos: [Soma Real]g | Gorduras: [Soma Real]g | Calorias: [Soma Real] kcal.
 
+ESTRUTURA OBRIGATÓRIA DO CARDÁPIO:
+Para CADA refeição, você deve seguir EXATAMENTE este modelo:
+
+[NOME DA REFEIÇÃO]
+- Alimento A (gramagem): [Cálculo: Xg Prot, Xg Carb, Xg Gord]
+- Alimento B (gramagem): [Cálculo: Xg Prot, Xg Carb, Xg Gord]
+SUBTOTAL DA REFEIÇÃO: [Soma exata dos macros desta refeição]
+SUGESTÃO DE PREPARO: ...
+
+---
+SOMA TOTAL DE TODAS AS REFEIÇÕES:
+Proteínas: [Soma de todos os subtotais]g
+Carboidratos: [Soma de todos os subtotais]g
+Gorduras: [Soma de todos os subtotais]g
+Calorias Totais: [Cálculo final baseado na soma acima]
+
+AVISO CRÍTICO: 
+Se a soma total não atingir a meta de ${info.totalProt}g de PROTEINAS, você DEVE aumentar as gramagens dos alimentos (frango, peixes, ovos, boi, porco...) até que o valor FIQUE O MAIS PRÓXIMO POSSIVEL 
+Se a soma total não atingir a meta de ${info.totalCarbo}g de Carboidratos, você DEVE aumentar as gramagens dos alimentos (arroz, macarrão, aveia...) até que o valor FIQUE O MAIS PRÓXIMO POSSIVEL 
+Se a soma total não atingir a meta de ${info.totalGord}g de Gordura, você DEVE aumentar as gramagens dos alimentos (azeite, abacate, pasta de amendoin...) até que o valor FIQUE O MAIS PRÓXIMO POSSIVEL 
+
+REFAÇA A CONTA QUANTAS VEZES FOR NECESSÁRIO PARA ATINGIR O MAIS PRÓXIMO DE  ${info.totalProt}g PROTEINA,  C: ${info.totalCarbo}g Carboidratos e G: ${info.totalGord}g. Gordura.
+
+P: ${info.totalProt}g | C: ${info.totalCarbo}g | G: ${info.totalGord}g.
+
 MENSAGEM DE AJUSTE: ${info.totalProt > 160 ? "Se os alimentos selecionados não tiverem proteína suficiente (ex: faltou carne/ovo), avise ao usuário para selecionar mais fontes proteicas." : ""}
 ITENS COMPLEMENTARES:
 1. HIDRATAÇÃO: Informe a recomendação de ${(parseFloat(d.peso) * 0.035).toFixed(1)}L de água por dia.
