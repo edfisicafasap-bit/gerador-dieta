@@ -71,28 +71,28 @@
         #btn-download-pos-geracao { width:100%; margin-top:20px; padding:18px; background:#000; border: 2px solid #FFD400; border-radius:10px; font-size:16px; font-weight:900; color:#FFD400; cursor: pointer; text-transform: uppercase; }
         
         .btn-suporte { 
-    position: fixed; 
-    bottom: 20px; 
-    right: 20px; 
-    background: #25d366; 
-    color: white; 
-    padding: 12px 20px; 
-    border-radius: 50px; 
-    text-decoration: none; 
-    font-size: 14px; 
-    font-weight: bold; 
-    z-index: 1000; 
-    display: flex; 
-    align-items: center; 
-    gap: 10px; /* Aumentei um pouco o espaço entre ícone e texto */
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    transition: 0.3s;
-}
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            background: #25d366; 
+            color: white; 
+            padding: 12px 20px; 
+            border-radius: 50px; 
+            text-decoration: none; 
+            font-size: 14px; 
+            font-weight: bold; 
+            z-index: 1000; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: 0.3s;
+        }
 
-.btn-suporte:hover {
-    transform: scale(1.1);
-    background: #20ba5a;
-}
+        .btn-suporte:hover {
+            transform: scale(1.1);
+            background: #20ba5a;
+        }
     </style>
 </head>
 <body onload="inicializarTudo()">
@@ -168,7 +168,7 @@
             <option value="6">6 Refeições</option>
         </select>
         <label>Objetivo</label>
-        <select id="objetivo">
+        <select id="objetivo" onchange="renderInterface()">
             <option value="Emagrecimento">Emagrecimento</option>
             <option value="Hipertrofia">Hipertrofia</option>
             <option value="Definição">Definição</option>
@@ -223,7 +223,11 @@
         "LEGUMES": { "Legumes": ["Cenoura", "Brócolis", "Couve-flor", "Abobrinha", "Abóbora", "Berinjela", "Espinafre", "Chuchu", "Quiabo", "Vagem", "Pepino", "Beterraba", "Pimentão", "Couve"] },
         "FRUTAS": { "Frutas": ["Banana", "Maçã", "Mamão", "Laranja", "Abacaxi", "Melancia", "Melão", "Manga", "Morango", "Uva", "Goiaba", "Pêra", "Kiwi", "Caju", "Limão", "Acerola", "Tangerina"] },
         "SEMENTES": { "Sementes": ["Chia", "Linhaça", "Semente de abóbora", "Semente de girassol", "Gergelim", "Quinoa"] },
-        "OUTROS": { "Outros": ["Peito de peru", "Iogurte Natural", "Leite Integral", "Leite Desnatado", "Leite s/Lactose", "Leite De Amendoas", "Leite de soja", "Ricota", "Queijo Minas", "Queijo Muçarela", "Whey Protein", "Mel"] }
+        "OUTROS": { "Outros": ["Peito de peru", "Iogurte Natural", "Leite Integral", "Leite Desnatado", "Leite s/Lactose", "Leite De Amendoas", "Leite de soja", "Ricota", "Queijo Minas", "Queijo Muçarela", "Whey Protein"] },
+        "CORINGAS CALÓRICOS": { 
+            "Doces Estratégicos": ["Mel", "Doce de Leite", "Geleia de Frutas", "Goiabada"],
+            "Densidade Energética": ["Suco de Uva Integral", "Suco de Laranja", "Maltodextrina", "Pasta de Amendoim Extra", "Azeite de Oliva (Dose Extra)"] 
+        }
     };
 
     const preparosUnificados = ["Cozido", "Assado", "Grelhado", "Refogado", "Na Airfryer", "Na frigideira", "Moído", "Desfiado", "Cozido no vapor", "Ensopado"];
@@ -269,6 +273,7 @@
         document.getElementById('peso').value = localStorage.getItem('tmb_weight');
         document.getElementById('calorias').value = localStorage.getItem('tmb_calories');
         document.getElementById('objetivo').value = localStorage.getItem('tmb_goal');
+        renderInterface(); // Garante que renderiza conforme o objetivo carregado
     }
 
     async function inicializarTudo() {
@@ -281,28 +286,32 @@
     }
 
     function renderInterface() {
-    const container = document.getElementById('categorias-container');
-    container.innerHTML = '';
-    for (let cat in estruturaAlimentos) {
-        let html = `<div class="categoria-pai">${cat}</div>`;
-        for (let sub in estruturaAlimentos[cat]) {
-            html += `<details><summary>${sub}</summary><div class="grid-alimentos">`;
-            estruturaAlimentos[cat][sub].forEach(item => { 
-                // CORRETO: O value agora leva a subcategoria para o split(':') funcionar
-                html += `<label class="item-alimento">
-                            <input type="checkbox" name="alimento" value="${sub}: ${item}"> ${item}
-                         </label>`; 
-            });
-            html += `</div></details>`;
+        const container = document.getElementById('categorias-container');
+        const objetivo = document.getElementById('objetivo').value;
+        container.innerHTML = '';
+        
+        for (let cat in estruturaAlimentos) {
+            // MOSTRAR CORINGAS APENAS PARA HIPERTROFIA
+            if (cat === "CORINGAS CALÓRICOS" && objetivo !== "Hipertrofia") continue;
+
+            let html = `<div class="categoria-pai">${cat}</div>`;
+            for (let sub in estruturaAlimentos[cat]) {
+                html += `<details><summary>${sub}</summary><div class="grid-alimentos">`;
+                estruturaAlimentos[cat][sub].forEach(item => { 
+                    html += `<label class="item-alimento">
+                                <input type="checkbox" name="alimento" value="${sub}: ${item}"> ${item}
+                             </label>`; 
+                });
+                html += `</div></details>`;
+            }
+            container.innerHTML += html;
         }
-        container.innerHTML += html;
+        const pCont = document.getElementById('preparos-unificados-container');
+        pCont.innerHTML = '';
+        preparosUnificados.forEach(p => { 
+            pCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-geral" value="${p}"> ${p}</label>`; 
+        });
     }
-    const pCont = document.getElementById('preparos-unificados-container');
-    pCont.innerHTML = '';
-    preparosUnificados.forEach(p => { 
-        pCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-geral" value="${p}"> ${p}</label>`; 
-    });
-}
 
 function prepararInstrucoesPrompt(d) {
     const normalizar = (str) => {
@@ -323,9 +332,7 @@ function prepararInstrucoesPrompt(d) {
 
     d.alimentos.forEach(item => {
         const partes = item.split(':');
-        // subcategoria (ex: Arroz)
         const subcategoria = partes[0] ? partes[0].trim().toUpperCase() : "";
-        // nome do alimento (ex: Arroz Branco Cozido)
         let nomeRaw = partes[1] ? partes[1].trim() : item.trim();
 
         const localizarNaTabela = (termo) => {
@@ -334,11 +341,8 @@ function prepararInstrucoesPrompt(d) {
             return chave ? TABELA_ALIMENTOS[chave] : null;
         };
 
-        // Como o 'item' agora já vem completo (ex: "Arroz Branco Cozido"), 
-        // a busca direta pelo nomeRaw deve ser prioridade.
         let dados = localizarNaTabela(nomeRaw) || localizarNaTabela(item);
 
-        // Se não achou e for dos grupos básicos, tentamos reconstruir o nome
         if (!dados) {
             let nomeTentativa = nomeRaw;
             if (subcategoria.includes("ARROZ")) nomeTentativa = `arroz ${nomeRaw}`;
@@ -376,8 +380,8 @@ function prepararInstrucoesPrompt(d) {
             if (msgIndex < mensagens.length) { status.innerText = mensagens[msgIndex]; msgIndex++; } 
         }, 1500);
 
-    const promptFinal = `
-Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTICA dos macros UTILIZANDO AS INFORMAÇÕES PRESCRITAS. Você deve montar refeições para bater as metas diarias com VALORES APROXIMADOS DA META. CRIE REFEIÇÕES REAIS DA CULINÁRIA BRASILEIRA. Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou."
+   const promptFinal = `
+Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTICA dos macros UTILIZANDO AS INFORMAÇÕES PRESCRITAS. Você deve montar refeições para bater as metas diarias com VALORES APROXIMADOS DA META. CRIE REFEIÇÕES REAIS DA CULINÁRIA BRASILEIRA. Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou.
 
 REGRAS DE FORMATAÇÃO: Responda apenas em TEXTO PLANO (Plain Text). É PROIBIDO o uso de qualquer sintaxe Markdown.
 
@@ -458,8 +462,19 @@ ACRESCENTE UM RODAPÉ ESCRITO: "ESTE PLANO ALIMENTAR FOI GERADO COM BASE EM ESTI
         const aceitouTermos = document.getElementById('aceite-clausula').checked;
         if (!aceitouTermos) return alert("Aceite os termos.");
 
-        const alimentos = Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value);
-        if (alimentos.length < 5) return alert("Selecione 5 alimentos.");
+        const alimentosChecks = Array.from(document.querySelectorAll('input[name="alimento"]:checked'));
+        const alimentosValores = alimentosChecks.map(i => i.value);
+        
+        if (alimentosValores.length < 5) return alert("Selecione pelo menos 5 alimentos.");
+
+        // TRAVA DE SEGURANÇA PARA HIPERTROFIA / ALTA CALORIA
+        const caloriasMeta = parseFloat(document.getElementById('calorias').value);
+        const objetivo = document.getElementById('objetivo').value;
+        const temCoringa = alimentosValores.some(item => item.includes("Densidade Energética") || item.includes("Doces Estratégicos"));
+
+        if (objetivo === "Hipertrofia" && caloriasMeta > 3200 && !temCoringa) {
+            return alert("⚠️ Atenção Jean! Sua meta de calorias é alta. Para que sua dieta não fique com volumes exagerados de comida, volte e selecione pelo menos 2 opções da categoria 'CORINGAS CALÓRICOS' (como Suco de Uva, Mel ou Pasta de Amendoim).");
+        }
 
         const email = prompt("Seu e-mail:");
         if (!email) return;
@@ -469,7 +484,7 @@ ACRESCENTE UM RODAPÉ ESCRITO: "ESTE PLANO ALIMENTAR FOI GERADO COM BASE EM ESTI
             calorias: document.getElementById('calorias').value,
             refeicoes: document.getElementById('num-refeicoes').value,
             objetivo: document.getElementById('objetivo').value,
-            alimentos: alimentos,
+            alimentos: alimentosValores,
             preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value),
             email: email.toLowerCase().trim()
         };
@@ -503,7 +518,3 @@ ACRESCENTE UM RODAPÉ ESCRITO: "ESTE PLANO ALIMENTAR FOI GERADO COM BASE EM ESTI
 </script>
 </body>
 </html>
-
-
-
-
