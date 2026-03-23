@@ -26,7 +26,7 @@ const TABELA_ALIMENTOS = {
   "cuscuz integral cozido": { proteina: 4.0, gordura: 0.8, carbo: 22 },
 
   // =====================
-  // 🥔 BATATAS/MANDIOCA (Grupo: Nome Exato conforme App)
+  // 🥔 BATATAS/MANDIOCA
   // =====================
   "batata inglesa cozida": { proteina: 2.0, gordura: 0.1, carbo: 17 },
   "batata inglesa assada": { proteina: 2.5, gordura: 0.1, carbo: 21 },
@@ -51,7 +51,7 @@ const TABELA_ALIMENTOS = {
   "mandioca frita na airfryer": { proteina: 1.5, gordura: 2.0, carbo: 42 },
 
   // =====================
-  // 🍞 PÃES, TAPIOCA, AVEIA (Grupo: Nome Exato)
+  // 🍞 PAES, TAPIOCA, AVEIA
   // =====================
   "pao frances": { proteina: 9.0, gordura: 1.0, carbo: 50 },
   "pao forma branco": { proteina: 7.5, gordura: 3.0, carbo: 50 },
@@ -73,7 +73,7 @@ const TABELA_ALIMENTOS = {
   "flocao de milho integral": { proteina: 8, gordura: 2, carbo: 74 },
 
   // =====================
-  // 🍗 PROTEÍNAS (Busca por "Subtipo")
+  // 🍗 PROTEINAS
   // =====================
   "file de peito": { proteina: 31, gordura: 3.6, carbo: 0 },
   "coxa e sobrecoxa (sem pele)": { proteina: 28, gordura: 4.0, carbo: 0 },
@@ -88,9 +88,6 @@ const TABELA_ALIMENTOS = {
   "lombo suino": { proteina: 25, gordura: 3.5, carbo: 0 },
   "file mignon suino": { proteina: 26, gordura: 4, carbo: 0 },
 
-  // =====================
-  // 🍳 OVOS (Nome Exato do App)
-  // =====================
   "ovos mexidos": { proteina: 13, gordura: 10, carbo: 1 },
   "ovos cozidos": { proteina: 13, gordura: 10, carbo: 1 },
   "ovos omelete": { proteina: 13, gordura: 10, carbo: 1 },
@@ -98,16 +95,13 @@ const TABELA_ALIMENTOS = {
   "ovos frito na agua": { proteina: 13, gordura: 10, carbo: 1 },
   "ovos frito com azeite": { proteina: 13, gordura: 15, carbo: 1 },
 
-  // =====================
-  // 🐟 PEIXES (Nome Exato do App)
-  // =====================
   "file de tilapia": { proteina: 26, gordura: 2, carbo: 0 },
   "file de merluza": { proteina: 24, gordura: 1, carbo: 0 },
   "file de linguado": { proteina: 22, gordura: 1, carbo: 0 },
   "file de atum fresco": { proteina: 23, gordura: 1, carbo: 0 },
 
   // =====================
-  // 🥦 FRUTAS, LEGUMES, GORDURAS, SEMENTES (Nome Exato)
+  // 🥦 FRUTAS, LEGUMES, GORDURAS
   // =====================
   "abacate": { proteina: 2, gordura: 15, carbo: 9 },
   "azeite de oliva extra virgem": { proteina: 0, gordura: 100, carbo: 0 },
@@ -159,7 +153,7 @@ const TABELA_ALIMENTOS = {
   "quinoa": { proteina: 14, gordura: 6, carbo: 64 },
 
   // =====================
-  // 🧃 OUTROS (Nome Exato do App)
+  // 🧃 OUTROS
   // =====================
   "peito de peru": { proteina: 29, gordura: 1, carbo: 0 },
   "iogurte natural": { proteina: 3.5, gordura: 3.5, carbo: 4 },
@@ -172,5 +166,17 @@ const TABELA_ALIMENTOS = {
   "queijo minas": { proteina: 18, gordura: 15, carbo: 1 },
   "queijo mucarela": { proteina: 22, gordura: 22, carbo: 2 },
   "whey protein": { proteina: 80, gordura: 5, carbo: 10 },
-  "mel": { proteina: 0.3, gordura: 0, carbo: 82 }
+
+  // =====================
+  // 🍯 DOCES ESTRATEGICOS E CORINGAS (Adicionados)
+  // =====================
+  "mel": { proteina: 0.3, gordura: 0, carbo: 82 },
+  "doce de leite": { proteina: 5.5, gordura: 6.7, carbo: 55 },
+  "geleia de frutas": { proteina: 0.5, gordura: 0.1, carbo: 68 },
+  "goiabada": { proteina: 0.9, gordura: 0.2, carbo: 74 },
+  "suco de uva integral": { proteina: 0, gordura: 0, carbo: 15 },
+  "suco de laranja": { proteina: 0.7, gordura: 0.2, carbo: 10 },
+  "maltodextrina": { proteina: 0, gordura: 0, carbo: 95 },
+  "pasta de amendoim extra": { proteina: 28, gordura: 49, carbo: 12 },
+  "azeite de oliva (dose extra)": { proteina: 0, gordura: 100, carbo: 0 }
 };
