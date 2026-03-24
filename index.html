@@ -123,6 +123,8 @@
     <div id="step-1" class="step-section step-active">
         <h2>🔥 Meta de calorias diária</h2>
         <p class="subtitle">Calcule sua meta baseada no seu objetivo</p>
+        <label>Seu Nome e Sobrenome</label>
+        <input type="text" id="calc-name" placeholder="Ex: João Silva">
         <label>Gênero</label>
         <select id="calc-gender"><option value="male">Masculino</option><option value="female">Feminino</option></select>
         <label>Idade</label>
@@ -156,7 +158,12 @@
 
     <div id="step-2" class="step-section">
         <h2>🍎 Configuração do Plano</h2>
-        <p class="subtitle">Selecionamos os melhores e mais saudáveis alimentos para você. Para um plano mais eficiente e rico em nutrientes, diversifique suas escolhas em cada categoria.</p>
+        <p class="subtitle" id="boas-vindas-plano">
+        Parabéns pela escolha <span id="nome-destaque" style="color: #FFD400; font-weight: 900;"></span>, 
+        ter um plano alimentar com base em suas calorias é indispensável para se ter melhores resultados. 
+        Nós já selecionamos os melhores e mais saudáveis alimentos para você. 
+        Lembre-se que para um plano mais eficiente e rico em nutrientes, diversifique suas escolhas em cada categoria.
+    </p>
         <label>Seu Peso Atual (kg)</label>
         <input type="number" id="peso">
         <label>Meta de Calorias Diárias</label>
@@ -238,14 +245,15 @@ const estruturaAlimentos = {
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
-    function calculateTMB() {
+   function calculateTMB() {
+        const name = document.getElementById('calc-name').value;
         const gender = document.getElementById('calc-gender').value;
         const age = parseFloat(document.getElementById('calc-age').value);
         const weight = parseFloat(document.getElementById('calc-weight').value);
         const height = parseFloat(document.getElementById('calc-height').value);
         const activity = parseFloat(document.getElementById('calc-activity').value);
         const goalValue = document.getElementById('calc-goal').value;
-        if (!age || !weight || !height) return alert("Preencha todos os campos.");
+       if (!name || !age || !weight || !height) return alert("Por favor, digite seu nome e preencha os dados.");
         
         let bmr = (gender === 'male') ? 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age) : 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
         const tdee = bmr * activity;
@@ -263,6 +271,7 @@ const estruturaAlimentos = {
         document.getElementById('resultContainer').style.display = 'block';
         document.getElementById('resultContainer').scrollIntoView({ behavior: 'smooth' });
         
+        localStorage.setItem('user_name', name);        
         localStorage.setItem('tmb_weight', weight);
         localStorage.setItem('tmb_calories', caloriesResult);
         localStorage.setItem('tmb_goal', goalValue);
@@ -270,6 +279,8 @@ const estruturaAlimentos = {
 
     function irParaDieta() {
         mudarPasso(2);
+        const nomeSalvo = localStorage.getItem('user_name') || "Campeão(ã)";
+        document.getElementById('nome-destaque').innerText = nomeSalvo.toUpperCase();
         document.getElementById('peso').value = localStorage.getItem('tmb_weight');
         document.getElementById('calorias').value = localStorage.getItem('tmb_calories');
         document.getElementById('objetivo').value = localStorage.getItem('tmb_goal');
@@ -395,6 +406,7 @@ function prepararInstrucoesPrompt(d) {
     async function gerarDieta(d, pagoConfirmado = false) {
         const status = document.getElementById('status-topo');
         const info = prepararInstrucoesPrompt(d);
+        const nomeUsuario = localStorage.getItem('user_name') || "Cliente";
 
         status.style.display = 'block';
         status.scrollIntoView({ behavior: 'smooth' });
