@@ -362,11 +362,24 @@ function prepararInstrucoesPrompt(d) {
             dados = localizarNaTabela(nomeTentativa);
         }
 
-        const p = dados ? (dados.proteina || 0) : 0;
-        const c = dados ? (dados.carbo || 0) : 0;
-        const g = dados ? (dados.gordura || 0) : 0;
+        if (dados) {
+            const p = dados.proteina || 0;
+            const c = dados.carbo || 0;
+            const g = dados.gordura || 0;
+            const uni = dados.unidade || "g";
 
-        matchPreparos += `- ${nomeRaw.toUpperCase()}: | Ref: 100g tem ${p}g Prot, ${c}g Carb, ${g}g Gord.\n`;
+            // Nova lógica de referência para o Prompt
+            let refTexto = "";
+            if (uni === "un") {
+                refTexto = `1 Unidade (aprox. ${dados.pesoReferencia}g)`;
+            } else if (uni === "ml") {
+                refTexto = `100ml`;
+            } else {
+                refTexto = `100g`;
+            }
+
+            matchPreparos += `- ${nomeRaw.toUpperCase()}: | Ref: ${refTexto} tem ${p}g Prot, ${c}g Carb, ${g}g Gord. (USAR ${uni.toUpperCase()} NO CARDÁPIO)\n`;
+        }
     });
 
     return {
@@ -491,6 +504,8 @@ DIRETRIZ DE FECHAMENTO MATEMÁTICO
    - Você está AUTORIZADO a aumentar o Suco de Uva Integral, Suco de Laranja e Maltodextrina para volumes altos (ex: 800ml, 1L ou 1.2L por dia) até que a soma de carboidratos bataO MAIS PROXIMO POSSIVEL o valor de ${info.totalCarbo}g.
 4. AJUSTE INFINITO DE PROTEINA: Você esta AUTORIZADO a utilizar CLARA DE OVOS que contem a cada 100g  : 13.40 de proteinas, 0 carbo e 0.1 gordura ,MESMO QUE NÃO TENHA NA LISTA DE ALIMENTOS
 5. PROIBIÇÃO DE AVISO DE ERRO: É proibido dizer que "não foi possível". Use o Suco de Uva como variável de ajuste até que a conta feche.
+
+REGRA DE NOMENCLATURA: Para líquidos (Leite, Iogurte, Sucos), descreva a porção em ml. Para Ovos, Pães e Frutas (Banana, Maçã), descreva a porção em Unidades (un). Para o restante (Carnes, Arroz, etc), mantenha em gramas (g).
 
 MENSAGEM DE AJUSTE: ${info.totalProt > 160 ? "Se os alimentos selecionados não tiverem proteína suficiente (ex: faltou carne/ovo), avise ao usuário para selecionar mais fontes proteicas." : ""}
 ITENS COMPLEMENTARES:
