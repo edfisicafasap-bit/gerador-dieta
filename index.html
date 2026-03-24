@@ -246,27 +246,36 @@ const estruturaAlimentos = {
     }
 
    function calculateTMB() {
-        const name = document.getElementById('calc-name').value;
-        const gender = document.getElementById('calc-gender').value;
-        const age = parseFloat(document.getElementById('calc-age').value);
-        const weight = parseFloat(document.getElementById('calc-weight').value);
-        const height = parseFloat(document.getElementById('calc-height').value);
-        const activity = parseFloat(document.getElementById('calc-activity').value);
-        const goalValue = document.getElementById('calc-goal').value;
-       if (!name || !age || !weight || !height) return alert("Por favor, digite seu nome e preencha os dados.");
-        
-        let bmr = (gender === 'male') ? 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age) : 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
-        const tdee = bmr * activity;
-        let finalCalories = (goalValue === 'Emagrecimento') ? tdee * 0.8 : (goalValue === 'Hipertrofia') ? tdee * 1.15 : tdee;
-        const caloriesResult = Math.round(finalCalories);
-        
-        document.getElementById('goalResult').innerText = caloriesResult + " kcal";
-        document.getElementById('tmb-msg-v2').innerHTML = `
-            Seu corpo precisa de <span class="highlight-text">${caloriesResult} calorias</span> por dia para ${goalValue.toLowerCase()}.<br> 
-            Deseja transformar esses números em um plano alimentar<br>
- <span class="destaque-amarelo">somente com os alimentos que você gosta de comer?</span><br> 
-            É só clicar no botão abaixo ↓
-        `;
+    const name = document.getElementById('calc-name').value;
+    const gender = document.getElementById('calc-gender').value;
+    const age = parseFloat(document.getElementById('calc-age').value);
+    const weight = parseFloat(document.getElementById('calc-weight').value);
+    const height = parseFloat(document.getElementById('calc-height').value);
+    const activity = parseFloat(document.getElementById('calc-activity').value);
+    const goalValue = document.getElementById('calc-goal').value;
+
+    if (!name || !age || !weight || !height) {
+        return alert("Por favor, digite seu nome e preencha os dados.");
+    }
+
+    let bmr = (gender === 'male') 
+        ? 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age) 
+        : 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+
+    const tdee = bmr * activity;
+    let finalCalories = (goalValue === 'Emagrecimento') ? tdee * 0.8 : (goalValue === 'Hipertrofia') ? tdee * 1.15 : tdee;
+    const caloriesResult = Math.round(finalCalories);
+
+    document.getElementById('goalResult').innerText = caloriesResult + " kcal";
+
+    // MENSAGEM COM O NOME EM AMARELO NO INÍCIO
+    document.getElementById('tmb-msg-v2').innerHTML = `
+        <span class="destaque-amarelo">${name.toUpperCase()}</span>, seu corpo precisa de 
+        <span class="highlight-text">${caloriesResult} calorias</span> por dia para ${goalValue.toLowerCase()}.<br> 
+        Deseja transformar esses números em um plano alimentar<br>
+        <span class="destaque-amarelo">somente com os alimentos que você gosta de comer?</span><br> 
+        É só clicar no botão abaixo ↓
+    `;
         
         document.getElementById('resultContainer').style.display = 'block';
         document.getElementById('resultContainer').scrollIntoView({ behavior: 'smooth' });
