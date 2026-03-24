@@ -159,10 +159,9 @@
     <div id="step-2" class="step-section">
         <h2>🍎 Configuração do Plano</h2>
         <p class="subtitle" id="boas-vindas-plano">
-        Parabéns pela escolha <span id="nome-destaque" style="color: #FFD400; font-weight: 900;"></span>, 
-        ter um plano alimentar com base em suas calorias é indispensável para se ter melhores resultados. 
-        Nós já selecionamos os melhores e mais saudáveis alimentos para você. 
-        Lembre-se que para um plano mais eficiente e rico em nutrientes, diversifique suas escolhas em cada categoria.
+       Parabéns pela escolha, <span id="nome-destaque" class="highlight-text"></span>!<br> 
+    Ter um <span class="highlight-text">plano alimentar</span> ajustado às suas calorias é essencial para melhores resultados.<br>
+    Selecionamos somente alimentos saudáveis para você — lembre-se de <span class="highlight-text">variar as opções</span> para garantir mais nutrientes e eficiência.
     </p>
         <label>Seu Peso Atual (kg)</label>
         <input type="number" id="peso">
@@ -269,12 +268,11 @@ const estruturaAlimentos = {
     document.getElementById('goalResult').innerText = caloriesResult + " kcal";
 
     // MENSAGEM COM O NOME EM AMARELO NO INÍCIO
-    document.getElementById('tmb-msg-v2').innerHTML = `
-        <span class="destaque-amarelo">${name.toUpperCase()}</span>, seu corpo precisa de 
-        <span class="highlight-text">${caloriesResult} calorias</span> por dia para ${goalValue.toLowerCase()}.<br> 
-        Deseja transformar esses números em um plano alimentar<br>
-        <span class="destaque-amarelo">somente com os alimentos que você gosta de comer?</span><br> 
-        É só clicar no botão abaixo ↓
+      document.getElementById('tmb-msg-v2').innerHTML = `
+        <span class="highlight-text">${name.toUpperCase()}</span>, seu corpo precisa de 
+        <span class="highlight-text">${caloriesResult} calorias</span> por dia para <span class="highlight-text">${goalValue.toLowerCase()}.</span><br> 
+        Deseja transformar esses números em um <span class="highlight-text">plano alimentar?</span><br>
+        É só clicar no botão abaixo <span class="highlight-text">↓</span>
     `;
         
         document.getElementById('resultContainer').style.display = 'block';
