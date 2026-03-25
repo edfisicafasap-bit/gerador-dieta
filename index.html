@@ -432,32 +432,32 @@ function prepararInstrucoesPrompt(d) {
 }
 
 async function gerarDieta(d) {
-        const status = document.getElementById('status-topo');
-        const info = prepararInstrucoesPrompt(d);
-        const nomeUsuario = localStorage.getItem('user_name') || "Campeão(ã)";
+    const status = document.getElementById('status-topo');
+    const info = prepararInstrucoesPrompt(d); // Realiza os cálculos de g/kg e prepara a lista de alimentos
+    const nomeUsuario = localStorage.getItem('user_name') || "Campeão(ã)";
 
-        status.style.display = 'block';
-        status.scrollIntoView({ behavior: 'smooth' });
+    status.style.display = 'block';
+    status.scrollIntoView({ behavior: 'smooth' });
 
-        // Mensagens atualizadas para o tempo real da API (Bate e Volta)
-        const mensagens = [
-            "📊 CALCULANDO MACRONUTRIENTES...", 
-            "🍳 SELECIONANDO PREPAROS...", 
-            "⚖️ REVISANDO CÁLCULOS (AUDITORIA)...",
-            "📄 FINALIZANDO SEU PDF..."
-        ];
-        
-        let msgIndex = 0;
-        status.innerText = mensagens[0];
-        const interval = setInterval(() => { 
-            if (msgIndex < mensagens.length - 1) { 
-                msgIndex++;
-                status.innerText = mensagens[msgIndex]; 
-            } 
-        }, 5000); // 5 segundos entre mensagens para cobrir o tempo das duas chamadas da IA
+    // Mensagens configuradas para o tempo de resposta da API com Auditoria (aprox. 20s)
+    const mensagens = [
+        "📊 CALCULANDO MACRONUTRIENTES...", 
+        "🍳 SELECIONANDO PREPAROS...", 
+        "⚖️ REVISANDO CÁLCULOS (AUDITORIA)...",
+        "📄 FINALIZANDO SEU PDF..."
+    ];
+    
+    let msgIndex = 0;
+    status.innerText = mensagens[0];
+    const interval = setInterval(() => { 
+        if (msgIndex < mensagens.length - 1) { 
+            msgIndex++;
+            status.innerText = mensagens[msgIndex]; 
+        } 
+    }, 5000); 
 
-        // O SEU PROMPT ESTRUTURADO (Enviado para o Passo 1 da API)
-        const promptFinal = `
+    // O SEU PROMPT ESTRUTURADO (Enviado para a API para a Geração Inicial)
+    const promptFinal = `
 Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTICA DOS MACROS CRUZADOS. Você deve utilizar as informações prescritas para bater as metas diárias utilizando a ESTRATÉGIA DE SUBTRAÇÃO. 
 
 REGRAS DE CÁLCULO OBRIGATÓRIAS (AUDITORIA TOTAL):
@@ -576,24 +576,45 @@ ${new Date().toLocaleString()}
 RODAPÉ:
 "ESTE PLANO ALIMENTAR FOI GERADO COM BASE EM ESTIMATIVAS NUTRICIONAIS PADRÃO..."`;
 
-    try {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const linhas = doc.splitTextToSize(promptFinal, 180);
-            let y = 20;
-            linhas.forEach(linha => {
-                if (y > 275) { doc.addPage(); y = 20; }
-                doc.text(linha, 15, y);
-                y += 6;
-            });
-            doc.save("DEBUG_PROMPT_COMPLETO.pdf");
-            clearInterval(interval);
-            status.innerText = "SUCESSO!";
-        } catch (e) {
-            clearInterval(interval);
-            console.error(e);
+try {
+        const response = await fetch('/api/gerar-dieta', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                prompt: promptFinal, 
+                email: d.email 
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Erro na geração.");
+
+        clearInterval(interval);
+        status.innerText = "✅ REEDUCAÇÃO GERADA COM SUCESSO!";
+
+        if (data.pdf_url) {
+            window.open(data.pdf_url, '_blank');
         }
+
+        const resultadoDiv = document.getElementById('resultado');
+        if (resultadoDiv) {
+            resultadoDiv.innerText = data.dieta;
+            resultadoDiv.style.display = 'block';
+            
+            const btnDownload = document.getElementById('btn-download-pos-geracao');
+            if (btnDownload) {
+                btnDownload.style.display = 'block';
+                btnDownload.onclick = () => window.open(data.pdf_url, '_blank');
+            }
+            mudarPasso(3); 
+        }
+
+    } catch (e) {
+        clearInterval(interval);
+        status.innerText = "❌ ERRO: " + e.message;
+        console.error(e);
     }
+}
 
     async function verificarAcessoEPagar() {
         const aceitouTermos = document.getElementById('aceite-clausula').checked;
