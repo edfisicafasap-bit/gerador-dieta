@@ -18,7 +18,7 @@ export default async function handler(req, res) {
         // 1. VERIFICAÇÃO DE SEGURANÇA E REGRAS DE NEGÓCIO
         const { data: usuario, error: userError } = await supabase
             .from('Usuarios_Dieta')
-            .select('*') // Selecionamos tudo para ter contagem_semanal e data_reset
+            .select('*')
             .eq('email', emailLimpo)
             .maybeSingle();
 
@@ -34,26 +34,21 @@ export default async function handler(req, res) {
 
         if (usuario.tipo_plano === 'anual') {
             const dataReset = usuario.data_reset ? new Date(usuario.data_reset) : null;
-
-            // Se não houver data_reset ou se a data já passou, resetamos a semana
             if (!dataReset || agora > dataReset) {
                 novaContagem = 0;
                 const proximoReset = new Date();
                 proximoReset.setDate(proximoReset.getDate() + 7);
                 novoReset = proximoReset.toISOString();
             }
-
-            // Verifica se já atingiu o limite de 2 na semana atual
             if (novaContagem >= 2) {
                 return res.status(403).json({ 
                     error: 'Limite semanal atingido. Você pode gerar 2 planos por semana.' 
                 });
             }
         }
-        // --------------------------------------------
 
-        // 2. Chamada para a OpenAI
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        // 2. PASSO 1: GERAÇÃO INICIAL DA DIETA
+        const responseGeral = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -62,20 +57,56 @@ export default async function handler(req, res) {
             body: JSON.stringify({
                 model: "gpt-4o-mini",
                 messages: [{ role: "user", content: prompt }],
-                temperature: 0.7
+                temperature: 0.3 // Temperatura baixa para evitar "alucinação" matemática
             })
         });
 
-        const data = await response.json();
-        if (!response.ok || !data.choices) throw new Error('Erro na IA');
+        const dataGeral = await responseGeral.json();
+        if (!responseGeral.ok) throw new Error('Erro na geração inicial');
+        const rascunhoDieta = dataGeral.choices[0].message.content;
 
-        const dietaTexto = data.choices[0].message.content;
+        // 3. PASSO 2: AUDITORIA E LIMPEZA (SELF-CORRECTION)
+        // Extraímos as metas do prompt original para o auditor conferir
+        const metasNoPrompt = prompt.match(/METAS:[\s\S]*?LISTA/) ? prompt.match(/METAS:[\s\S]*?LISTA/)[0] : "Bater os macros calculados.";
 
-        // 3. Gerar PDF e Upload
+        const promptAuditor = `
+        VOCÊ É UM AUDITOR NUTRICIONAL. 
+        REVISE A DIETA ABAIXO E CORRIJA QUALQUER ERRO MATEMÁTICO NOS MACROS.
+        
+        Sua prioridade é a MATEMÁTICA REAL baseada nestas metas:
+        ${metasNoPrompt}
+
+        DIETA PARA REVISAR:
+        ${rascunhoDieta}
+
+        REGRAS DE OURO:
+        1. Refaça as somas de cada refeição. Se houver erro, ajuste as gramagens.
+        2. O total final deve ser a soma REAL das refeições apresentadas.
+        3. REMOVA OBRIGATORIAMENTE qualquer Markdown (###, **, #, *). O texto deve ser plano e limpo.
+        4. Comece a resposta direto com "Aqui está seu plano...".
+        `;
+
+        const responseAuditor = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini",
+                messages: [{ role: "user", content: promptAuditor }],
+                temperature: 0 // Zero absoluto para precisão máxima
+            })
+        });
+
+        const dataAuditor = await responseAuditor.json();
+        const dietaTextoFinal = dataAuditor.choices[0].message.content;
+
+        // 4. Gerar PDF e Upload (Usando o texto já auditado e limpo)
         const nomeArquivo = `reeducacao-${emailLimpo.replace(/[@.]/g, '_')}-${Date.now()}.pdf`;
-        const linkPublico = await uploadPDFSupabase(dietaTexto, nomeArquivo);
+        const linkPublico = await uploadPDFSupabase(dietaTextoFinal, nomeArquivo);
 
-        // 4. ATUALIZAÇÃO DOS CRÉDITOS E CONTROLE SEMANAL
+        // 5. ATUALIZAÇÃO DOS CRÉDITOS E CONTROLE SEMANAL
         const atualizacao = { 
             pdf_url: linkPublico, 
             ultima_geracao: agora.toISOString(),
@@ -86,7 +117,7 @@ export default async function handler(req, res) {
             atualizacao.creditos = 0;
             atualizacao.pago = false;
         } else if (usuario.tipo_plano === 'anual') {
-            atualizacao.contagem_semanal = novaContagem + 1; // Incrementa o uso
+            atualizacao.contagem_semanal = novaContagem + 1;
         }
 
         await supabase
@@ -95,7 +126,7 @@ export default async function handler(req, res) {
             .eq('email', emailLimpo);
 
         return res.status(200).json({ 
-            dieta: dietaTexto, 
+            dieta: dietaTextoFinal, 
             pdf_url: linkPublico 
         });
 
