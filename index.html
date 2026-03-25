@@ -431,21 +431,33 @@ function prepararInstrucoesPrompt(d) {
     };
 }
 
-    async function gerarDieta(d, pagoConfirmado = false) {
+async function gerarDieta(d) {
         const status = document.getElementById('status-topo');
         const info = prepararInstrucoesPrompt(d);
-        const nomeUsuario = localStorage.getItem('user_name') || "Cliente";
+        const nomeUsuario = localStorage.getItem('user_name') || "Campeão(ã)";
 
         status.style.display = 'block';
         status.scrollIntoView({ behavior: 'smooth' });
 
-        const mensagens = ["📊 CALCULANDO MACRONUTRIENTES...", "🍳 SELECIONANDO PREPAROS...", "⏳ GERANDO PDF DE DEBUG..."];
+        // Mensagens atualizadas para o tempo real da API (Bate e Volta)
+        const mensagens = [
+            "📊 CALCULANDO MACRONUTRIENTES...", 
+            "🍳 SELECIONANDO PREPAROS...", 
+            "⚖️ REVISANDO CÁLCULOS (AUDITORIA)...",
+            "📄 FINALIZANDO SEU PDF..."
+        ];
+        
         let msgIndex = 0;
+        status.innerText = mensagens[0];
         const interval = setInterval(() => { 
-            if (msgIndex < mensagens.length) { status.innerText = mensagens[msgIndex]; msgIndex++; } 
-        }, 1500);
+            if (msgIndex < mensagens.length - 1) { 
+                msgIndex++;
+                status.innerText = mensagens[msgIndex]; 
+            } 
+        }, 5000); // 5 segundos entre mensagens para cobrir o tempo das duas chamadas da IA
 
-const promptFinal = `
+        // O SEU PROMPT ESTRUTURADO (Enviado para o Passo 1 da API)
+        const promptFinal = `
 Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTICA DOS MACROS CRUZADOS. Você deve utilizar as informações prescritas para bater as metas diárias utilizando a ESTRATÉGIA DE SUBTRAÇÃO. 
 
 REGRAS DE CÁLCULO OBRIGATÓRIAS (AUDITORIA TOTAL):
