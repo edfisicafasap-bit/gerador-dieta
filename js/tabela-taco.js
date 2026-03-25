@@ -93,6 +93,7 @@ const TABELA_ALIMENTOS = {
   "ovos poche": { proteina: 6.5, gordura: 5, carbo: 0.5, unidade: "un", pesoReferencia: 50 },
   "ovos frito na agua": { proteina: 6.5, gordura: 5, carbo: 0.5, unidade: "un", pesoReferencia: 50 },
   "ovos frito com azeite": { proteina: 6.5, gordura: 7.5, carbo: 0.5, unidade: "un", pesoReferencia: 50 },
+  "clara de ovos": { proteina: 3.6, gordura: 0, carbo: 0.2, unidade: "un", pesoReferencia: 35 },
 
   "file de tilapia": { proteina: 26, gordura: 2, carbo: 0, unidade: "g" },
   "file de merluza": { proteina: 24, gordura: 1, carbo: 0, unidade: "g" },
