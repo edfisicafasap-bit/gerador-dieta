@@ -339,6 +339,25 @@ function prepararInstrucoesPrompt(d) {
                      .trim() : "";
     };
 
+    // ============================================================
+    // LÓGICA DE INJEÇÃO AUTOMÁTICA DE CLARAS
+    // Se houver qualquer item da subcategoria "Ovos" selecionado, 
+    // e a Clara ainda não estiver na lista, nós a adicionamos.
+    // ============================================================
+    const temOvoSelecionado = d.alimentos.some(item => 
+        item.toLowerCase().includes("ovos:") || item.toLowerCase().includes("mexidos")
+    );
+    
+    const jaTemClara = d.alimentos.some(item => 
+        item.toLowerCase().includes("clara de ovos")
+    );
+
+    if (temOvoSelecionado && !jaTemClara) {
+        // Injetamos no formato esperado pelo seu split(':')
+        d.alimentos.push("Ovos: Clara de Ovos");
+    }
+    // ============================================================
+
     let matchPreparos = "";
     const caloriasMeta = parseFloat(d.calorias) || 2000;
     const pesoUser = parseFloat(d.peso) || 70;
@@ -377,6 +396,9 @@ function prepararInstrucoesPrompt(d) {
             let nomeTentativa = nomeRaw;
             if (subcategoria.includes("ARROZ")) nomeTentativa = `arroz ${nomeRaw}`;
             if (subcategoria.includes("FEIJAO")) nomeTentativa = `feijao ${nomeRaw}`;
+            // Tentativa específica para encontrar a clara caso o nome venha apenas como "clara de ovos"
+            if (nomeRaw.toLowerCase().includes("clara")) nomeTentativa = "clara de ovos";
+            
             dados = localizarNaTabela(nomeTentativa);
         }
 
@@ -386,10 +408,9 @@ function prepararInstrucoesPrompt(d) {
             const g = dados.gordura || 0;
             const uni = dados.unidade || "g";
 
-            // Nova lógica de referência para o Prompt
             let refTexto = "";
             if (uni === "un") {
-                refTexto = `1 Unidade (aprox. ${dados.pesoReferencia}g)`;
+                refTexto = `1 Unidade (aprox. ${dados.pesoReferencia || 50}g)`;
             } else if (uni === "ml") {
                 refTexto = `100ml`;
             } else {
@@ -472,7 +493,7 @@ Voce deve gerar EXATAMENTE ${d.refeicoes} refeicoes.
 REGRAS DE OURO DE DISTRIBUIÇÃO PROTEICA:
 1. NÃO SE LIMITE A GRAMATURAS DE PORÇÃO PADRÃO EM: CARBOIDRATOS E PROTEINAS NO ALMOÇO E JANTA,  Se a meta de ${info.totalProt}g E ${info.totalCarbo} for alta, não tenha medo de subir as porções, mas faça de forma inteligente para ficar algo real e possivel de comer.
 2. DIVERSIFIQUE AS FONTES: Para não sobrecarregar apenas o Almoço/Jantar com carnes, AUMENTE a densidade proteica das outras refeições:
-   - CAFÉ/LANCHES: Se necessário, use 3 a 4 ovos em vez de 2, ou combine Ovos + Queijo (Ricota/Minas) + Iogurte + Whey na mesma refeição.
+   - CAFÉ/LANCHES: Se necessário, use 3 a 4 ovos + as claras em vez de 2, ou combine Ovos + Queijo (Ricota/Minas) + Iogurte + Whey na mesma refeição.
    - ALMOÇO/JANTAR: Combine a carne principal com outras fontes (ex: Feijão, Lentilha ou Queijo ralado por cima) para ajudar a bater o total.
 3. PRIORIDADE MATEMÁTICA: O resumo final deve ser a SOMA REAL de todos os macros (incluindo a proteína dos carboidratos como arroz, feijão e aveia). Se a conta não fechar ${info.totalProt}g, ajuste as gramagens para cima até bater o valor exato.
 4. EQUILÍBRIO: Prefira pratos volumosos e variados em vez de uma única porção gigante de proteína animal isolada.
@@ -527,7 +548,7 @@ DIRETRIZ DE FECHAMENTO MATEMÁTICO
 2. TRAVA DE GORDURA: Ajuste o Azeite e as fontes de gordura para não passar de ${info.totalGord}g.
 3. AJUSTE INFINITO DE CARBOIDRATO: Se após os passos acima o Carboidrato ainda não atingiu ${info.totalCarbo}g:
    - Você está AUTORIZADO a aumentar o Suco de Uva Integral, Suco de Laranja e Maltodextrina para volumes altos (ex: 800ml, 1L ou 1.2L por dia) até que a soma de carboidratos bataO MAIS PROXIMO POSSIVEL o valor de ${info.totalCarbo}g.
-4. AJUSTE INFINITO DE PROTEINA: Você esta AUTORIZADO a utilizar CLARA DE OVOS que contem a cada 100g  : 13.40 de proteinas, 0 carbo e 0.1 gordura ,MESMO QUE NÃO TENHA NA LISTA DE ALIMENTOS
+4. AJUSTE INFINITO DE PROTEINA: Se as proteínas animais selecionadas não forem suficientes para bater a meta sem estourar a gordura, utilize a CLARA DE OVOS disponível na lista técnica para fechar a conta.
 5. PROIBIÇÃO DE AVISO DE ERRO: É proibido dizer que "não foi possível". Use o Suco de Uva como variável de ajuste até que a conta feche.
 
 REGRA DE NOMENCLATURA: Para líquidos (Leite, Iogurte, Sucos), descreva a porção em ml. Para Ovos, Pães e Frutas (Banana, Maçã), descreva a porção em Unidades (un). Para o restante (Carnes, Arroz, etc), mantenha em gramas (g).
