@@ -450,117 +450,119 @@ Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTIC
 
 REGRAS DE CÁLCULO OBRIGATÓRIAS (AUDITORIA TOTAL):
 1. MACROS SECUNDÁRIOS: Você deve obrigatoriamente contabilizar as proteínas e gorduras presentes nos carboidratos (ex: Arroz, Feijão, Aveia, Pão), as gorduras e carboidratos presentes nas proteínas (ex: Ovos, Carnes, Queijos, Iogurte) e as proteínas e carboidratos presentes nas fontes de gordura (ex: Pasta de Amendoim, Chia).
-2. PROTEÍNA POR SUBTRAÇÃO: Primeiro, calcule toda a proteína proveniente das fontes de carboidrato e gordura (arroz, feijão, aveia, pão, leite, pasta de amendoim, etc.). Depois, adicione APENAS a quantidade necessária de proteína animal (frango, carne, ovo, peito de peru) para atingir o total de ${info.totalProt}g. Se os carboidratos já entregarem muita proteína, reduza a carne drasticamente.
-3. SOMA ARITMÉTICA REAL: O resumo no final deve ser a soma REAL de cada grama de alimento listado de acordo com a tabela de nutrientes de cada um, É PROIBIDO inventar ou arredondar números para "parecer" que bateu a meta. Se a soma real der diferente da meta, escreva o valor real encontrado.
-SE ATENTE OBRIGATÓRIAMENTE A:
-- 1. Não ajustar número no final para parecer visualmente que bateu a meta
-- 2 O total final será 100% derivado da soma real dos alimentos
-- 3 Se passar ou ficar abaixo, vai aparecer exatamente como deu a soma, independente se bateu cravado ou não!
+2. PROTEÍNA POR SUBTRAÇÃO: Primeiro, calcule toda a proteína proveniente das fontes de carboidrato e gordura. Depois, adicione APENAS a quantidade necessária de proteína animal para atingir ${info.totalProt}g.
+3. SOMA ARITMÉTICA REAL: O resumo deve ser a soma REAL. É PROIBIDO inventar números.
 
-4. PRECISÃO DOS DADOS: Use apenas os valores de referência da LISTA DE ALIMENTOS abaixo.
+SE ATENTE OBRIGATORIAMENTE:
+- Não ajustar números no final
+- O total final é 100% derivado da soma real
+- Mostrar exatamente o valor encontrado
 
-5. REGRA INVIOLÁVEL: PROTEINA NUNCA DEVE FICAR ABAIXO DE 1.5G POR KG E NUNCA ACIMA DE 2.2 G POR KG; GORDURA NUNCA DEVE FICAR ABAIXO DE 0.7g POR KG E NUNCA ACIMA DE 1.1g POR KG. CHEGUE O MAIS PROXIMO POSSIVEL DA META SEM ESTOURAR ESSE LIMITE. SE COM OS ALIMENTOS QUE A PESSOA SELECIONOU NÃO FOI POSSIVEL FAZER UM CALCULO EXATO, NÃO MINTA, APENAS ALERTE! O TOTAL DE CALORIAS NUNCA DEVERÁ FICAR MAIS QUE 100KCAL NEM MENOS QUE 100KCAL DO TOTAL DE ${d.calorias} kcal, ESSA REGRA É EXTREMAMENTE OBRIGATÓRIA. 
+4. PRECISÃO DOS DADOS: Use apenas os valores da LISTA DE ALIMENTOS.
 
-Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou."
+5. REGRA INVIOLÁVEL:
+Proteína: 1.5–2.2g/kg  
+Gordura: 0.7–1.1g/kg  
+Calorias: ±100 kcal de ${d.calorias}
 
-REGRAS DE FORMATAÇÃO: Responda apenas em TEXTO PLANO (Plain Text). É PROIBIDO o uso de qualquer sintaxe Markdown.
+Comece a resposta exatamente com:
+"Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou."
 
-O PLANO DEVE TER O TOTAL APROXIMADO DE ${d.calorias} kcal para ${d.objetivo}.
-METAS TÉCNICAS TOTAIS: P: ${info.totalProt}g | C: ${info.totalCarbo}g | G: ${info.totalGord}g.
-METAS POR REFEIÇÃO (ALVO): ~${info.alvoCaloricoRef} kcal | ~${info.protPorRef}g Prot.
+REGRAS DE FORMATAÇÃO:
+Texto plano (SEM markdown)
 
-LISTA DE ALIMENTOS DISPONÍVEIS E SEUS MACROS (USE PARA ORGANIZAR):
+METAS:
+P: ${info.totalProt}g | C: ${info.totalCarbo}g | G: ${info.totalGord}g
+
+LISTA DE ALIMENTOS:
 ${info.matchPreparos}
 
-REGRAS DE OURO (NÃO IGNORE):
-1. AJUSTE DE PORÇÃO: Se para bater ${info.totalProt}g de proteína você precisar sugerir 260g de frango, FAÇA ISSO. Não fique preso a porções de 100g ou 150g. MAS SE TIVER MUITAS PROTEINAS SELECIONADAS, VARIE ELAS. EX: CAFE DA MANHA COM OVOS E QUEIJO, OU COM OVOS E WHEY... OU SEJA, COLOQUE MAIS DE UMA OPÇÃO DE PROTEINA.
-2. SOMA VERDADEIRA: O resumo no final deve ser a soma REAL das gramagens de acordo com os alimentos, OBRIGATÓRIO POR O NUMERO REAL, NÃO PRECISA INVENTAR PARA BATER A META, CASO NÃO BATA  A META DEIXE SEM BATER ELA, MAS NÃO MINTA NOS NUMEROS. Não repita apenas os números que eu te enviei se a comida que você listou não somar aquilo.
+REGRAS DE OURO:
+1. Ajuste livre de porções (sem limite fixo)
+2. Soma sempre REAL (sem inventar)
 
-REGRAS POR HORÁRIO
-CAFÉ DA MANHÃ: Transformar em: Bowl, Shake, Vitamina, Sanduíche ou Omelete. 
-LANCHES, DESJEJUM E CAFÉ DA TARDE: Foco em portabilidade e simplicidade.
-ALMOÇO/JANTAR: Estrutura [Base de Carboidrato] + [Proteína] + [Legumes] e escreva na frente "SALADA À VONTADE".
-Jantar pode ser mais leve, mas deve manter a estrutura de refeição completa.
-CEIA: REFEIÇÕES SUPER LEVES, COMO UMA FRUTA, OU FRUTA + WHEY, OU IOGURTE...
-REGRA IMPORTANTE: INCLUIR AO MENOS UMA FONTE DE PROTEINA EM TODAS AS REFEIÇÕES.
+REGRAS POR HORÁRIO:
+CAFÉ: Bowl, Shake, Omelete etc  
+ALMOÇO/JANTA: Carb + Proteína + Legumes + "SALADA À VONTADE"  
+CEIA: leve  
+Sempre incluir proteína
 
-DETERMINAÇÃO DE REFEIÇÕES:
-Voce deve gerar EXATAMENTE ${d.refeicoes} refeicoes.
-- Se ${d.refeicoes} for 4: Use (1. Cafe da Manha, 2. Almoco, 3. Cafe da Tarde, 4. Jantar).
-- Se ${d.refeicoes} for 5: Use (1. Cafe da Manha, 2. Almoco, 3. Cafe da Tarde, 4. Jantar, 5. Ceia).
-- Se ${d.refeicoes} for 6: Use (1. Desjejum, 2. Cafe da Manha, 3. Almoco, 4. Cafe da Tarde, 5. Jantar, 6. Ceia).
+DETERMINAÇÃO:
+EXATAMENTE ${d.refeicoes} refeições
 
-REGRAS DE OURO DE DISTRIBUIÇÃO PROTEICA:
-1. NÃO SE LIMITE A GRAMATURAS DE PORÇÃO PADRÃO EM: CARBOIDRATOS E PROTEINAS NO ALMOÇO E JANTA,  Se a meta de ${info.totalProt}g E ${info.totalCarbo} for alta, não tenha medo de subir as porções, mas faça de forma inteligente para ficar algo real e possivel de comer.
-2. DIVERSIFIQUE AS FONTES: Para não sobrecarregar apenas o Almoço/Jantar com carnes, AUMENTE a densidade proteica das outras refeições:
-   - CAFÉ/LANCHES: Se necessário, use 3 a 4 ovos + as claras em vez de 2, ou combine Ovos + Queijo (Ricota/Minas) + Iogurte + Whey na mesma refeição.
-   - ALMOÇO/JANTAR: Combine a carne principal com outras fontes (ex: Feijão, Lentilha ou Queijo ralado por cima) para ajudar a bater o total.
-3. PRIORIDADE MATEMÁTICA: O resumo final deve ser a SOMA REAL de todos os macros (incluindo a proteína dos carboidratos como arroz, feijão e aveia). Se a conta não fechar ${info.totalProt}g, ajuste as gramagens para cima até bater o valor exato.
-4. EQUILÍBRIO: Prefira pratos volumosos e variados em vez de uma única porção gigante de proteína animal isolada.
+DISTRIBUIÇÃO PROTEICA:
+- Diversificar fontes
+- Usar claras se necessário
+- Não concentrar tudo no almoço
 
-REGRAS OBRIGATÓRIAS FONTES DE GORDURA:
-DIVIDA AS FONTES DE GORDURA  AO LONGO DO DIA, NÃO COLOQUE TODAS EM APENAS UMA REFEIÇÃO
+REGRA DE GORDURA:
+Distribuir ao longo do dia
 
-ESTRUTURA DO CARDÁPIO (${d.refeicoes} refeições):
+REGRA DE DENSIDADE ALIMENTAR POR OBJETIVO:
+- Emagrecimento: baixa densidade (alto volume, baixa caloria)
+- Definição: equilíbrio
+- Hipertrofia: alta densidade (facilidade de ingestão)
 
-BLOCO 1: OPÇÕES A
-   Para cada refeição liste APENAS:
-   - Nome do Alimento (Peso em gramas (ou unidades para pães, banana, ovos, maça, etc...)
-   SUGESTÃO DE PREPARO: (Instruções simples).
+ESTRUTURA:
+[REFEIÇÃO]
+- Alimento (g): [Prot, Carb, Gord]
+SUBTOTAL
+PREPARO
 
-SOMA REAL DOS MACROS (OPÇÃO A):
-Proteínas: [Soma Real]g | Carboidratos: [Soma Real]g | Gorduras: [Soma Real]g | Calorias: [Soma Real] kcal.
+SOMA FINAL:
+Proteínas: real  
+Carboidratos: real  
+Gorduras: real  
+Calorias: real  
 
----
-BLOCO 2: OPÇÕES B (VARIAÇÃO SEM ARROZ E FEIJÃO)
-(Mesmo formato, trocando arroz/feijão por outras fontes de carbo da lista técnica).
+DIRETRIZ DE FECHAMENTO:
 
-SOMA REAL DOS MACROS (OPÇÃO B):
-Proteínas: [Soma Real]g | Carboidratos: [Soma Real]g | Gorduras: [Soma Real]g | Calorias: [Soma Real] kcal.
+1. TRAVA DE PROTEÍNA:
+Prioridade máxima bater ${info.totalProt}g
 
-ESTRUTURA OBRIGATÓRIA DO CARDÁPIO:
-Para CADA refeição, você deve seguir EXATAMENTE este modelo:
+2. TRAVA DE GORDURA:
+Não ultrapassar ${info.totalGord}g
 
-[NOME DA REFEIÇÃO]
-- Alimento A (gramagem): [Cálculo: Xg Prot, Xg Carb, Xg Gord]
-- Alimento B (gramagem): [Cálculo: Xg Prot, Xg Carb, Xg Gord]
-SUBTOTAL DA REFEIÇÃO: [Soma exata dos macros desta refeição]
-SUGESTÃO DE PREPARO: ...
+3. AJUSTE DE CARBOIDRATO BASEADO NO OBJETIVO:
 
----
-SOMA TOTAL DE TODAS AS REFEIÇÕES:
-Proteínas: [Soma de todos os subtotais]g
-Carboidratos: [Soma de todos os subtotais]g
-Gorduras: [Soma de todos os subtotais]g
-Calorias Totais: [Cálculo final baseado na soma acima]
+- SE ${d.objetivo} = "Hipertrofia":
+Pode usar SUCO DE UVA, SUCO DE LARANJA, MALTODEXTRINA, MEL
+Pode usar volumes altos (500ml até 1L+)
 
-AVISO CRÍTICO: 
-Se a soma total não atingir a meta de ${info.totalProt}g de PROTEINAS, você DEVE aumentar as gramagens dos alimentos (frango, peixes, ovos, boi, porco...) até que o valor FIQUE O MAIS PRÓXIMO POSSIVEL 
-Se a soma total não atingir a meta de ${info.totalCarbo}g de Carboidratos, você DEVE aumentar as gramagens dos alimentos (arroz, macarrão, aveia...) até que o valor FIQUE O MAIS PRÓXIMO POSSIVEL 
-Se a soma total não atingir a meta de ${info.totalGord}g de Gordura, você DEVE aumentar as gramagens dos alimentos (azeite, abacate, pasta de amendoin...) até que o valor FIQUE O MAIS PRÓXIMO POSSIVEL 
+- SE ${d.objetivo} = "Definição":
+Uso moderado de líquidos
+Priorizar sólidos
 
-REFAÇA A CONTA QUANTAS VEZES FOR NECESSÁRIO PARA ATINGIR O MAIS PRÓXIMO DE  ${info.totalProt}g PROTEINA,  C: ${info.totalCarbo}g Carboidratos e G: ${info.totalGord}g. Gordura.
+- SE ${d.objetivo} = "Emagrecimento":
+PROIBIDO usar líquidos calóricos como estratégia principal
+Ajustar apenas com alimentos sólidos
 
-P: ${info.totalProt}g | C: ${info.totalCarbo}g | G: ${info.totalGord}g.
+4. AJUSTE DE PROTEÍNA:
+Usar CLARA DE OVO se necessário
 
-DIRETRIZ DE FECHAMENTO MATEMÁTICO 
-1. TRAVA DE PROTEÍNA: Priorize bater os ${info.totalProt}g de proteína primeiro usando as fontes animais.
-2. TRAVA DE GORDURA: Ajuste o Azeite e as fontes de gordura para não passar de ${info.totalGord}g.
-3. AJUSTE INFINITO DE CARBOIDRATO: Se após os passos acima o Carboidrato ainda não atingiu ${info.totalCarbo}g:
-   - Você está AUTORIZADO a aumentar o Suco de Uva Integral, Suco de Laranja e Maltodextrina para volumes altos (ex: 800ml, 1L ou 1.2L por dia) até que a soma de carboidratos bataO MAIS PROXIMO POSSIVEL o valor de ${info.totalCarbo}g.
-4. AJUSTE INFINITO DE PROTEINA: Se as proteínas animais selecionadas não forem suficientes para bater a meta sem estourar a gordura, utilize a CLARA DE OVOS disponível na lista técnica para fechar a conta.
-5. PROIBIÇÃO DE AVISO DE ERRO: É proibido dizer que "não foi possível". Use o Suco de Uva como variável de ajuste até que a conta feche.
+5. PROIBIÇÃO DE FALHA:
+Você NÃO pode dizer que não é possível.
+Você DEVE ajustar usando:
+- Volume (cutting)
+- Equilíbrio (manutenção)
+- Densidade (bulking)
 
-REGRA DE NOMENCLATURA: Para líquidos (Leite, Iogurte, Sucos), descreva a porção em ml. Para Ovos, Pães e Frutas (Banana, Maçã), descreva a porção em Unidades (un). Para o restante (Carnes, Arroz, etc), mantenha em gramas (g).
+REGRA DE NOMENCLATURA:
+ml = líquidos  
+un = unidades  
+g = sólidos  
 
-REGRA FINAL OBRIGATÓRIA: A DIETA RESPEITOU TODAS AS REGRAS OBRIGATÓRIAS? SE SIM > CONTINUE, SE NÃO REFAÇA !
+REGRA FINAL:
+Se não respeitou tudo → REFAÇA
 
-MENSAGEM DE AJUSTE: ${info.totalProt > 160 ? "Se os alimentos selecionados não tiverem proteína suficiente (ex: faltou carne/ovo), avise ao usuário para selecionar mais fontes proteicas." : ""}
-ITENS COMPLEMENTARES:
-1. HIDRATAÇÃO: Informe a recomendação de ${(parseFloat(d.peso) * 0.035).toFixed(1)}L de água por dia.
-2. DATA: ${new Date().toLocaleString()}.
+HIDRATAÇÃO:
+${(parseFloat(d.peso) * 0.035).toFixed(1)}L/dia
 
-ACRESCENTE UM RODAPÉ ESCRITO: "ESTE PLANO ALIMENTAR FOI GERADO COM BASE EM ESTIMATIVAS NUTRICIONAIS PADRÃO. Os valores de macros e calorias são aproximados para fins de orientação. Se notar qualquer inconsistência ou precisar de ajuda para organizar suas porções, clique no botão de SUPORTE para falar conosco via WhatsApp. Este programa não substitui consulta médica ou nutricional personalizada."`;
+DATA:
+${new Date().toLocaleString()}
+
+RODAPÉ:
+"ESTE PLANO ALIMENTAR FOI GERADO COM BASE EM ESTIMATIVAS NUTRICIONAIS PADRÃO..."`;
 
     try {
             const { jsPDF } = window.jspdf;
