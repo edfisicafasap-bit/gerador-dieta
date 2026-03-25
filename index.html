@@ -430,10 +430,15 @@ Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTIC
 REGRAS DE CÁLCULO OBRIGATÓRIAS (AUDITORIA TOTAL):
 1. MACROS SECUNDÁRIOS: Você deve obrigatoriamente contabilizar as proteínas e gorduras presentes nos carboidratos (ex: Arroz, Feijão, Aveia, Pão), as gorduras e carboidratos presentes nas proteínas (ex: Ovos, Carnes, Queijos, Iogurte) e as proteínas e carboidratos presentes nas fontes de gordura (ex: Pasta de Amendoim, Chia).
 2. PROTEÍNA POR SUBTRAÇÃO: Primeiro, calcule toda a proteína proveniente das fontes de carboidrato e gordura (arroz, feijão, aveia, pão, leite, pasta de amendoim, etc.). Depois, adicione APENAS a quantidade necessária de proteína animal (frango, carne, ovo, peito de peru) para atingir o total de ${info.totalProt}g. Se os carboidratos já entregarem muita proteína, reduza a carne drasticamente.
-3. SOMA ARITMÉTICA REAL: O resumo no final deve ser a soma REAL de cada grama de alimento listado. É PROIBIDO inventar ou arredondar números para "parecer" que bateu a meta. Se a soma real der diferente da meta, escreva o valor real encontrado.
+3. SOMA ARITMÉTICA REAL: O resumo no final deve ser a soma REAL de cada grama de alimento listado de acordo com a tabela de nutrientes de cada um, É PROIBIDO inventar ou arredondar números para "parecer" que bateu a meta. Se a soma real der diferente da meta, escreva o valor real encontrado.
+SE ATENTE OBRIGATÓRIAMENTE A:
+- 1. Não ajustar número no final para parecer visualmente que bateu a meta
+- 2 O total final será 100% derivado da soma real dos alimentos
+- 3 Se passar ou ficar abaixo, vai aparecer exatamente como deu a soma, independente se bateu cravado ou não!
+
 4. PRECISÃO DOS DADOS: Use apenas os valores de referência da LISTA DE ALIMENTOS abaixo.
-5. REGRA INVIOLÁVEL: PROTEINA NUNCA DEVE FICAR ABAIXO DE 1.5G POR KG E NUNCA ACIMA DE 2.2 G POR KG; GORDURA NUNCA DEVE FICAR ABAIXO DE 0.7g POR KG E NUNCA ACIMA DE 1.1g POR KG. CHEGUE O MAIS PROXIMO POSSIVEL DA META SEM ESTOURAR ESSE LIMITE. SE COM OS ALIMENTOS QUE A PESSOA SELECIONOU NÃO FOI POSSIVEL FAZER UM CALCULO EXATO, NÃO MINTA, APENAS ALERTE!
-6. NÃO FORÇE, CAMUFLE OU INVENTE NUMEROS PARA QUE A OPÇÃO A FIQUE EXATAMENTE IGUAL A OPCAO B. SABEMOS QUE É PRATICAMENTE IMPOSSIVEL FAZER TIPOS DE PLANO COM EXATAMENTE A MESMA QUANTIDADE DE NUTRIENTES, ENTÃO NÃO TEM PROBLEMA QUE FIQUEM DIFERENTE UM DO OUTRO, COLOQUE O VALOR REAL!
+
+5. REGRA INVIOLÁVEL: PROTEINA NUNCA DEVE FICAR ABAIXO DE 1.5G POR KG E NUNCA ACIMA DE 2.2 G POR KG; GORDURA NUNCA DEVE FICAR ABAIXO DE 0.7g POR KG E NUNCA ACIMA DE 1.1g POR KG. CHEGUE O MAIS PROXIMO POSSIVEL DA META SEM ESTOURAR ESSE LIMITE. SE COM OS ALIMENTOS QUE A PESSOA SELECIONOU NÃO FOI POSSIVEL FAZER UM CALCULO EXATO, NÃO MINTA, APENAS ALERTE! O TOTAL DE CALORIAS NUNCA DEVERÁ FICAR MAIS QUE 100KCAL NEM MENOS QUE 100KCAL DO TOTAL DE ${d.calorias} kcal, ESSA REGRA É EXTREMAMENTE OBRIGATÓRIA. 
 
 Comece a resposta exatamente com este parágrafo: "Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou."
 
@@ -472,9 +477,6 @@ REGRAS DE OURO DE DISTRIBUIÇÃO PROTEICA:
 3. PRIORIDADE MATEMÁTICA: O resumo final deve ser a SOMA REAL de todos os macros (incluindo a proteína dos carboidratos como arroz, feijão e aveia). Se a conta não fechar ${info.totalProt}g, ajuste as gramagens para cima até bater o valor exato.
 4. EQUILÍBRIO: Prefira pratos volumosos e variados em vez de uma única porção gigante de proteína animal isolada.
 
-REGRAS DE DISTRIBUIÇÃO DE ALIMENTOS:
-DISTRIBUIÇÃO DE ALIMENTOS: Alimentos como OVO, AVEIA, PÃO... que são comuns tanto em cafe da manha quanto no café da tarde, podem ser repetidos na mesma dieta, não se limite a por somente em uma refeição, principalmente quando em grande quantidades.
-
 REGRAS OBRIGATÓRIAS FONTES DE GORDURA:
 DIVIDA AS FONTES DE GORDURA  AO LONGO DO DIA, NÃO COLOQUE TODAS EM APENAS UMA REFEIÇÃO
 
@@ -495,8 +497,8 @@ BLOCO 2: OPÇÕES B (VARIAÇÃO SEM ARROZ E FEIJÃO)
 SOMA REAL DOS MACROS (OPÇÃO B):
 Proteínas: [Soma Real]g | Carboidratos: [Soma Real]g | Gorduras: [Soma Real]g | Calorias: [Soma Real] kcal.
 
-ESTRUTURA INTERNA DO CARDÁPIO, FAÇA ISSO EM PROCESSO INTERNO - NÃO EXIBIR,  Execute todos os cálculos de macros e calorias de cada alimento internamente. Não exiba os subtotalizadores, somas de macros ou cálculos detalhados no texto final. Entregue apenas o nome do alimento, a gramagem e a sugestão de preparo.
-Para CADA refeição, você deve seguir EXATAMENTE este modelo INTERNAMENTE PARA FAZER OS CALCULOS:
+ESTRUTURA OBRIGATÓRIA DO CARDÁPIO:
+Para CADA refeição, você deve seguir EXATAMENTE este modelo:
 
 [NOME DA REFEIÇÃO]
 - Alimento A (gramagem): [Cálculo: Xg Prot, Xg Carb, Xg Gord]
@@ -530,12 +532,15 @@ DIRETRIZ DE FECHAMENTO MATEMÁTICO
 
 REGRA DE NOMENCLATURA: Para líquidos (Leite, Iogurte, Sucos), descreva a porção em ml. Para Ovos, Pães e Frutas (Banana, Maçã), descreva a porção em Unidades (un). Para o restante (Carnes, Arroz, etc), mantenha em gramas (g).
 
+REGRA FINAL OBRIGATÓRIA: A DIETA RESPEITOU TODAS AS REGRAS OBRIGATÓRIAS? SE SIM > CONTINUE, SE NÃO REFAÇA !
+
 MENSAGEM DE AJUSTE: ${info.totalProt > 160 ? "Se os alimentos selecionados não tiverem proteína suficiente (ex: faltou carne/ovo), avise ao usuário para selecionar mais fontes proteicas." : ""}
 ITENS COMPLEMENTARES:
 1. HIDRATAÇÃO: Informe a recomendação de ${(parseFloat(d.peso) * 0.035).toFixed(1)}L de água por dia.
 2. DATA: ${new Date().toLocaleString()}.
 
 ACRESCENTE UM RODAPÉ ESCRITO: "ESTE PLANO ALIMENTAR FOI GERADO COM BASE EM ESTIMATIVAS NUTRICIONAIS PADRÃO. Os valores de macros e calorias são aproximados para fins de orientação. Se notar qualquer inconsistência ou precisar de ajuda para organizar suas porções, clique no botão de SUPORTE para falar conosco via WhatsApp. Este programa não substitui consulta médica ou nutricional personalizada."`;
+
     try {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
