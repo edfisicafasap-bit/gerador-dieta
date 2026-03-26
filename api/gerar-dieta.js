@@ -63,11 +63,14 @@ export default async function handler(req, res) {
 
         const dataGeral = await responseGeral.json();
         if (!responseGeral.ok) throw new Error('Erro na geração inicial');
+        
+        // --- CAPTURA 1: Resposta inicial (imprecisa) ---
         const rascunhoDieta = dataGeral.choices[0].message.content;
 
         // 3. PASSO 2: AUDITORIA E LIMPEZA
         const metasNoPrompt = prompt.match(/METAS:[\s\S]*?LISTA/) ? prompt.match(/METAS:[\s\S]*?LISTA/)[0] : "Bater os macros calculados.";
 
+        // --- CAPTURA 2: O prompt que o auditor vai receber ---
         const promptAuditor = `
         VOCÊ É UM AUDITOR NUTRICIONAL. 
         REVISE A DIETA ABAIXO E CORRIJA QUALQUER ERRO MATEMÁTICO NOS MACROS.
@@ -105,13 +108,15 @@ export default async function handler(req, res) {
         const nomeArquivo = `reeducacao-${emailLimpo.replace(/[@.]/g, '_')}-${Date.now()}.pdf`;
         const linkPublico = await uploadPDFSupabase(dietaTextoFinal, nomeArquivo);
 
-        // 5. ATUALIZAÇÃO DOS CRÉDITOS E SALVAMENTO DO PROMPT (LOG DE DEBUG)
+        // 5. ATUALIZAÇÃO E SALVAMENTO DE TODOS OS LOGS DE DEBUG
         const atualizacao = { 
             pdf_url: linkPublico, 
             ultima_geracao: agora.toISOString(),
             data_reset: novoReset,
-            // SALVANDO O PROMPT NA COLUNA QUE VOCÊ CRIOU NO SQL:
-            last_prompt_debug: prompt 
+            // LOGS DE DEBUG COMPLETOS:
+            last_prompt_debug: prompt,             // O que o usuário enviou (Prompt 1)
+            rascunho_ia_inicial: rascunhoDieta,    // O que a IA respondeu primeiro (Resposta 1)
+            prompt_auditor_enviado: promptAuditor  // O que foi pedido para corrigir (Prompt 2)
         };
 
         if (usuario.tipo_plano === 'unica') {
