@@ -537,17 +537,19 @@ Não ultrapassar ${info.totalGord}g
 
 3. AJUSTE DE CARBOIDRATO BASEADO NO OBJETIVO:
 
-- SE ${d.objetivo} = "Hipertrofia":
-Pode usar SUCO DE UVA, SUCO DE LARANJA, MALTODEXTRINA, MEL
-Pode usar volumes altos (500ml até 1L+)
+Se OBJETIVO FOR "HIPERTROFIA"
+- Pode usar SUCO DE UVA, SUCO DE LARANJA, MALTODEXTRINA, MEL
+- Pode usar volumes altos (500ml até 1L+)
+- Pode conter volumes altos de refeições
 
-- SE ${d.objetivo} = "Definição":
-Uso moderado de líquidos
-Priorizar sólidos
+SE OBJETIVO FOR "DEFINIÇÃO":
+- Uso moderado de líquidos
+- Priorizar sólidos
+- Equilibrio
 
-- SE ${d.objetivo} = "Emagrecimento":
-PROIBIDO usar líquidos calóricos como estratégia principal
-Ajustar apenas com alimentos sólidos
+SE OBJETIVO FOR "EMAGRECIMENTO"
+- Equilibrar proteinas e gordura em todas as refeições
+- Priorizar carbos mais altos somente no almoço e janta
 
 4. AJUSTE DE PROTEÍNA:
 Usar CLARA DE OVO se necessário
