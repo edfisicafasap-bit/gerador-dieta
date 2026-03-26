@@ -460,6 +460,10 @@ async function gerarDieta(d) {
  const promptFinal = `
 Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTICA DOS MACROS CRUZADOS. Você deve utilizar as informações prescritas para bater as metas diárias utilizando a ESTRATÉGIA DE SUBTRAÇÃO. 
 
+AO FINAL: (OBRIGATÓRIO:
+1- SOME TODOS OS MACROS LISTADOS NA TABELA E ME ENTREGUE O VALOR QUE REAL DA SOMA DELES.
+FAÇA UMA INDICAÇÃO DE AJUSTES PARA QUE O PLANO ATINJA COM PRECISÃO A METAS DE P: ${info.totalProt}g | C: ${info.totalCarbo}g | G: ${info.totalGord}g INDICANDO AJUSTES NECESSÁRIOS.
+
 REGRAS DE CÁLCULO OBRIGATÓRIAS (AUDITORIA TOTAL):
 1. MACROS SECUNDÁRIOS: Você deve obrigatoriamente contabilizar as proteínas e gorduras presentes nos carboidratos (ex: Arroz, Feijão, Aveia, Pão), as gorduras e carboidratos presentes nas proteínas (ex: Ovos, Carnes, Queijos, Iogurte) e as proteínas e carboidratos presentes nas fontes de gordura (ex: Pasta de Amendoim, Chia).
 2. PROTEÍNA POR SUBTRAÇÃO: Primeiro, calcule toda a proteína proveniente das fontes de carboidrato e gordura. Depois, adicione APENAS a quantidade necessária de proteína animal para atingir ${info.totalProt}g.
@@ -478,7 +482,7 @@ Gordura: 0.7–1.1g/kg
 Calorias: ±100 kcal de ${d.calorias}
 
 Comece a resposta exatamente com:
-"Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou."
+"Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos selecionados pelo usuário. analise este plano e faça os ajustes caso necessário conforme indicado."
 
 REGRAS DE FORMATAÇÃO:
 Texto plano (SEM markdown)
@@ -575,13 +579,6 @@ ${(parseFloat(d.peso) * 0.035).toFixed(1)}L/dia
 DATA:
 ${new Date().toLocaleString()}
 
-
-AO FINAL (OBRIGATÓRIO:
-1- SOME TODOS OS MACROS LISTADOS NA TABELA E ME ENTREGUE O VALOR QUE REAL DA SOMA DELES.
-FAÇA UMA INDICAÇÃO DE AJUSTES PARA QUE O PLANO ATINJA COM PRECISÃO A METAS DE P: ${info.totalProt}g | C: ${info.totalCarbo}g | G: ${info.totalGord}g INDICANDO:
-1- ADIÇÃO OU SUBTRAÇÃO DE ALIMENTOS PARA BATER A META INDICANDO QUAIS ALIMENTOS ACRESCENTAR OU QUAIS ALIMENTOS TIRAR
-2- REALOCAÇÃO DAS PROTEINAS, GORDURAS E CARBOIDRATOS, PARA FICAR MAIS EQUILIBRADO
-3- ESCREVE ESSA PARTE DANDO UM COMANDO, E NAO SUGERINDO. AO INVES DE DIZER "INDICO QUE FAÇA ISSO" QUERO QUE ESCREVA: TROQUE ISSO POR ISSO, FAÇA ISSO NO LUGAR DISSO, PASSE X GR DE TAL ALIMENTO PARA TAL REFEIÇÃO.
 
 RODAPÉ:
 "ESTE PLANO ALIMENTAR FOI GERADO COM BASE EM ESTIMATIVAS NUTRICIONAIS PADRÃO..."`;
