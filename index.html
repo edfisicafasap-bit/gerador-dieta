@@ -460,6 +460,8 @@ async function gerarDieta(d) {
     const promptFinal = `
 Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTICA DOS MACROS CRUZADOS. Você deve utilizar as informações prescritas para bater as metas diárias utilizando a ESTRATÉGIA DE SUBTRAÇÃO. 
 
+OBRIGATÓRIO AO FINAL: AO FINAL DA DIETA MOSTRE UMA SUGESTÃO DE AJUSTES NECESSÁRIOS PARA QUE A META SEJA ATINGIDA COM MAIS DE 95% DE PRECISÃO!
+
 REGRAS DE CÁLCULO OBRIGATÓRIAS (AUDITORIA TOTAL):
 1. MACROS SECUNDÁRIOS: Você deve obrigatoriamente contabilizar as proteínas e gorduras presentes nos carboidratos (ex: Arroz, Feijão, Aveia, Pão), as gorduras e carboidratos presentes nas proteínas (ex: Ovos, Carnes, Queijos, Iogurte) e as proteínas e carboidratos presentes nas fontes de gordura (ex: Pasta de Amendoim, Chia).
 2. PROTEÍNA POR SUBTRAÇÃO: Primeiro, calcule toda a proteína proveniente das fontes de carboidrato e gordura. Depois, adicione APENAS a quantidade necessária de proteína animal para atingir ${info.totalProt}g.
