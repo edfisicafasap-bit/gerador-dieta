@@ -15,7 +15,7 @@ export default async function handler(req, res) {
         const emailLimpo = email.toLowerCase().trim();
         const agora = new Date();
 
-        // 1. VERIFICAÇÃO DE SEGURANÇA E REGRAS DE NEGÓCIO
+        // 1. VERIFICAÇÃO DE SEGURANÇA E USUÁRIO
         const { data: usuario, error: userError } = await supabase
             .from('Usuarios_Dieta')
             .select('*')
@@ -28,7 +28,7 @@ export default async function handler(req, res) {
             return res.status(403).json({ error: 'Acesso negado. Conclua o pagamento.' });
         }
 
-        // --- LÓGICA DO PLANO ANUAL (2 POR SEMANA) ---
+        // --- LÓGICA DO PLANO ANUAL ---
         let novaContagem = usuario.contagem_semanal || 0;
         let novoReset = usuario.data_reset;
 
@@ -41,13 +41,11 @@ export default async function handler(req, res) {
                 novoReset = proximoReset.toISOString();
             }
             if (novaContagem >= 2) {
-                return res.status(403).json({ 
-                    error: 'Limite semanal atingido. Você pode gerar 2 planos por semana.' 
-                });
+                return res.status(403).json({ error: 'Limite semanal atingido.' });
             }
         }
 
-        // 2. PASSO 1: GERAÇÃO INICIAL DA DIETA
+        // 2. PASSO 1: GERAÇÃO INICIAL
         const responseGeral = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -62,31 +60,41 @@ export default async function handler(req, res) {
         });
 
         const dataGeral = await responseGeral.json();
-        if (!responseGeral.ok) throw new Error('Erro na geração inicial');
-        
-        // --- CAPTURA 1: Resposta inicial (imprecisa) ---
         const rascunhoDieta = dataGeral.choices[0].message.content;
 
-        // 3. PASSO 2: AUDITORIA E LIMPEZA
-        const metasNoPrompt = prompt.match(/METAS:[\s\S]*?LISTA/) ? prompt.match(/METAS:[\s\S]*?LISTA/)[0] : "Bater os macros calculados.";
+        // 3. PASSO 2: AUDITORIA COM FONTE DA VERDADE
+        // Extraímos as metas e a lista de alimentos do prompt original para o Auditor
+        const metasNoPrompt = prompt.match(/METAS:[\s\S]*?LISTA/) ? prompt.match(/METAS:[\s\S]*?LISTA/)[0] : "Bater macros.";
+        const listaReferencia = prompt.split('LISTA DE ALIMENTOS:')[1] || "Use os valores do rascunho.";
 
-        // --- CAPTURA 2: O prompt que o auditor vai receber ---
         const promptAuditor = `
-        VOCÊ É UM AUDITOR NUTRICIONAL. 
-        REVISE A DIETA ABAIXO E CORRIJA QUALQUER ERRO MATEMÁTICO NOS MACROS.
-        
-        Sua prioridade é a MATEMÁTICA REAL baseada nestas metas:
-        ${metasNoPrompt}
+VOCÊ É UM SISTEMA DE CORREÇÃO MATEMÁTICA E FORMATAÇÃO DE DIETAS. 
+SUA TAREFA É ENTREGAR O PLANO FINAL PRONTO, SEM EXPLICAÇÕES E SEM SUGESTÕES.
 
-        DIETA PARA REVISAR:
-        ${rascunhoDieta}
+FONTE DA VERDADE (USE ESTES VALORES PARA CORRIGIR O RASCUNHO):
+${listaReferencia}
 
-        REGRAS DE OURO:
-        1. Refaça as somas de cada refeição. Se houver erro, ajuste as gramagens.
-        2. O total final deve ser a soma REAL das refeições apresentadas.
-        3. REMOVA OBRIGATORIAMENTE qualquer Markdown (###, **, #, *). O texto deve ser plano e limpo.
-        4. Comece a resposta direto com "Aqui está seu plano...".
-        `;
+METAS RÍGIDAS:
+${metasNoPrompt}
+
+DIETA PARA PROCESSAR:
+${rascunhoDieta}
+
+REGRAS OBRIGATÓRIAS:
+1. NÃO EXPLIQUE O QUE VOCÊ ESTÁ FAZENDO. 
+2. NÃO MOSTRE CÁLCULOS OU REVISÕES.
+3. SE A DIETA ESTIVER FORA DA META, ALTERE AS GRAMAGENS AGORA NO TEXTO PARA QUE A SOMA SEJA EXATA.
+4. USE OS VALORES DA "FONTE DA VERDADE" PARA GARANTIR QUE OS MACROS POR ALIMENTO ESTEJAM CERTOS.
+5. REMOVA QUALQUER TEXTO QUE NÃO SEJA O CARDÁPIO.
+6. FORMATAÇÃO: Sem Markdown (###, **, etc). Comece direto em [CAFÉ DA MANHÃ].
+
+SAÍDA ESPERADA:
+[NOME DA REFEIÇÃO]
+- Alimento (Quantidade): [P, C, G]
+...
+SOMA FINAL:
+Proteínas: Xg | Carboidratos: Xg | Gorduras: Xg | Calorias: X kcal
+`;
 
         const responseAuditor = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
@@ -104,19 +112,18 @@ export default async function handler(req, res) {
         const dataAuditor = await responseAuditor.json();
         const dietaTextoFinal = dataAuditor.choices[0].message.content;
 
-        // 4. Gerar PDF e Upload
+        // 4. GERAR PDF E UPLOAD
         const nomeArquivo = `reeducacao-${emailLimpo.replace(/[@.]/g, '_')}-${Date.now()}.pdf`;
         const linkPublico = await uploadPDFSupabase(dietaTextoFinal, nomeArquivo);
 
-        // 5. ATUALIZAÇÃO E SALVAMENTO DE TODOS OS LOGS DE DEBUG
+        // 5. SALVAR NO SUPABASE (DEBUG E ATUALIZAÇÃO)
         const atualizacao = { 
             pdf_url: linkPublico, 
             ultima_geracao: agora.toISOString(),
             data_reset: novoReset,
-            // LOGS DE DEBUG COMPLETOS:
-            last_prompt_debug: prompt,             // O que o usuário enviou (Prompt 1)
-            rascunho_ia_inicial: rascunhoDieta,    // O que a IA respondeu primeiro (Resposta 1)
-            prompt_auditor_enviado: promptAuditor  // O que foi pedido para corrigir (Prompt 2)
+            last_prompt_debug: prompt,
+            rascunho_ia_inicial: rascunhoDieta,
+            prompt_auditor_enviado: promptAuditor
         };
 
         if (usuario.tipo_plano === 'unica') {
@@ -126,18 +133,12 @@ export default async function handler(req, res) {
             atualizacao.contagem_semanal = novaContagem + 1;
         }
 
-        await supabase
-            .from('Usuarios_Dieta')
-            .update(atualizacao)
-            .eq('email', emailLimpo);
+        await supabase.from('Usuarios_Dieta').update(atualizacao).eq('email', emailLimpo);
 
-        return res.status(200).json({ 
-            dieta: dietaTextoFinal, 
-            pdf_url: linkPublico 
-        });
+        return res.status(200).json({ dieta: dietaTextoFinal, pdf_url: linkPublico });
 
     } catch (error) {
-        console.error('Erro no servidor:', error.message);
-        return res.status(500).json({ error: 'Erro interno ao gerar o plano.' });
+        console.error('Erro:', error.message);
+        return res.status(500).json({ error: 'Erro interno.' });
     }
 }
