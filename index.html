@@ -457,10 +457,8 @@ async function gerarDieta(d) {
     }, 5000); 
 
     // O SEU PROMPT ESTRUTURADO (Enviado para a API para a Geração Inicial)
-    const promptFinal = `
+ const promptFinal = `
 Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTICA DOS MACROS CRUZADOS. Você deve utilizar as informações prescritas para bater as metas diárias utilizando a ESTRATÉGIA DE SUBTRAÇÃO. 
-
-OBRIGATÓRIO AO FINAL: AO FINAL DA DIETA MOSTRE UMA SUGESTÃO DE AJUSTES NECESSÁRIOS PARA QUE A META SEJA ATINGIDA COM MAIS DE 95% DE PRECISÃO!
 
 REGRAS DE CÁLCULO OBRIGATÓRIAS (AUDITORIA TOTAL):
 1. MACROS SECUNDÁRIOS: Você deve obrigatoriamente contabilizar as proteínas e gorduras presentes nos carboidratos (ex: Arroz, Feijão, Aveia, Pão), as gorduras e carboidratos presentes nas proteínas (ex: Ovos, Carnes, Queijos, Iogurte) e as proteínas e carboidratos presentes nas fontes de gordura (ex: Pasta de Amendoim, Chia).
@@ -569,13 +567,13 @@ g = sólidos
 REGRA FINAL:
 Se não respeitou tudo → REFAÇA
 
-6. OBRIGATÓRIO: COLOQUE AO FINAL: O PORQUE QUE NÃO BATEU TODOS OS MACROS, QUAIS OS MOTIVOS QUE IMPEDIRAM E O QUE DEVE SER FEITO PARA AJUSTAR
-
 HIDRATAÇÃO:
 ${(parseFloat(d.peso) * 0.035).toFixed(1)}L/dia
 
 DATA:
 ${new Date().toLocaleString()}
+
+AO FINAL FAÇA UMA INDICAÇÃO DE AJUSTES PARA QUE O PLANO ATINJA COM PRECISÃO A METAS DE P: ${info.totalProt}g | C: ${info.totalCarbo}g | G: ${info.totalGord}g REAJUSTANDO O CARDÁPIO GERADO
 
 RODAPÉ:
 "ESTE PLANO ALIMENTAR FOI GERADO COM BASE EM ESTIMATIVAS NUTRICIONAIS PADRÃO..."`;
