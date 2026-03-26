@@ -57,7 +57,7 @@ export default async function handler(req, res) {
             body: JSON.stringify({
                 model: "gpt-4o-mini",
                 messages: [{ role: "user", content: prompt }],
-                temperature: 0.3 // Temperatura baixa para evitar "alucinação" matemática
+                temperature: 0.3 
             })
         });
 
@@ -65,8 +65,7 @@ export default async function handler(req, res) {
         if (!responseGeral.ok) throw new Error('Erro na geração inicial');
         const rascunhoDieta = dataGeral.choices[0].message.content;
 
-        // 3. PASSO 2: AUDITORIA E LIMPEZA (SELF-CORRECTION)
-        // Extraímos as metas do prompt original para o auditor conferir
+        // 3. PASSO 2: AUDITORIA E LIMPEZA
         const metasNoPrompt = prompt.match(/METAS:[\s\S]*?LISTA/) ? prompt.match(/METAS:[\s\S]*?LISTA/)[0] : "Bater os macros calculados.";
 
         const promptAuditor = `
@@ -95,22 +94,24 @@ export default async function handler(req, res) {
             body: JSON.stringify({
                 model: "gpt-4o-mini",
                 messages: [{ role: "user", content: promptAuditor }],
-                temperature: 0 // Zero absoluto para precisão máxima
+                temperature: 0 
             })
         });
 
         const dataAuditor = await responseAuditor.json();
         const dietaTextoFinal = dataAuditor.choices[0].message.content;
 
-        // 4. Gerar PDF e Upload (Usando o texto já auditado e limpo)
+        // 4. Gerar PDF e Upload
         const nomeArquivo = `reeducacao-${emailLimpo.replace(/[@.]/g, '_')}-${Date.now()}.pdf`;
         const linkPublico = await uploadPDFSupabase(dietaTextoFinal, nomeArquivo);
 
-        // 5. ATUALIZAÇÃO DOS CRÉDITOS E CONTROLE SEMANAL
+        // 5. ATUALIZAÇÃO DOS CRÉDITOS E SALVAMENTO DO PROMPT (LOG DE DEBUG)
         const atualizacao = { 
             pdf_url: linkPublico, 
             ultima_geracao: agora.toISOString(),
-            data_reset: novoReset
+            data_reset: novoReset,
+            // SALVANDO O PROMPT NA COLUNA QUE VOCÊ CRIOU NO SQL:
+            last_prompt_debug: prompt 
         };
 
         if (usuario.tipo_plano === 'unica') {
