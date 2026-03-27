@@ -45,7 +45,7 @@ export default async function handler(req, res) {
             }
         }
 
-        // 2. PASSO 1: GERAÇÃO INICIAL
+        // 2. PASSO 1: GERAÇÃO INICIAL (IA gera a dieta com as sugestões de ajuste)
         const responseGeral = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -60,42 +60,14 @@ export default async function handler(req, res) {
         });
 
         const dataGeral = await responseGeral.json();
-        const rascunhoDieta = dataGeral.choices[0].message.content;
+        const dietaGeradaPelaIA = dataGeral.choices[0].message.content;
 
-        // 3. PASSO 2: AUDITORIA COM FONTE DA VERDADE
-        // Extraímos as metas e a lista de alimentos do prompt original para o Auditor
-        const metasNoPrompt = prompt.match(/METAS:[\s\S]*?LISTA/) ? prompt.match(/METAS:[\s\S]*?LISTA/)[0] : "Bater macros.";
-        const listaReferencia = prompt.split('LISTA DE ALIMENTOS:')[1] || "Use os valores do rascunho.";
-
+        // 3. PASSO 2: ENVIO DA DIETA GERADA + SUA MENSAGEM DE AJUSTE
         const promptAuditor = `
-               HAJA COMO UM NUTRICIONISTA DE PRECISÃO. 
-       Sua prioridade absoluta é a MATEMÁTICA DOS MACROS CRUZADOS. Você deve utilizar as informações prescritas para bater as metas diárias utilizando a ESTRATÉGIA DE SUBTRAÇÃO e REAJUSTANDO A DIETA CONFORME INDICADO. CONFIRA ANTES DE QUALQUER COISA OS AJUSTES NECESSÁRIOS NO FINAL DO TEXTO E LOGO EM SEGUIDA VOCÊ IRÁ SOMENTE REAJUSTAR PARA BATER AS METAS CONFORME INDICADO FAZENDO O QUE FOI INDICADO!
-VOCÊ É UM SISTEMA DE CORREÇÃO MATEMÁTICA E FORMATAÇÃO DE DIETAS. 
-SUA TAREFA É ENTREGAR O PLANO FINAL PRONTO, SEM EXPLICAÇÕES E SEM SUGESTÕES.
+${dietaGeradaPelaIA}
 
-FONTE DA VERDADE (USE ESTES VALORES PARA REAJUSTAR O RASCUNHO CONFORME NECESSÁRIO):
-${listaReferencia}
-
-METAS PARA BATER (CHEGAR O MAIS PRÓXIMO POSSIVEL):
-${metasNoPrompt}
-
-DIETA PARA PROCESSAR:
-${rascunhoDieta}
-
-REGRAS OBRIGATÓRIAS:
-1. NÃO EXPLIQUE O QUE VOCÊ ESTÁ FAZENDO. 
-2. NÃO MOSTRE CÁLCULOS OU REVISÕES.
-3. SE A DIETA ESTIVER FORA DA META, ALTERE AS GRAMAGENS AGORA NO TEXTO PARA QUE A SOMA SEJA EXATA.
-4. USE OS VALORES DA "FONTE DA VERDADE" PARA GARANTIR QUE OS MACROS POR ALIMENTO ESTEJAM CERTOS.
-5. REMOVA QUALQUER TEXTO QUE NÃO SEJA O CARDÁPIO.
-6. FORMATAÇÃO: Sem Markdown (###, **, etc). Comece direto em [CAFÉ DA MANHÃ].
-
-SAÍDA ESPERADA:
-[NOME DA REFEIÇÃO]
-- Alimento (Quantidade): [P, C, G]
-...
-SOMA FINAL:
-Proteínas: Xg | Carboidratos: Xg | Gorduras: Xg | Calorias: X kcal
+INSTRUÇÃO OBRIGATÓRIA:
+"faça os ajustes mencionados e me devolva com a mesma formatação, não explique e nem de detalhes do que foi feito, apenas ajustes e me devolva, nao quero que escreva nada do que foi ajustado, quero a dieta limpa e formatada. no topo quero que tire as calorias, deixando mencionado apenas o objetivo da dieta e a quantidade de refeições"
 `;
 
         const responseAuditor = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -124,7 +96,7 @@ Proteínas: Xg | Carboidratos: Xg | Gorduras: Xg | Calorias: X kcal
             ultima_geracao: agora.toISOString(),
             data_reset: novoReset,
             last_prompt_debug: prompt,
-            rascunho_ia_inicial: rascunhoDieta,
+            rascunho_ia_inicial: dietaGeradaPelaIA,
             prompt_auditor_enviado: promptAuditor
         };
 
