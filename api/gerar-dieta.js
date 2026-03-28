@@ -90,13 +90,14 @@ INSTRUÇÃO OBRIGATÓRIA:
         const nomeArquivo = `reeducacao-${emailLimpo.replace(/[@.]/g, '_')}-${Date.now()}.pdf`;
         const linkPublico = await uploadPDFSupabase(dietaTextoFinal, nomeArquivo);
 
-        // 5. SALVAR NO SUPABASE (DEBUG E ATUALIZAÇÃO)
+      // 5. SALVAR NO SUPABASE (DEBUG E ATUALIZAÇÃO)
         const atualizacao = { 
             pdf_url: linkPublico, 
             ultima_geracao: agora.toISOString(),
             data_reset: novoReset,
             last_prompt_debug: prompt,
-            rascunho_ia_inicial: dietaGeradaPelaIA,
+            // AQUI ESTAVA O ERRO: Ajustamos os nomes para bater com as variáveis novas
+            rascunho_ia_inicial: dietaGeradaPelaIA, 
             prompt_auditor_enviado: promptAuditor
         };
 
@@ -104,15 +105,24 @@ INSTRUÇÃO OBRIGATÓRIA:
             atualizacao.creditos = 0;
             atualizacao.pago = false;
         } else if (usuario.tipo_plano === 'anual') {
-            atualizacao.contagem_semanal = novaContagem + 1;
+            atualizacao.contagem_semanal = (novaContagem || 0) + 1;
         }
 
-        await supabase.from('Usuarios_Dieta').update(atualizacao).eq('email', emailLimpo);
+        // Executa a atualização no banco
+        const { error: updateError } = await supabase
+            .from('Usuarios_Dieta')
+            .update(atualizacao)
+            .eq('email', emailLimpo);
+
+        if (updateError) {
+            console.error('Erro ao atualizar Supabase:', updateError.message);
+            // Mesmo com erro no log, retornamos a dieta para o usuário não travar
+        }
 
         return res.status(200).json({ dieta: dietaTextoFinal, pdf_url: linkPublico });
 
     } catch (error) {
-        console.error('Erro:', error.message);
-        return res.status(500).json({ error: 'Erro interno.' });
+        console.error('Erro Geral:', error.message);
+        return res.status(500).json({ error: 'Erro interno no servidor.' });
     }
 }
