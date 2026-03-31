@@ -62,8 +62,14 @@ export default async function handler(req, res) {
         const dataGeral = await responseGeral.json();
         const dietaGeradaPelaIA = dataGeral.choices?.[0]?.message?.content || "Erro na geração inicial";
 
-        // 3. PASSO 2: ENVIO DA DIETA GERADA + INSTRUÇÃO DE AJUSTE (AUDITOR)
-        const promptAuditor = `${dietaGeradaPelaIA}\n\nINSTRUÇÃO OBRIGATÓRIA:\n"faça os ajustes mencionados e me devolva com a mesma formatação, não explique e nem de detalhes do que foi feito, apenas ajustes e me devolva, nao quero que escreva nada do que foi ajustado, quero a dieta limpa e formatada. no topo quero que tire as calorias, deixando mencionado apenas o objetivo da dieta e a quantidade de refeições"`;
+        // 🔥 SALVAMENTO PARCIAL (Evita perda de dados se houver Timeout na Fase 2)
+        await supabase.from('Usuarios_Dieta').update({
+            last_prompt_debug: String(prompt),
+            rascunho_ia_inicial: String(dietaGeradaPelaIA)
+        }).eq('email', emailLimpo);
+
+        // 3. PASSO 2: ENVIO DA DIETA GERADA + INSTRUÇÃO (AUDITOR)
+        const promptAuditor = `${dietaGeradaPelaIA}\n\nINSTRUÇÃO OBRIGATÓRIA: faça os ajustes mencionados e me devolva com a mesma formatação, não explique e nem de detalhes do que foi feito, apenas ajustes e me devolva, nao quero que escreva nada do que foi ajustado, quero a dieta limpa e formatada. no topo quero que tire as calorias, deixando mencionado apenas o objetivo da dieta e a quantidade de refeições`;
 
         const responseAuditor = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
@@ -85,34 +91,27 @@ export default async function handler(req, res) {
         const nomeArquivo = `reeducacao-${emailLimpo.replace(/[@.]/g, '_')}-${Date.now()}.pdf`;
         const linkPublico = await uploadPDFSupabase(dietaTextoFinal, nomeArquivo);
 
-        // 5. SALVAR NO SUPABASE (VERSÃO CORRIGIDA)
-        const atualizacao = { 
+        // 5. SALVAMENTO FINAL (PDF E CRÉDITOS)
+        const atualizacaoFinal = { 
             pdf_url: linkPublico, 
             ultima_geracao: agora.toISOString(),
             data_reset: novoReset || usuario.data_reset,
-            last_prompt_debug: String(prompt),
-            rascunho_ia_inicial: String(dietaGeradaPelaIA), 
             prompt_auditor_enviado: String(promptAuditor)
         };
 
         if (usuario.tipo_plano === 'unica') {
-            atualizacao.creditos = 0;
-            atualizacao.pago = false;
+            atualizacaoFinal.creditos = 0;
+            atualizacaoFinal.pago = false;
         } else if (usuario.tipo_plano === 'anual') {
-            atualizacao.contagem_semanal = (novaContagem || 0) + 1;
+            atualizacaoFinal.contagem_semanal = (novaContagem || 0) + 1;
         }
 
-        // Executa a atualização
         const { error: updateError } = await supabase
             .from('Usuarios_Dieta')
-            .update(atualizacao)
+            .update(atualizacaoFinal)
             .eq('email', emailLimpo);
 
-        if (updateError) {
-            console.error('ERRO SUPABASE:', updateError.message);
-        } else {
-            console.log('✅ Banco atualizado com sucesso para:', emailLimpo);
-        }
+        if (updateError) console.error('ERRO FINAL SUPABASE:', updateError.message);
 
         return res.status(200).json({ dieta: dietaTextoFinal, pdf_url: linkPublico });
 
