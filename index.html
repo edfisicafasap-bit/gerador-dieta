@@ -18,215 +18,514 @@
         body { background:#000; margin:0; font-family: 'Montserrat', sans-serif; color: #fff; padding-bottom: 50px; }
         .container { max-width:600px; margin:auto; padding:20px; background:#000; position: relative; }
         
-        h1 { font-weight:900; color:#FFD400; text-align:center; text-transform:uppercase; margin-bottom:10px; font-size: 2rem; }
-        .sub-h1 { text-align:center; color:#ccc; font-size:0.9rem; margin-bottom:30px; }
-
-        .passo { display:none; animation: fadeIn 0.5s ease; }
-        .passo.ativo { display:block; }
-        @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
-
-        .card { background:#111; padding:25px; border-radius:15px; border:1px solid #333; margin-bottom:20px; }
-        label { display:block; margin-bottom:8px; font-weight:700; color:#FFD400; text-transform:uppercase; font-size:0.8rem; }
+        h2 { color:#FFD400; text-align: center; margin-bottom: 5px; font-size: 22px; text-transform: uppercase; font-weight: 900; }
+        p.subtitle { text-align: center; color: #ccc; font-size: 14px; margin-bottom: 25px; }
         
-        input, select { 
-            width:100%; padding:15px; background:#222; border:1px solid #444; 
-            color:#fff; border-radius:10px; margin-bottom:20px; box-sizing:border-box;
-            font-family: 'Montserrat', sans-serif; font-size: 1rem;
-        }
-
-        .btn { 
-            width:100%; padding:20px; background:#FFD400; color:#000; border:none; 
-            border-radius:10px; font-weight:900; cursor:pointer; text-transform:uppercase;
-            font-size:1.1rem; transition: 0.3s;
-        }
-        .btn:hover { background:#fff; transform: scale(1.02); }
-
-        .grid-alimentos { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-        .item-alimento { 
-            background:#222; padding:12px; border-radius:8px; border:1px solid #444;
-            display:flex; align-items:center; cursor:pointer; transition: 0.2s;
-            font-size: 0.85rem;
-        }
-        .item-alimento:hover { border-color: #FFD400; }
-        .item-alimento input { width:auto; margin-bottom:0; margin-right:10px; }
+        label { display:block; margin-top:18px; font-size:13px; font-weight: 700; color: #eee; text-transform: uppercase; }
+        input, select { width:100%; padding:14px; margin-top:6px; border-radius:8px; border:1px solid #222; background: #111; color: #fff; font-size: 15px; box-sizing: border-box; font-family: 'Montserrat'; }
         
-        .item-alimento.selecionado { background: #FFD400; color: #000; border-color: #fff; }
-        .item-alimento.selecionado label { color: #000; }
-
-        #status-topo { 
-            display:none; background:#FFD400; color:#000; padding:15px; 
-            text-align:center; font-weight:900; position: sticky; top:0; z-index:100;
-            border-radius: 0 0 15px 15px; box-shadow: 0 4px 15px rgba(255,212,0,0.3);
+        #btn-gerar, .btn-calc { 
+            width:100%; margin-top:20px; padding:20px; background:#FFD400; border:none; border-radius:10px; 
+            font-size:16px; font-weight:900; color:#000; cursor: pointer; transition: 0.3s; text-transform: uppercase; 
         }
 
-        #resultado { 
-            background:#111; color:#fff; padding:20px; border-radius:10px; 
-            white-space:pre-wrap; border:1px solid #FFD400; margin-top:20px; font-size: 0.9rem; line-height: 1.6;
+        /* RESULTADO TMB PREMIUM REESTRUTURADO */
+        .result-box-tmb { 
+            margin-top: 30px; padding: 35px 25px; background: linear-gradient(145deg, #111, #000); 
+            border-radius: 15px; border: 2px solid #FFD400; display: none; text-align: center;
+            box-shadow: 0 0 25px rgba(255, 212, 0, 0.2);
+        }
+        .result-val { font-size: 52px; font-weight: 900; color: #FFD400; margin: 0; text-shadow: 0 0 15px rgba(255, 212, 0, 0.4); line-height: 1; }
+        .result-text { font-size: 15px; line-height: 1.6; color: #fff; margin-top: 20px; font-weight: 400; }
+        .highlight-text { color: #FFD400; font-weight: 900; }
+        .destaque-amarelo { background: #FFD400; color: #000; padding: 2px 4px; font-weight: 900; border-radius: 3px; }
+
+        .step-section { display: none; }
+        .step-active { display: block; animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* MODAL DE PAGAMENTO */
+        #payment-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
+        .payment-card { background: #111; padding: 35px; border-radius: 20px; text-align: center; max-width: 420px; border: 1px solid #333; }
+        
+        .plan-option { margin-bottom: 25px; text-align: left; }
+        .plan-btn { width: 100%; padding: 20px; border-radius: 12px; font-weight: 900; font-size: 16px; cursor: pointer; text-transform: uppercase; border: none; transition: 0.2s; }
+        .plan-desc { font-size: 13px; color: #aaa; margin-top: 10px; line-height: 1.4; display: block; }
+        
+        .btn-unica { background: transparent; color: #FFD400; border: 2px solid #FFD400; }
+        .btn-anual { background: #fff; color: #000; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+
+        .categoria-pai { color: #FFD400; font-size: 15px; font-weight: 900; margin: 25px 0 10px 0; padding-left: 10px; text-transform: uppercase; border-left: 4px solid #FFD400; }
+        details { background: #0a0a0a; border: 1px solid #222; border-radius: 8px; margin-bottom: 8px; }
+        summary { padding: 14px; cursor: pointer; color: #fff; font-weight: 700; font-size: 13px; text-transform: uppercase; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+        summary::after { content: '▼'; font-size: 10px; color: #FFD400; }
+        
+        .grid-alimentos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 12px 12px 12px; }
+        .item-alimento { display: flex; align-items: center; font-size: 12px; color: #bbb; cursor: pointer; padding: 6px 0; }
+        .item-alimento input { width: auto; margin: 0 10px 0 0; }
+        
+        .secao-especial { background: #111; border: 1px dashed #FFD400; padding: 20px; border-radius: 12px; margin: 25px 0; }
+        
+        #status-topo { display: none; background: #111; color: #FFD400; padding: 20px; border-radius: 12px; text-align: center; font-weight: 900; margin-top: 20px; border: 1px solid #FFD400; text-transform: uppercase; }
+        #resultado { margin-top: 20px; white-space: pre-wrap; background: #111; padding: 25px; border-radius: 15px; display: none; border: 1px solid #FFD400; font-size: 15px; line-height: 1.8; color: #eee; }
+        #btn-download-pos-geracao { width:100%; margin-top:20px; padding:18px; background:#000; border: 2px solid #FFD400; border-radius:10px; font-size:16px; font-weight:900; color:#FFD400; cursor: pointer; text-transform: uppercase; }
+        
+        .btn-suporte { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            background: #25d366; 
+            color: white; 
+            padding: 12px 20px; 
+            border-radius: 50px; 
+            text-decoration: none; 
+            font-size: 14px; 
+            font-weight: bold; 
+            z-index: 1000; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: 0.3s;
         }
 
-        .payment-overlay {
-            display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-            background:rgba(0,0,0,0.95); z-index:1000; flex-direction:column; align-items:center; justify-content:center;
-            padding: 20px; text-align: center;
+        .btn-suporte:hover {
+            transform: scale(1.1);
+            background: #20ba5a;
         }
     </style>
 </head>
-<body>
+<body onload="inicializarTudo()">
 
-<div id="status-topo">💰 PAGAMENTO CONFIRMADO</div>
+<a href="https://wa.me/5522992587653" target="_blank" class="btn-suporte">
+    <i class="fab fa-whatsapp" style="font-size: 20px;"></i> SUPORTE
+</a>
+
+<div id="payment-overlay">
+    <div class="payment-card">
+        <h2 style="color: #FFD400; margin-bottom: 30px;">Libere seu Acesso 🚀</h2>
+        
+        <div class="plan-option">
+            <button class="plan-btn btn-unica" onclick="iniciarCheckout('price_1Sz1w7GEaACih56ZWyTiPBAu')">📊 PLANEJAMENTO ÚNICO - R$ 9,90</button>
+            <span class="plan-desc">Receba um plano alimentar personalizado agora mesmo.</span>
+        </div>
+
+        <div class="plan-option">
+            <button class="plan-btn btn-anual" onclick="iniciarCheckout('price_1TAhibGEaACih56Z4TeYkNwK')">📅 ACESSO ANUAL - R$ 69,90</button>
+            <span class="plan-desc">Você pode gerar até 2 planos alimentares por semana durante o período de 1 ano.</span>
+        </div>
+
+        <p style="margin-top: 20px; font-size: 12px; color: #666; cursor: pointer; text-decoration: underline;" onclick="fecharModal()">← Voltar e ajustar alimentos</p>
+    </div>
+</div>
 
 <div class="container">
-    <h1>Reeducação<br><span style="color:#fff">Alimentar</span></h1>
-    <p class="sub-h1">Personal Jean Oliveira - Inteligência Artificial</p>
-
-    <div id="passo1" class="passo ativo">
-        <div class="card">
-            <label>Seu Peso Atual (kg)</label>
-            <input type="number" id="peso" placeholder="Ex: 85" step="0.1">
-
-            <label>Meta de Calorias (kcal)</label>
-            <input type="number" id="calorias" placeholder="Ex: 2500">
-
-            <label>Número de Refeições</label>
-            <select id="num-refeicoes">
-                <option value="3">3 refeições</option>
-                <option value="4">4 refeições</option>
-                <option value="5" selected>5 refeições</option>
-                <option value="6">6 refeições</option>
-            </select>
-
-            <label>Qual seu Objetivo?</label>
-            <select id="objetivo">
-                <option value="Emagrecimento">Emagrecimento</option>
-                <option value="Definição">Definição</option>
-                <option value="Hipertrofia">Hipertrofia</option>
-            </select>
+    <div id="step-1" class="step-section step-active">
+        <h2>🔥 Meta de calorias diária</h2>
+        <p class="subtitle">Calcule sua meta baseada no seu objetivo</p>
+        <label>Seu Nome e Sobrenome</label>
+        <input type="text" id="calc-name" placeholder="Ex: João Silva">
+        <label>Gênero</label>
+        <select id="calc-gender"><option value="male">Masculino</option><option value="female">Feminino</option></select>
+        <label>Idade</label>
+        <input type="number" id="calc-age" placeholder="Ex: 28">
+        <label>Peso atual (kg)</label>
+        <input type="number" id="calc-weight" step="0.1" placeholder="Ex: 75.0">
+        <label>Altura (cm)</label>
+        <input type="number" id="calc-height" placeholder="Ex: 170">
+        <label>Nível de Atividade</label>
+        <select id="calc-activity">
+            <option value="1.2">Sedentário (Escritório / Sem treino)</option>
+            <option value="1.375">Leve (Treino 1-3 dias/semana)</option>
+            <option value="1.55">Moderado (Treino 3-5 dias/semana)</option>
+            <option value="1.725">Intenso (Treino pesado 6-7 dias)</option>
+            <option value="1.9">Atleta (Treino pesado + Trabalho braçal)</option>
+        </select>
+        <label>Seu Objetivo Principal</label>
+        <select id="calc-goal">
+            <option value="Emagrecimento">Perder Gordura (Cutting)</option>
+            <option value="Definição">Manter Peso (Definição)</option>
+            <option value="Hipertrofia">Ganhar Massa (Bulking)</option>
+        </select>
+        <button class="btn-calc" onclick="calculateTMB()">DESCOBRIR MINHA META CALÓRICA →</button>
+        
+        <div id="resultContainer" class="result-box-tmb">
+            <div id="goalResult" class="result-val">--</div>
+            <p class="result-text" id="tmb-msg-v2"></p>
+            <button class="btn-calc" style="margin-top: 30px; background: #FFD400; color: #000; box-shadow: 0 8px 20px rgba(255, 212, 0, 0.3);" onclick="irParaDieta()">MONTAR MEU PLANO AGORA →</button>
         </div>
-        <button class="btn" onclick="mudarPasso(2)">Próximo Passo <i class="fas fa-arrow-right"></i></button>
     </div>
 
-    <div id="passo2" class="passo">
-        <div class="card">
-            <label style="font-size: 1rem; margin-bottom: 20px;">Selecione o que você tem em casa:</label>
-            <div id="lista-alimentos" class="grid-alimentos"></div>
+    <div id="step-2" class="step-section">
+        <h2>🍎 Configuração do Plano</h2>
+        <p class="subtitle" id="boas-vindas-plano">
+       Parabéns pela escolha, <span id="nome-destaque" class="highlight-text"></span>!<br> 
+    Ter um <span class="highlight-text">plano alimentar</span> ajustado às suas calorias é essencial para melhores resultados.<br>
+    Selecionamos somente alimentos saudáveis para você — lembre-se de <span class="highlight-text">variar as opções</span> para garantir mais nutrientes e eficiência.
+    </p>
+        <label>Seu Peso Atual (kg)</label>
+        <input type="number" id="peso">
+        <label>Meta de Calorias Diárias</label>
+        <input type="number" id="calorias">
+        <label>Número de Refeições</label>
+        <select id="num-refeicoes">
+            <option value="4">4 Refeições</option>
+            <option value="5">5 Refeições</option>
+            <option value="6">6 Refeições</option>
+        </select>
+        <label>Objetivo</label>
+        <select id="objetivo" onchange="renderInterface()">
+            <option value="Emagrecimento">Emagrecimento</option>
+            <option value="Hipertrofia">Hipertrofia</option>
+            <option value="Definição">Definição</option>
+        </select>
+        <div id="categorias-container"></div>
+        <div class="secao-especial">
+            <h4>🍳 MODOS DE PREPARO</h4>
+            <div id="preparos-unificados-container" class="grid-alimentos"></div>
         </div>
-
-        <div class="card">
-            <label>Como prefere seus preparos?</label>
-            <div class="grid-alimentos">
-                <div class="item-alimento"><input type="checkbox" name="preparo-geral" value="Grelhado" checked> <label>Grelhados</label></div>
-                <div class="item-alimento"><input type="checkbox" name="preparo-geral" value="Cozido"> <label>Cozidos</label></div>
-                <div class="item-alimento"><input type="checkbox" name="preparo-geral" value="Airfryer"> <label>Airfryer</label></div>
-                <div class="item-alimento"><input type="checkbox" name="preparo-geral" value="Assado"> <label>Assados</label></div>
-            </div>
-        </div>
-
-        <div class="card" style="border-color: #FFD400;">
-            <label style="color: #FFD400;"><input type="checkbox" id="aceite-clausula"> EU COMPREENDO QUE ESTE PLANO É UMA SUGESTÃO GERADA POR IA E NÃO SUBSTITUI UM NUTRICIONISTA.</label>
-        </div>
-
-        <button class="btn" onclick="verificarAcessoEPagar()">GERAR REEDUCAÇÃO</button>
+        <label style="display: flex; align-items: center; font-weight: normal; font-size: 12px; text-transform: none;">
+            <input type="checkbox" id="aceite-clausula" style="width: 20px; margin-right: 10px;"> Declaro que estou ciente de que não tenho problemas de saúde, alergias ou restrições alimentares que me impeçam de seguir este plano. Entendo que este programa é uma ferramenta de apoio e não substitui uma consulta personalizada com médico ou nutricionista.
+        </label>
+        <div id="status-topo">PROCESSANDO SEU PLANO...</div>
+        <button id="btn-gerar" onclick="verificarAcessoEPagar()">GERAR PLANO AGORA →</button>
     </div>
 
-    <div id="passo3" class="passo">
+    <div id="step-3" class="step-section">
+        <h2>📊 Seu Plano Alimentar</h2>
         <div id="resultado"></div>
-        <button id="btn-download-pos-geracao" class="btn" style="margin-top:20px; display:none;">BAIXAR PDF</button>
-        <button class="btn" style="background:#444; color:#fff; margin-top:10px;" onclick="location.reload()">VOLTAR AO INÍCIO</button>
+        <button id="btn-download-pos-geracao" style="display:none;">📥 BAIXAR PDF COMPLETO</button>
+        <button onclick="window.location.reload()" style="background:none; border:none; color:#666; width:100%; margin-top:30px; cursor:pointer; font-family: 'Montserrat'; font-size: 12px; text-transform: uppercase;">← Refazer cálculos</button>
     </div>
 </div>
 
-<div id="payment-overlay" class="payment-overlay">
-    <h2 style="color:#FFD400; font-weight:900;">PAGAMENTO NECESSÁRIO</h2>
-    <p style="margin-bottom:30px; max-width: 400px;">Você ainda não possui um plano ativo ou seus créditos acabaram. Escolha uma opção:</p>
-    
-    <div class="card" style="width:100%; max-width:350px; background:#222; border: 2px solid #333; cursor:pointer;" onclick="iniciarCheckout('price_1Sz1w7GEaACih56ZWyTiPBAu')">
-        <h3 style="color:#FFD400;">PLANO AVULSO</h3>
-        <p>Gere 1 plano agora mesmo</p>
-        <div style="font-size:1.5rem; font-weight:900;">R$ 29,90</div>
-    </div>
-
-    <div class="card" style="width:100%; max-width:350px; background:#FFD400; color:#000; cursor:pointer;" onclick="iniciarCheckout('price_1TAhibGEaACih56Z4TeYkNwK')">
-        <h3 style="margin:0;">PLANO ANUAL</h3>
-        <p>Gere até 2 planos por semana</p>
-        <div style="font-size:1.5rem; font-weight:900;">R$ 97,00</div>
-    </div>
-
-    <button class="btn" style="background:none; color:#fff; border:1px solid #444; max-width:200px;" onclick="fecharModal()">CANCELAR</button>
-</div>
 <script>
-    // Inicialização Supabase (mantenha suas credenciais aqui)
-    const _supabase = supabase.createClient('SUA_URL', 'SUA_KEY');
+    const S_URL = 'https://xyqqngskrjzhxbsackul.supabase.co';
+    const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cXFuZ3Nrcmp6aHhic2Fja3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NTI3NzksImV4cCI6MjA4NTUyODc3OX0.B90q1Jv-vodVIV_dLFUCOekyshrv3HekVpPugpPaHRI'; 
+    const _supabase = supabase.createClient(S_URL, S_KEY);
 
-    function carregarAlimentos() {
-        const container = document.getElementById('lista-alimentos');
-        Object.keys(TABELA_ALIMENTOS).forEach(key => {
-            const div = document.createElement('div');
-            div.className = 'item-alimento';
-            div.innerHTML = `<input type="checkbox" name="alimento" value="${key}"> <label>${key.toUpperCase()}</label>`;
-            div.onclick = function(e) {
-                if(e.target.tagName !== 'INPUT') {
-                    const chk = this.querySelector('input');
-                    chk.checked = !chk.checked;
-                }
-                this.classList.toggle('selecionado', this.querySelector('input').checked);
-            };
-            container.appendChild(div);
+const estruturaAlimentos = {
+        "CARBOIDRATOS": {
+            "Arroz": ["Arroz Branco Cozido", "Arroz Integral Cozido", "Arroz Parboilizado Cozido", "Arroz Jasmine Cozido", "Arroz Basmati Cozido", "Arroz 7 Grãos Cozido"],
+            "Feijão": ["Feijão Carioca Cozido", "Feijão Preto Cozido", "Feijão Branco Cozido", "Feijão Fradinho Cozido", "Feijão Vermelho Cozido"],
+            "Macarrão": ["Macarrão Comum (Sêmola) Cozido", "Macarrão Integral Cozido", "Macarrão de Arroz Cozido", "Macarrão Sem Glúten Cozido"],
+            "Cuscuz": ["Flocão de Milho Tradicional", "Flocão de Milho Nordestino", "Flocão de Milho Marroquino", "Flocão de Milho Integral"],
+            "Batata Inglesa": ["Batata Inglesa Cozida", "Batata Inglesa Assada", "Batata Inglesa Purê", "Batata Inglesa Sauté", "Batata Inglesa Rústica Forno/Airfryer", "Batata Inglesa Chips Forno/Airfryer", "Batata Inglesa Frita na Airfryer"],
+            "Batata Doces": ["Batata Doces Cozida", "Batata Doces Assada", "Batata Doces Purê", "Batata Doces Sauté", "Batata Doces Rústica Forno/Airfryer", "Batata Doces Frita na Airfryer"],
+            "Mandioca": ["Mandioca Cozida", "Mandioca Assada", "Mandioca Purê", "Mandioca Sauté", "Mandioca Rústica Forno/Airfryer", "Mandioca Frita na Airfryer"],
+            "Pão": ["Pão Francês", "Pão Forma Branco", "Pão Forma Integral", "Pão Integral com Grãos", "Pão Sírio", "Pão de Aveia"],
+            "Tapioca": ["Tapioca Tradicional", "Tapioca Hidratada", "Tapioca Integral"],
+            "Aveia": ["Aveia em Flocos Finos", "Aveia em Flocos", "Aveia Farinha", "Aveia Farelo"],
+            "Flocão de Milho": ["Flocão de Milho Tradicional", "Flocão de Milho Integral"]
+        },
+        "PROTEÍNAS": {
+            "Frango": ["Filé de peito", "Coxa e sobrecoxa (sem pele)"],
+            "Boi": ["Patinho", "Coxão mole", "Coxão duro", "Lagarto", "Músculo", "Alcatra limpa"],
+            "Porco": ["Lombo suíno", "Filé mignon suíno"],
+            "Ovos": ["Mexidos", "Cozidos", "Omelete", "Pochê", "Frito na água", "Frito com azeite"]
+        },
+        "PEIXES": { "Peixes": ["Filé de tilápia", "Filé de merluza", "Filé de linguado", "Filé de atum fresco"] },
+        "GORDURAS": { "Gorduras Boas": ["Abacate", "Azeite de oliva extra virgem", "Castanha-do-pará", "Castanha de caju", "Amêndoas", "Nozes", "Amendoim", "Pasta de amendoim"] },
+        "LEGUMES": { "Legumes": ["Cenoura", "Brócolis", "Couve-flor", "Abobrinha", "Abóbora", "Berinjela", "Espinafre", "Chuchu", "Quiabo", "Vagem", "Pepino", "Beterraba", "Pimentão", "Couve"] },
+        "FRUTAS": { "Frutas": ["Banana", "Maçã", "Mamão", "Laranja", "Abacaxi", "Melancia", "Melão", "Manga", "Morango", "Uva", "Goiaba", "Pêra", "Kiwi", "Caju", "Limão", "Acerola", "Tangerina"] },
+        "SEMENTES": { "Sementes": ["Chia", "Linhaça", "Semente de abóbora", "Semente de girassol", "Gergelim", "Quinoa"] },
+        "OUTROS": { "Outros": ["Peito de peru", "Iogurte Natural", "Leite Integral", "Leite Desnatado", "Leite s/Lactose", "Leite De Amendoas", "Leite de soja", "Ricota", "Queijo Minas", "Queijo Muçarela", "Whey Protein"] },
+        "CORINGAS CALÓRICOS": { 
+            "Doces Estratégicos": ["Mel", "Doce de Leite", "Geleia de Frutas", "Goiabada"],
+            "Densidade Energética": ["Suco de Uva Integral", "Suco de Laranja", "Maltodextrina", "Pasta de Amendoim Extra", "Azeite de Oliva (Dose Extra)"] 
+        }
+    };
+
+    const preparosUnificados = ["Cozido", "Assado", "Grelhado", "Refogado", "Na Airfryer", "Na frigideira", "Moído", "Desfiado", "Cozido no vapor", "Ensopado"];
+
+    function mudarPasso(passo) {
+        document.querySelectorAll('.step-section').forEach(s => s.classList.remove('step-active'));
+        document.getElementById('step-' + passo).classList.add('step-active');
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+   function calculateTMB() {
+    const name = document.getElementById('calc-name').value;
+    const gender = document.getElementById('calc-gender').value;
+    const age = parseFloat(document.getElementById('calc-age').value);
+    const weight = parseFloat(document.getElementById('calc-weight').value);
+    const height = parseFloat(document.getElementById('calc-height').value);
+    const activity = parseFloat(document.getElementById('calc-activity').value);
+    const goalValue = document.getElementById('calc-goal').value;
+
+    if (!name || !age || !weight || !height) {
+        return alert("Por favor, digite seu nome e preencha os dados.");
+    }
+
+    let bmr = (gender === 'male') 
+        ? 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age) 
+        : 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+
+    const tdee = bmr * activity;
+    let finalCalories = (goalValue === 'Emagrecimento') ? tdee * 0.8 : (goalValue === 'Hipertrofia') ? tdee * 1.15 : tdee;
+    const caloriesResult = Math.round(finalCalories);
+
+    document.getElementById('goalResult').innerText = caloriesResult + " kcal";
+
+    // MENSAGEM COM O NOME EM AMARELO NO INÍCIO
+      document.getElementById('tmb-msg-v2').innerHTML = `
+        <span class="highlight-text">${name.toUpperCase()}</span>, seu corpo precisa de 
+        <span class="highlight-text">${caloriesResult} calorias</span> por dia para <span class="highlight-text">${goalValue.toLowerCase()}.</span><br> 
+        Deseja transformar esses números em um <span class="highlight-text">plano alimentar?</span><br>
+        É só clicar no botão abaixo <span class="highlight-text">↓</span>
+    `;
+        
+        document.getElementById('resultContainer').style.display = 'block';
+        document.getElementById('resultContainer').scrollIntoView({ behavior: 'smooth' });
+        
+        localStorage.setItem('user_name', name);        
+        localStorage.setItem('tmb_weight', weight);
+        localStorage.setItem('tmb_calories', caloriesResult);
+        localStorage.setItem('tmb_goal', goalValue);
+    }
+
+    function irParaDieta() {
+        mudarPasso(2);
+        const nomeSalvo = localStorage.getItem('user_name') || "Campeão(ã)";
+        document.getElementById('nome-destaque').innerText = nomeSalvo.toUpperCase();
+        document.getElementById('peso').value = localStorage.getItem('tmb_weight');
+        document.getElementById('calorias').value = localStorage.getItem('tmb_calories');
+        document.getElementById('objetivo').value = localStorage.getItem('tmb_goal');
+        renderInterface(); 
+    }
+
+    async function inicializarTudo() {
+        renderInterface(); 
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('pago') === 'true') {
+            const rascunho = localStorage.getItem('rascunho_dieta');
+            if (rascunho) { mudarPasso(2); gerarDieta(JSON.parse(rascunho), true); window.history.replaceState({}, document.title, "/"); }
+        }
+    }
+
+    function renderInterface() {
+        const container = document.getElementById('categorias-container');
+        const objetivo = document.getElementById('objetivo').value;
+        container.innerHTML = '';
+        
+        for (let cat in estruturaAlimentos) {
+            if (cat === "CORINGAS CALÓRICOS" && objetivo !== "Hipertrofia") continue;
+
+            let html = `<div class="categoria-pai">${cat}</div>`;
+            for (let sub in estruturaAlimentos[cat]) {
+                html += `<details><summary>${sub}</summary><div class="grid-alimentos">`;
+                estruturaAlimentos[cat][sub].forEach(item => { 
+                    html += `<label class="item-alimento">
+                                 <input type="checkbox" name="alimento" value="${sub}: ${item}"> ${item}
+                             </label>`; 
+                });
+                html += `</div></details>`;
+            }
+            container.innerHTML += html;
+        }
+        const pCont = document.getElementById('preparos-unificados-container');
+        pCont.innerHTML = '';
+        preparosUnificados.forEach(p => { 
+            pCont.innerHTML += `<label class="item-alimento"><input type="checkbox" name="preparo-geral" value="${p}"> ${p}</label>`; 
         });
     }
-    carregarAlimentos();
 
-    function mudarPasso(n) {
-        document.querySelectorAll('.passo').forEach(p => p.classList.remove('ativo'));
-        document.getElementById('passo' + n).classList.add('ativo');
-        window.scrollTo(0,0);
+function prepararInstrucoesPrompt(d) {
+    const normalizar = (str) => {
+        return str ? str.normalize("NFD")
+                     .replace(/[\u0300-\u036f]/g, "")
+                     .toLowerCase()
+                     .replace(/[^a-z0-9 ]/g, "")
+                     .trim() : "";
+    };
+
+    // ============================================================
+    // LÓGICA DE INJEÇÃO AUTOMÁTICA DE CLARAS
+    // Se houver qualquer item da subcategoria "Ovos" selecionado, 
+    // e a Clara ainda não estiver na lista, nós a adicionamos.
+    // ============================================================
+    const temOvoSelecionado = d.alimentos.some(item => 
+        item.toLowerCase().includes("ovos:") || item.toLowerCase().includes("mexidos")
+    );
+    
+    const jaTemClara = d.alimentos.some(item => 
+        item.toLowerCase().includes("clara de ovos")
+    );
+
+    if (temOvoSelecionado && !jaTemClara) {
+        // Injetamos no formato esperado pelo seu split(':')
+        d.alimentos.push("Ovos: Clara de Ovos");
+    }
+    // ============================================================
+
+    let matchPreparos = "";
+    const caloriasMeta = parseFloat(d.calorias) || 2000;
+    const pesoUser = parseFloat(d.peso) || 70;
+    const objetivo = d.objetivo;
+
+    // LÓGICA DE MACROS POR G/KG
+    const totalProt = Math.round(pesoUser * 2);
+    const totalGord = Math.round(pesoUser * 1);
+    
+    let fatorCarbo;
+    if (objetivo === "Emagrecimento") fatorCarbo = 3; 
+    else if (objetivo === "Hipertrofia") fatorCarbo = 5.5; 
+    else fatorCarbo = 4;
+
+    let totalCarbo = Math.round(pesoUser * fatorCarbo);
+
+    const caloriasAtuais = (totalProt * 4) + (totalGord * 9) + (totalCarbo * 4);
+    if (caloriasAtuais < caloriasMeta) {
+        totalCarbo += Math.round((caloriasMeta - caloriasAtuais) / 4);
     }
 
-    function prepararInstrucoesPrompt(d) {
-        const p = parseFloat(d.peso);
-        const cal = parseFloat(d.calorias);
-        
-        // Sua lógica de macros
-        const protG_kg = d.objetivo === "Hipertrofia" ? 2.2 : (d.objetivo === "Definição" ? 2.0 : 1.6);
-        const gordG_kg = 0.8;
+    d.alimentos.forEach(item => {
+        const partes = item.split(':');
+        const subcategoria = partes[0] ? partes[0].trim().toUpperCase() : "";
+        let nomeRaw = partes[1] ? partes[1].trim() : item.trim();
 
-        const totalProt = Math.round(p * protG_kg);
-        const totalGord = Math.round(p * gordG_kg);
-        const totalCarbo = Math.round((cal - (totalProt * 4) - (totalGord * 9)) / 4);
+        const localizarNaTabela = (termo) => {
+            const termoNorm = normalizar(termo);
+            const chave = Object.keys(TABELA_ALIMENTOS).find(k => normalizar(k) === termoNorm);
+            return chave ? TABELA_ALIMENTOS[chave] : null;
+        };
 
-        let matchPreparos = "";
-        d.alimentos.forEach(alimento => {
-            const config = CONFIG_PREPAROS[alimento] || { preparos_sugeridos: ["Grelhado"] };
-            matchPreparos += `- ${alimento.toUpperCase()}: ${config.preparos_sugeridos.join(', ')}\n`;
+        let dados = localizarNaTabela(nomeRaw) || localizarNaTabela(item);
+
+        if (!dados) {
+            let nomeTentativa = nomeRaw;
+            if (subcategoria.includes("ARROZ")) nomeTentativa = `arroz ${nomeRaw}`;
+            if (subcategoria.includes("FEIJAO")) nomeTentativa = `feijao ${nomeRaw}`;
+            // Tentativa específica para encontrar a clara caso o nome venha apenas como "clara de ovos"
+            if (nomeRaw.toLowerCase().includes("clara")) nomeTentativa = "clara de ovos";
+            
+            dados = localizarNaTabela(nomeTentativa);
+        }
+
+        if (dados) {
+            const p = dados.proteina || 0;
+            const c = dados.carbo || 0;
+            const g = dados.gordura || 0;
+            const uni = dados.unidade || "g";
+
+            let refTexto = "";
+            if (uni === "un") {
+                refTexto = `1 Unidade (aprox. ${dados.pesoReferencia || 50}g)`;
+            } else if (uni === "ml") {
+                refTexto = `100ml`;
+            } else {
+                refTexto = `100g`;
+            }
+
+            matchPreparos += `- ${nomeRaw.toUpperCase()}: | Ref: ${refTexto} tem ${p}g Prot, ${c}g Carb, ${g}g Gord. (USAR ${uni.toUpperCase()} NO CARDÁPIO)\n`;
+        }
+    });
+
+    return {
+        totalProt, totalGord, totalCarbo,
+        protPorRef: Math.round(totalProt / d.refeicoes),
+        carboPorRef: Math.round(totalCarbo / d.refeicoes),
+        gordPorRef: Math.round(totalGord / d.refeicoes),
+        matchPreparos, 
+        alvoCaloricoRef: Math.round(caloriasMeta / d.refeicoes)
+    };
+}
+
+async function gerarDieta(d) {
+    const status = document.getElementById('status-topo');
+    // Prepara os cálculos e a lista de alimentos (conforme sua lógica atual)
+    const promptMontado = prepararInstrucoesPrompt(d); 
+    const nomeUsuario = localStorage.getItem('user_name') || "Campeão(ã)";
+
+    // Exibe o feedback visual
+    status.style.display = 'block';
+    status.scrollIntoView({ behavior: 'smooth' });
+
+    // Mensagens dinâmicas para cobrir os ~25 segundos de processamento (IA 1 + IA 2 + PDF)
+    const mensagens = [
+        "💰 PAGAMENTO CONFIRMADO",
+        "🔍 ANALISANDO SEUS DADOS...", 
+        "📄 CALCULANDO MACROS...", 
+        "🤖 IA GERANDO CARDÁPIO...",
+        "⚖️ REVISANDO QUANTIDADES...",
+        "🛠️ FINALIZANDO AJUSTES...",
+        "⚙️ GERANDO SEU PDF...",
+        "⬇️ PREPARANDO DOWNLOAD..."
+    ];
+    
+    let msgIndex = 0;
+    status.innerText = mensagens[0];
+    
+    // Troca a mensagem a cada 4 segundos para cobrir o tempo total
+    const interval = setInterval(() => { 
+        if (msgIndex < mensagens.length - 1) { 
+            msgIndex++;
+            status.innerText = mensagens[msgIndex]; 
+        } 
+    }, 4000); 
+
+    try {
+        const response = await fetch('/api/gerar-dieta', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                prompt: promptMontado, 
+                email: d.email 
+            }),
         });
 
-        return { totalProt, totalCarbo, totalGord, matchPreparos };
+        // Verificação de Timeout da Vercel (Erro 504)
+        if (response.status === 504) {
+            clearInterval(interval);
+            status.innerText = "⏳ QUASE PRONTO... SÓ MAIS UM MOMENTO";
+            // Tenta verificar se o PDF foi gerado após o timeout
+            setTimeout(() => verificarPdfGerado(d.email), 5000);
+            return;
+        }
+
+        const result = await response.json();
+
+        if (response.ok && result.pdf_url) {
+            clearInterval(interval);
+            status.innerText = "✅ REEDUCAÇÃO GERADA! BAIXANDO...";
+            
+            // Pequeno delay para o usuário ler a mensagem de sucesso
+            setTimeout(() => {
+                window.location.href = result.pdf_url;
+            }, 1500);
+        } else {
+            throw new Error(result.error || "Erro ao gerar dieta.");
+        }
+
+    } catch (err) {
+        clearInterval(interval);
+        console.error("Erro no processamento:", err);
+        status.innerText = "❌ ERRO AO GERAR. TENTE NOVAMENTE.";
+        alert("Ocorreu um erro: " + err.message);
     }
+}
 
-    async function gerarDieta(d) {
-        const status = document.getElementById('status-topo');
-        const info = prepararInstrucoesPrompt(d);
-        
-        status.style.display = 'block';
-        status.scrollIntoView({ behavior: 'smooth' });
+// Função de segurança caso a Vercel dê timeout mas o PDF tenha sido salvo no final
+async function verificarPdfGerado(email) {
+    try {
+        const res = await fetch('/api/buscar-dieta', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (data.pdf_url) {
+            window.location.href = data.pdf_url;
+        } else {
+            alert("O servidor demorou muito. Por favor, tente gerar novamente em instantes.");
+        }
+    } catch (e) {
+        console.log("Erro na verificação secundária.");
+    }
+}
 
-        const mensagens = [
-            "💰 PAGAMENTO CONFIRMADO", "🔍 ANALISANDO SEUS DADOS...", 
-            "📄 CALCULANDO MACROS...", "🤖 IA GERANDO CARDÁPIO...",
-            "⚖️ REVISANDO QUANTIDADES...", "🛠️ FINALIZANDO AJUSTES...",
-            "⚙️ GERANDO SEU PDF...", "⬇️ PREPARANDO DOWNLOAD..."
-        ];
-        
-        let msgIndex = 0;
-        status.innerText = mensagens[0];
-        const interval = setInterval(() => { 
-            if (msgIndex < mensagens.length - 1) { 
-                msgIndex++;
-                status.innerText = mensagens[msgIndex]; 
-            } 
-        }, 4000); 
-
-        // O SEU PROMPT ESTRUTURADO ORIGINAL E COMPLETO
-        const promptFinal = `
+    // O SEU PROMPT ESTRUTURADO (Enviado para a API para a Geração Inicial)
+ const promptFinal = `
 Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTICA DOS MACROS CRUZADOS. Você deve utilizar as informações prescritas para bater as metas diárias utilizando a ESTRATÉGIA DE SUBTRAÇÃO. 
 
 AO FINAL: (OBRIGATÓRIO:
@@ -355,69 +654,20 @@ ${(parseFloat(d.peso) * 0.035).toFixed(1)}L/dia
 DATA:
 ${new Date().toLocaleString()}
 
+
 RODAPÉ:
 "ESTE PLANO ALIMENTAR FOI GERADO COM BASE EM ESTIMATIVAS NUTRICIONAIS PADRÃO..."`;
 
-        try {
-            const response = await fetch('/api/gerar-dieta', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: promptFinal, email: d.email }),
-            });
-
-            if (response.status === 504) {
-                clearInterval(interval);
-                status.innerText = "⏳ QUASE PRONTO... SÓ MAIS UM MOMENTO";
-                setTimeout(() => verificarPdfGerado(d.email), 5000);
-                return;
-            }
-
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || "Erro na geração.");
-
-            clearInterval(interval);
-            status.innerText = "✅ REEDUCAÇÃO GERADA COM SUCESSO!";
-
-            // Preenche o resultado e mostra botão de download (seu código original)
-            const resultadoDiv = document.getElementById('resultado');
-            if (resultadoDiv) {
-                resultadoDiv.innerText = data.dieta;
-                resultadoDiv.style.display = 'block';
-                const btnDownload = document.getElementById('btn-download-pos-geracao');
-                if (btnDownload) {
-                    btnDownload.style.display = 'block';
-                    btnDownload.onclick = () => window.open(data.pdf_url, '_blank');
-                }
-                mudarPasso(3); 
-            }
-            if (data.pdf_url) setTimeout(() => { window.location.href = data.pdf_url; }, 1500);
-
-        } catch (e) {
-            clearInterval(interval);
-            status.innerText = "❌ ERRO: " + e.message;
-        }
-    }
-
-    async function verificarPdfGerado(email) {
-        try {
-            const res = await fetch('/api/buscar-dieta', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
-            });
-            const data = await res.json();
-            if (data.pdf_url) window.location.href = data.pdf_url;
-        } catch (e) { console.log("Erro na verificação."); }
-    }
-
     async function verificarAcessoEPagar() {
-        if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos.");
-        
+        const aceitouTermos = document.getElementById('aceite-clausula').checked;
+        if (!aceitouTermos) return alert("Aceite os termos.");
+
         const alimentosChecks = Array.from(document.querySelectorAll('input[name="alimento"]:checked'));
         const alimentosValores = alimentosChecks.map(i => i.value);
+        
         if (alimentosValores.length < 5) return alert("Selecione pelo menos 5 alimentos.");
 
-        // SUA TRAVA DE HIPERTROFIA / CORINGAS CALÓRICOS
+        // TRAVA DE SEGURANÇA PARA HIPERTROFIA / ALTA CALORIA
         const caloriasMeta = parseFloat(document.getElementById('calorias').value);
         const objetivo = document.getElementById('objetivo').value;
         const temCoringa = alimentosValores.some(item => item.includes("Densidade Energética") || item.includes("Doces Estratégicos"));
