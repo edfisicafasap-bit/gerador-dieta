@@ -73,7 +73,7 @@
 </head>
 <body>
 
-<div id="status-topo">AGUARDE...</div>
+<div id="status-topo">💰 PAGAMENTO CONFIRMADO</div>
 
 <div class="container">
     <h1>Reeducação<br><span style="color:#fff">Alimentar</span></h1>
@@ -102,7 +102,7 @@
                 <option value="Hipertrofia">Hipertrofia</option>
             </select>
         </div>
-        <button class="btn" onclick="mudarPasso(2)">Escolher Alimentos <i class="fas fa-arrow-right"></i></button>
+        <button class="btn" onclick="mudarPasso(2)">Próximo Passo <i class="fas fa-arrow-right"></i></button>
     </div>
 
     <div id="passo2" class="passo">
@@ -125,36 +125,40 @@
             <label style="color: #FFD400;"><input type="checkbox" id="aceite-clausula"> EU COMPREENDO QUE ESTE PLANO É UMA SUGESTÃO GERADA POR IA E NÃO SUBSTITUI UM NUTRICIONISTA.</label>
         </div>
 
-        <button class="btn" onclick="verificarAcessoEPagar()">GERAR MINHA REEDUCAÇÃO</button>
-        <button class="btn" style="background:none; color:#aaa; margin-top:10px; font-size:0.8rem" onclick="mudarPasso(1)">Voltar</button>
+        <button class="btn" onclick="verificarAcessoEPagar()">GERAR REEDUCAÇÃO</button>
     </div>
 
     <div id="passo3" class="passo">
         <div id="resultado"></div>
         <button id="btn-download-pos-geracao" class="btn" style="margin-top:20px; display:none;">BAIXAR PDF</button>
-        <button class="btn" style="background:#444; color:#fff; margin-top:10px;" onclick="location.reload()">NOVA CONSULTA</button>
+        <button class="btn" style="background:#444; color:#fff; margin-top:10px;" onclick="location.reload()">VOLTAR AO INÍCIO</button>
     </div>
 </div>
 
 <div id="payment-overlay" class="payment-overlay">
     <h2 style="color:#FFD400; font-weight:900;">PAGAMENTO NECESSÁRIO</h2>
-    <p style="margin-bottom:30px;">Libere seu acesso para gerar sua Reeducação Alimentar:</p>
+    <p style="margin-bottom:30px; max-width: 400px;">Você ainda não possui um plano ativo ou seus créditos acabaram. Escolha uma opção:</p>
     
-    <div class="card" style="width:100%; max-width:350px; background:#FFD400; color:#000; cursor:pointer;" onclick="iniciarCheckout('price_1Sz1w7GEaACih56ZWyTiPBAu')">
-        <h3 style="margin:0;">PLANO COMPLETO</h3>
-        <p>Acesso imediato à geração</p>
-        <div style="font-size:1.5rem; font-weight:900;">CONFIRMAR NO CHECKOUT</div>
+    <div class="card" style="width:100%; max-width:350px; background:#222; border: 2px solid #333; cursor:pointer;" onclick="iniciarCheckout('price_1Sz1w7GEaACih56ZWyTiPBAu')">
+        <h3 style="color:#FFD400;">PLANO AVULSO</h3>
+        <p>Gere 1 plano agora mesmo</p>
+        <div style="font-size:1.5rem; font-weight:900;">R$ 29,90</div>
     </div>
 
-    <button class="btn" style="background:none; color:#fff; border:1px solid #444; max-width:200px; margin-top: 20px;" onclick="fecharModal()">VOLTAR</button>
+    <div class="card" style="width:100%; max-width:350px; background:#FFD400; color:#000; cursor:pointer;" onclick="iniciarCheckout('price_1TAhibGEaACih56Z4TeYkNwK')">
+        <h3 style="margin:0;">PLANO ANUAL</h3>
+        <p>Gere até 2 planos por semana</p>
+        <div style="font-size:1.5rem; font-weight:900;">R$ 97,00</div>
+    </div>
+
+    <button class="btn" style="background:none; color:#fff; border:1px solid #444; max-width:200px;" onclick="fecharModal()">CANCELAR</button>
 </div>
 <script>
-    // Substitua pelas suas chaves reais do Supabase
-    const _supabase = supabase.createClient('SUA_URL_AQUI', 'SUA_CHAVE_ANONIMA_AQUI');
+    // Inicialização Supabase (mantenha suas credenciais aqui)
+    const _supabase = supabase.createClient('SUA_URL', 'SUA_KEY');
 
     function carregarAlimentos() {
         const container = document.getElementById('lista-alimentos');
-        if (!container) return;
         Object.keys(TABELA_ALIMENTOS).forEach(key => {
             const div = document.createElement('div');
             div.className = 'item-alimento';
@@ -173,8 +177,7 @@
 
     function mudarPasso(n) {
         document.querySelectorAll('.passo').forEach(p => p.classList.remove('ativo'));
-        const next = document.getElementById('passo' + n);
-        if (next) next.classList.add('ativo');
+        document.getElementById('passo' + n).classList.add('ativo');
         window.scrollTo(0,0);
     }
 
@@ -182,6 +185,7 @@
         const p = parseFloat(d.peso);
         const cal = parseFloat(d.calorias);
         
+        // Sua lógica de macros
         const protG_kg = d.objetivo === "Hipertrofia" ? 2.2 : (d.objetivo === "Definição" ? 2.0 : 1.6);
         const gordG_kg = 0.8;
 
@@ -201,19 +205,15 @@
     async function gerarDieta(d) {
         const status = document.getElementById('status-topo');
         const info = prepararInstrucoesPrompt(d);
-
+        
         status.style.display = 'block';
         status.scrollIntoView({ behavior: 'smooth' });
 
         const mensagens = [
-            "💰 PAGAMENTO CONFIRMADO",
-            "🔍 ANALISANDO SEUS DADOS...", 
-            "📄 CALCULANDO MACROS...", 
-            "🤖 IA GERANDO CARDÁPIO...",
-            "⚖️ REVISANDO QUANTIDADES...",
-            "🛠️ FINALIZANDO AJUSTES...",
-            "⚙️ GERANDO SEU PDF...",
-            "⬇️ PREPARANDO DOWNLOAD..."
+            "💰 PAGAMENTO CONFIRMADO", "🔍 ANALISANDO SEUS DADOS...", 
+            "📄 CALCULANDO MACROS...", "🤖 IA GERANDO CARDÁPIO...",
+            "⚖️ REVISANDO QUANTIDADES...", "🛠️ FINALIZANDO AJUSTES...",
+            "⚙️ GERANDO SEU PDF...", "⬇️ PREPARANDO DOWNLOAD..."
         ];
         
         let msgIndex = 0;
@@ -225,7 +225,7 @@
             } 
         }, 4000); 
 
-        // SEU PROMPT ESTRUTURADO COMPLETO (Inviolável)
+        // O SEU PROMPT ESTRUTURADO ORIGINAL E COMPLETO
         const promptFinal = `
 Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTICA DOS MACROS CRUZADOS. Você deve utilizar as informações prescritas para bater as metas diárias utilizando a ESTRATÉGIA DE SUBTRAÇÃO. 
 
@@ -378,6 +378,7 @@ RODAPÉ:
             clearInterval(interval);
             status.innerText = "✅ REEDUCAÇÃO GERADA COM SUCESSO!";
 
+            // Preenche o resultado e mostra botão de download (seu código original)
             const resultadoDiv = document.getElementById('resultado');
             if (resultadoDiv) {
                 resultadoDiv.innerText = data.dieta;
@@ -394,7 +395,6 @@ RODAPÉ:
         } catch (e) {
             clearInterval(interval);
             status.innerText = "❌ ERRO: " + e.message;
-            console.error(e);
         }
     }
 
@@ -407,18 +407,26 @@ RODAPÉ:
             });
             const data = await res.json();
             if (data.pdf_url) window.location.href = data.pdf_url;
-            else alert("O servidor demorou muito. Tente gerar novamente em instantes.");
-        } catch (e) { console.error("Erro na verificação."); }
+        } catch (e) { console.log("Erro na verificação."); }
     }
 
     async function verificarAcessoEPagar() {
-        const aceitou = document.getElementById('aceite-clausula').checked;
-        if (!aceitou) return alert("Aceite os termos.");
+        if (!document.getElementById('aceite-clausula').checked) return alert("Aceite os termos.");
         
-        const alimentos = Array.from(document.querySelectorAll('input[name="alimento"]:checked')).map(i => i.value);
-        if (alimentos.length < 5) return alert("Selecione pelo menos 5 alimentos.");
+        const alimentosChecks = Array.from(document.querySelectorAll('input[name="alimento"]:checked'));
+        const alimentosValores = alimentosChecks.map(i => i.value);
+        if (alimentosValores.length < 5) return alert("Selecione pelo menos 5 alimentos.");
 
-        const email = prompt("Confirme seu e-mail:");
+        // SUA TRAVA DE HIPERTROFIA / CORINGAS CALÓRICOS
+        const caloriasMeta = parseFloat(document.getElementById('calorias').value);
+        const objetivo = document.getElementById('objetivo').value;
+        const temCoringa = alimentosValores.some(item => item.includes("Densidade Energética") || item.includes("Doces Estratégicos"));
+
+        if (objetivo === "Hipertrofia" && caloriasMeta > 3200 && !temCoringa) {
+            return alert("⚠️ Atenção Jean! Sua meta de calorias é alta. Para que sua dieta não fique com volumes exagerados de comida, volte e selecione pelo menos 2 opções da categoria 'CORINGAS CALÓRICOS' (como Suco de Uva, Mel ou Pasta de Amendoim).");
+        }
+
+        const email = prompt("Seu e-mail:");
         if (!email) return;
 
         const rascunho = {
@@ -426,7 +434,8 @@ RODAPÉ:
             calorias: document.getElementById('calorias').value,
             refeicoes: document.getElementById('num-refeicoes').value,
             objetivo: document.getElementById('objetivo').value,
-            alimentos: alimentos,
+            alimentos: alimentosValores,
+            preparos: Array.from(document.querySelectorAll('input[name="preparo-geral"]:checked')).map(i => i.value),
             email: email.toLowerCase().trim()
         };
 
@@ -439,18 +448,18 @@ RODAPÉ:
             } else {
                 gerarDieta(rascunho);
             }
-        } catch (err) { alert("Erro de conexão ao banco."); }
+        } catch (err) { alert("Erro de conexão."); }
     }
 
     async function iniciarCheckout(priceId) {
         const rascunho = JSON.parse(localStorage.getItem('rascunho_dieta'));
         try {
-            const res = await fetch('/api/checkout', {
+            const response = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ priceId, email: rascunho.email }),
             });
-            const data = await res.json();
+            const data = await response.json();
             if (data.url) window.location.href = data.url;
         } catch (err) { alert("Erro no checkout."); }
     }
