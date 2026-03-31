@@ -433,34 +433,96 @@ function prepararInstrucoesPrompt(d) {
 
 async function gerarDieta(d) {
     const status = document.getElementById('status-topo');
-    const info = prepararInstrucoesPrompt(d); // Realiza os cálculos de g/kg e prepara a lista de alimentos
+    // Prepara os cálculos e a lista de alimentos (conforme sua lógica atual)
+    const promptMontado = prepararInstrucoesPrompt(d); 
     const nomeUsuario = localStorage.getItem('user_name') || "Campeão(ã)";
 
+    // Exibe o feedback visual
     status.style.display = 'block';
     status.scrollIntoView({ behavior: 'smooth' });
 
-    // Mensagens configuradas para o tempo de resposta da API com Auditoria (aprox. 20s)
+    // Mensagens dinâmicas para cobrir os ~25 segundos de processamento (IA 1 + IA 2 + PDF)
     const mensagens = [
         "💰 PAGAMENTO CONFIRMADO",
-        "🔍 ANALISANDO ALIMENTOS...", 
-        "📄 MONTANDO SEU CARDÁPIO...", 
-        "✅ CARDÁPIO PRONTO...",
-        "📤 ENVIANDO PARA APROVAÇÃO...",
-    "⏳ AGUARDANDO APROVAÇÃO...",
-    "✅ CARDÁPIO APROVADO...",
-        "⏱️ AGUARDE...",
-           "⚙️ GERANDO SEU PDF...",
-        "⬇️ AGUARDE O DOWNLOAD"
+        "🔍 ANALISANDO SEUS DADOS...", 
+        "📄 CALCULANDO MACROS...", 
+        "🤖 IA GERANDO CARDÁPIO...",
+        "⚖️ REVISANDO QUANTIDADES...",
+        "🛠️ FINALIZANDO AJUSTES...",
+        "⚙️ GERANDO SEU PDF...",
+        "⬇️ PREPARANDO DOWNLOAD..."
     ];
     
     let msgIndex = 0;
     status.innerText = mensagens[0];
+    
+    // Troca a mensagem a cada 4 segundos para cobrir o tempo total
     const interval = setInterval(() => { 
         if (msgIndex < mensagens.length - 1) { 
             msgIndex++;
             status.innerText = mensagens[msgIndex]; 
         } 
-    }, 5000); 
+    }, 4000); 
+
+    try {
+        const response = await fetch('/api/gerar-dieta', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                prompt: promptMontado, 
+                email: d.email 
+            }),
+        });
+
+        // Verificação de Timeout da Vercel (Erro 504)
+        if (response.status === 504) {
+            clearInterval(interval);
+            status.innerText = "⏳ QUASE PRONTO... SÓ MAIS UM MOMENTO";
+            // Tenta verificar se o PDF foi gerado após o timeout
+            setTimeout(() => verificarPdfGerado(d.email), 5000);
+            return;
+        }
+
+        const result = await response.json();
+
+        if (response.ok && result.pdf_url) {
+            clearInterval(interval);
+            status.innerText = "✅ REEDUCAÇÃO GERADA! BAIXANDO...";
+            
+            // Pequeno delay para o usuário ler a mensagem de sucesso
+            setTimeout(() => {
+                window.location.href = result.pdf_url;
+            }, 1500);
+        } else {
+            throw new Error(result.error || "Erro ao gerar dieta.");
+        }
+
+    } catch (err) {
+        clearInterval(interval);
+        console.error("Erro no processamento:", err);
+        status.innerText = "❌ ERRO AO GERAR. TENTE NOVAMENTE.";
+        alert("Ocorreu um erro: " + err.message);
+    }
+}
+
+// Função de segurança caso a Vercel dê timeout mas o PDF tenha sido salvo no final
+async function verificarPdfGerado(email) {
+    try {
+        const res = await fetch('/api/buscar-dieta', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (data.pdf_url) {
+            window.location.href = data.pdf_url;
+        } else {
+            alert("O servidor demorou muito. Por favor, tente gerar novamente em instantes.");
+        }
+    } catch (e) {
+        console.log("Erro na verificação secundária.");
+    }
+}
 
     // O SEU PROMPT ESTRUTURADO (Enviado para a API para a Geração Inicial)
  const promptFinal = `
