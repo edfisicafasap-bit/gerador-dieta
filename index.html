@@ -431,22 +431,44 @@ function prepararInstrucoesPrompt(d) {
     };
 }
 
-    async function gerarDieta(d, pagoConfirmado = false) {
-        const status = document.getElementById('status-topo');
-        const info = prepararInstrucoesPrompt(d);
-        const nomeUsuario = localStorage.getItem('user_name') || "Cliente";
+async function gerarDieta(d) {
+    const status = document.getElementById('status-topo');
+    const info = prepararInstrucoesPrompt(d); // Realiza os cálculos de g/kg e prepara a lista de alimentos
+    const nomeUsuario = localStorage.getItem('user_name') || "Campeão(ã)";
 
-        status.style.display = 'block';
-        status.scrollIntoView({ behavior: 'smooth' });
+    status.style.display = 'block';
+    status.scrollIntoView({ behavior: 'smooth' });
 
-        const mensagens = ["📊 CALCULANDO MACRONUTRIENTES...", "🍳 SELECIONANDO PREPAROS...", "⏳ GERANDO PDF DE DEBUG..."];
-        let msgIndex = 0;
-        const interval = setInterval(() => { 
-            if (msgIndex < mensagens.length) { status.innerText = mensagens[msgIndex]; msgIndex++; } 
-        }, 1500);
+    // Mensagens configuradas para o tempo de resposta da API com Auditoria (aprox. 20s)
+    const mensagens = [
+        "💰 PAGAMENTO CONFIRMADO",
+        "🔍 ANALISANDO ALIMENTOS...", 
+        "📄 MONTANDO SEU CARDÁPIO...", 
+        "✅ CARDÁPIO PRONTO...",
+        "📤 ENVIANDO PARA APROVAÇÃO...",
+    "⏳ AGUARDANDO APROVAÇÃO...",
+    "✅ CARDÁPIO APROVADO...",
+        "⏱️ AGUARDE...",
+           "⚙️ GERANDO SEU PDF...",
+        "⬇️ AGUARDE O DOWNLOAD"
+    ];
+    
+    let msgIndex = 0;
+    status.innerText = mensagens[0];
+    const interval = setInterval(() => { 
+        if (msgIndex < mensagens.length - 1) { 
+            msgIndex++;
+            status.innerText = mensagens[msgIndex]; 
+        } 
+    }, 5000); 
 
-const promptFinal = `
+    // O SEU PROMPT ESTRUTURADO (Enviado para a API para a Geração Inicial)
+ const promptFinal = `
 Atue como um Nutricionista de Precisão. Sua prioridade absoluta é a MATEMÁTICA DOS MACROS CRUZADOS. Você deve utilizar as informações prescritas para bater as metas diárias utilizando a ESTRATÉGIA DE SUBTRAÇÃO. 
+
+AO FINAL: (OBRIGATÓRIO:
+1- SOME TODOS OS MACROS LISTADOS NA TABELA E ME ENTREGUE O VALOR QUE REAL DA SOMA DELES.
+FAÇA UMA INDICAÇÃO DE AJUSTES PARA QUE O PLANO ATINJA COM PRECISÃO A METAS DE P: ${info.totalProt}g | C: ${info.totalCarbo}g | G: ${info.totalGord}g INDICANDO AJUSTES NECESSÁRIOS.
 
 REGRAS DE CÁLCULO OBRIGATÓRIAS (AUDITORIA TOTAL):
 1. MACROS SECUNDÁRIOS: Você deve obrigatoriamente contabilizar as proteínas e gorduras presentes nos carboidratos (ex: Arroz, Feijão, Aveia, Pão), as gorduras e carboidratos presentes nas proteínas (ex: Ovos, Carnes, Queijos, Iogurte) e as proteínas e carboidratos presentes nas fontes de gordura (ex: Pasta de Amendoim, Chia).
@@ -466,7 +488,7 @@ Gordura: 0.7–1.1g/kg
 Calorias: ±100 kcal de ${d.calorias}
 
 Comece a resposta exatamente com:
-"Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos que você selecionou."
+"Aqui está um plano de refeições de ${d.calorias} kcal para ${d.objetivo}, dividido em ${d.refeicoes} refeições, utilizando os alimentos selecionados pelo usuário. analise este plano e faça os ajustes caso necessário conforme indicado."
 
 REGRAS DE FORMATAÇÃO:
 Texto plano (SEM markdown)
@@ -481,19 +503,26 @@ REGRAS DE OURO:
 1. Ajuste livre de porções (sem limite fixo)
 2. Soma sempre REAL (sem inventar)
 
-REGRAS POR HORÁRIO:
-CAFÉ: Bowl, Shake, Omelete etc  
-ALMOÇO/JANTA: Carb + Proteína + Legumes + "SALADA À VONTADE"  
-CEIA: leve  
-Sempre incluir proteína
+REGRAS POR HORÁRIO
+REGRA OBRIGATÓRIA PARA AVEIA: DIVIDIR EM CAFÉ DA MANHÃ E TARDE QUANDO EM QUANTIDADES ACIMA DE 80GR
+CAFÉ DA MANHÃ: Transformar em: Bowl, Shake, Vitamina, Sanduíche ou Omelete. 
+LANCHES, DESJEJUM E CAFÉ DA TARDE: Foco em portabilidade e simplicidade.
+ALMOÇO/JANTAR: Estrutura [Base de Carboidrato] + [Proteína] + [Legumes] + Salada à vontade.
+Jantar pode ser mais leve, mas deve manter a estrutura de refeição completa.
+CEIA: REFEIÇÕES SUPER LEVES, COMO UMA FRUTA, OU FRUTA + WHEY, OU IOGURTE...
+REGRA IMPORTANTE: 
+- INCLUIR AO MENOS UMA FONTE DE PROTEINA EM TODAS AS REFEIÇÕES.
+- DISTRIBUIR A GORDURA AO LONGO DO DIA DE FORMA EQUILIBRADA
+- AS REFEIÇÕES DEVEM SER OBRIGATÓRIAMENTE REAIS, PROIBIDO INVENTAR REFEIÇÕES QUE NÃO EXISTEM, COMO AVEIA COM OVO, AVEIA COM PAO, AVEIA COM QUEIJO... TRANSFORME SEMPRE EM REFEIÇÕES TRADICIONAIS DO BRASILEIRO
 
 DETERMINAÇÃO:
 EXATAMENTE ${d.refeicoes} refeições
 
 DISTRIBUIÇÃO PROTEICA:
-- Diversificar fontes
+- Diversificar fontes (porem ovo e clara de ovos é permitido repetir no café da manha, café da tarde e ceia em dietas com quantidades grande de proteina)
 - Usar claras se necessário
 - Não concentrar tudo no almoço
+- Não por volume alto de proteina na ceia
 
 REGRA DE GORDURA:
 Distribuir ao longo do dia
@@ -510,10 +539,10 @@ SUBTOTAL
 PREPARO
 
 SOMA FINAL:
-Proteínas: real  
-Carboidratos: real  
-Gorduras: real  
-Calorias: real  
+Proteínas: valor real  
+Carboidratos: valor real  
+Gorduras: valor real  
+Calorias: valor real  
 
 DIRETRIZ DE FECHAMENTO:
 
@@ -525,17 +554,19 @@ Não ultrapassar ${info.totalGord}g
 
 3. AJUSTE DE CARBOIDRATO BASEADO NO OBJETIVO:
 
-- SE ${d.objetivo} = "Hipertrofia":
-Pode usar SUCO DE UVA, SUCO DE LARANJA, MALTODEXTRINA, MEL
-Pode usar volumes altos (500ml até 1L+)
+Se OBJETIVO FOR "HIPERTROFIA"
+- Pode usar SUCO DE UVA, SUCO DE LARANJA, MALTODEXTRINA, MEL
+- Pode usar volumes altos (500ml até 1L+)
+- Pode conter volumes altos de refeições
 
-- SE ${d.objetivo} = "Definição":
-Uso moderado de líquidos
-Priorizar sólidos
+SE OBJETIVO FOR "DEFINIÇÃO":
+- Uso moderado de líquidos
+- Priorizar sólidos
+- Equilibrio
 
-- SE ${d.objetivo} = "Emagrecimento":
-PROIBIDO usar líquidos calóricos como estratégia principal
-Ajustar apenas com alimentos sólidos
+SE OBJETIVO FOR "EMAGRECIMENTO"
+- Equilibrar proteinas e gordura em todas as refeições
+- Priorizar carbos mais altos somente no almoço e janta
 
 4. AJUSTE DE PROTEÍNA:
 Usar CLARA DE OVO se necessário
@@ -561,27 +592,49 @@ ${(parseFloat(d.peso) * 0.035).toFixed(1)}L/dia
 DATA:
 ${new Date().toLocaleString()}
 
+
 RODAPÉ:
 "ESTE PLANO ALIMENTAR FOI GERADO COM BASE EM ESTIMATIVAS NUTRICIONAIS PADRÃO..."`;
 
-    try {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const linhas = doc.splitTextToSize(promptFinal, 180);
-            let y = 20;
-            linhas.forEach(linha => {
-                if (y > 275) { doc.addPage(); y = 20; }
-                doc.text(linha, 15, y);
-                y += 6;
-            });
-            doc.save("DEBUG_PROMPT_COMPLETO.pdf");
-            clearInterval(interval);
-            status.innerText = "SUCESSO!";
-        } catch (e) {
-            clearInterval(interval);
-            console.error(e);
+try {
+        const response = await fetch('/api/gerar-dieta', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                prompt: promptFinal, 
+                email: d.email 
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Erro na geração.");
+
+        clearInterval(interval);
+        status.innerText = "✅ REEDUCAÇÃO GERADA COM SUCESSO!";
+
+        if (data.pdf_url) {
+            window.open(data.pdf_url, '_blank');
         }
+
+        const resultadoDiv = document.getElementById('resultado');
+        if (resultadoDiv) {
+            resultadoDiv.innerText = data.dieta;
+            resultadoDiv.style.display = 'block';
+            
+            const btnDownload = document.getElementById('btn-download-pos-geracao');
+            if (btnDownload) {
+                btnDownload.style.display = 'block';
+                btnDownload.onclick = () => window.open(data.pdf_url, '_blank');
+            }
+            mudarPasso(3); 
+        }
+
+    } catch (e) {
+        clearInterval(interval);
+        status.innerText = "❌ ERRO: " + e.message;
+        console.error(e);
     }
+}
 
     async function verificarAcessoEPagar() {
         const aceitouTermos = document.getElementById('aceite-clausula').checked;
